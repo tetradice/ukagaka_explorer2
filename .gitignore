@@ -1,0 +1,13 @@
+/plugin/ghostexplorer2/gui_debug/
+/plugin/ghostexplorer2/updates2.dau
+/plugin/ghostexplorer2/ssp_plugin_log.txt
+/gui/packages/
+*.suo
+*.csproj.user
+/gui/GhostExplorer2GUI/obj/
+*.pdb
+*.vshost.exe*
+/plugin/ghostexplorer2/gui/Magick.NET-Q8-AnyCPU.xml
+/plugin/ghostexplorer2/gui/
+/gui/ExplorerLib/bin/
+/gui/ExplorerLib/obj/

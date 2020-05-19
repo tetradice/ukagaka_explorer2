@@ -1,0 +1,3 @@
+type,plugin
+name,ゴーストエクスプローラ通
+directory,ghostexplorer2

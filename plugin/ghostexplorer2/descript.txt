@@ -1,0 +1,25 @@
+//文字コード
+Charset,Shift_JIS
+
+//名前
+name,ゴーストエクスプローラ通
+
+//作者
+//craftmanwは日本語も可、craftmanは英語のみ。どっちか片方でもOK
+craftman,pon
+craftmanw,ポン
+
+//PLUGIN DLL
+filename,yaya.dll
+
+//オプション指定-OnSecondChangeの通知頻度
+//0で無効、標準1
+secondchangeinterval,0
+
+//プラグインID
+//http://www.famkruithof.net/uuid/uuidgen とかで生成できます
+//一度書いたら変えないこと
+id,f0c86cb0-9313-11ea-ab12-0800200c9a66
+
+//更新URL
+homeurl,http://sakura.morphball.net/explorer2/update/ghostexplorer2/
