@@ -14,6 +14,8 @@
 Twitter: https://twitter.com/tetradice
 Ukadon: https://ukadon.shillest.net/web/accounts/29648
 
+ソース (Github) : https://github.com/tetradice/ukagaka_explorer2
+
 ****************
 
 ■動作詳細
@@ -29,7 +31,7 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
 ■動作詳細（ゴースト作者さん向け）
 
 ・ゴーストのフォルダに ghost\master\explorer2\character_descript.txt を置くと、ゴースト選択時に、そのテキストファイルの内容を
-  ゴーストの説明文として表示します。キャラクター紹介みたいなノリで書いてください。
+  ゴーストの説明文として表示します。キャラクター紹介のようなノリで書いてください。
 
     ※テキストファイルのエンコーディングは【UTF-8】である必要があります
       （シフトJISは不可であることに注意してください）
