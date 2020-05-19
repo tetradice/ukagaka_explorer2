@@ -13,7 +13,6 @@
 作者: ポン
 Twitter: https://twitter.com/tetradice
 Ukadon: https://ukadon.shillest.net/web/accounts/29648
-
 ソース (Github) : https://github.com/tetradice/ukagaka_explorer2
 
 ****************
