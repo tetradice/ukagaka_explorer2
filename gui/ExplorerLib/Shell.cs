@@ -48,6 +48,16 @@ namespace ExplorerLib
         public virtual string Explorer2DescriptPath { get { return Path.Combine(DirPath, @"explorer2\descript.txt"); } }
 
         /// <summary>
+        /// explorer2\character_descript.txt のファイルパス
+        /// </summary>
+        public virtual string CharacterDescriptPath { get { return Path.Combine(DirPath, @"explorer2\character_descript.txt"); } }
+
+        /// <summary>
+        /// explorer2\character_descript.txt の本文
+        /// </summary>
+        public virtual string CharacterDescript { get; set; }
+
+        /// <summary>
         /// シェル名
         /// </summary>
         public virtual string Name { get { return Descript.Get("name"); } }
@@ -120,6 +130,13 @@ namespace ExplorerLib
             }
             this.Descript = DescriptText.Load(DescriptPath);
 
+            // character_descript.txt があれば読み込み
+            CharacterDescript = null;
+            if (File.Exists(CharacterDescriptPath))
+            {
+                CharacterDescript = File.ReadAllText(CharacterDescriptPath, Encoding.UTF8);
+            }
+
             // sakura側、kero側それぞれのbindgroup情報 (着せ替え情報) 読み込み
             var sakuraEnabledBindGroupIds = GetEnabledBindGroupIds("sakura");
             var keroEnabledBindGroupIds = GetEnabledBindGroupIds("kero");
@@ -167,6 +184,10 @@ namespace ExplorerLib
                 // explorer2/descript.txt 更新日付
                 var exp2DescPath = Explorer2DescriptPath;
                 if (File.Exists(exp2DescPath) && File.GetLastWriteTime(exp2DescPath) > LastModified) LastModified = File.GetLastWriteTime(exp2DescPath); // 新しければセット
+
+                // explorer2/character_descript.txt 更新日付
+                var charDescPath = CharacterDescriptPath;
+                if (File.Exists(charDescPath) && File.GetLastWriteTime(charDescPath) > LastModified) LastModified = File.GetLastWriteTime(charDescPath); // 新しければセット
 
                 // surfaces*.txt 更新日付
                 foreach (var surfaceText in SurfacesTextList)

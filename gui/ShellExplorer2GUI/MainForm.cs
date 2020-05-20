@@ -315,10 +315,10 @@ namespace ShellExplorer2
                 {
                     return string.Join("\r\n", SurfaceErrorMessages.Select(m => "ERROR: " + m));
                 }
-                //if (SelectedShell.CharacterDescript != null)
-                //{
-                //    return SelectedShell.CharacterDescript;
-                //}
+                if (SelectedShell.CharacterDescript != null)
+                {
+                    return SelectedShell.CharacterDescript;
+                }
             }
 
             return null;
@@ -520,6 +520,10 @@ namespace ShellExplorer2
 
             // ボタン等表示状態を更新
             UpdateUIState();
+
+            // シェルを選択
+            lstShell.Items[0].Focused = true;
+            lstShell.Items[0].Selected = true;
         }
 
         private void MainForm_Shown(object sender, EventArgs e)

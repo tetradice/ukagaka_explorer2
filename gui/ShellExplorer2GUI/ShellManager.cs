@@ -59,10 +59,10 @@ namespace ShellExplorer2
                 if (!File.Exists(Path.Combine(subDir, "descript.txt"))) continue;
 
                 // シェルを読み込み
-                var ghost = Shell.Load(subDir, 0, 10);
+                var shell = Shell.Load(subDir, 0, 10);
 
                 // リストに追加
-                Shells.Add(ghost);
+                Shells.Add(shell);
             }
 
             // 最後に名前＋フォルダパス順でソート
