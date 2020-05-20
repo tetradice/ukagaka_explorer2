@@ -41,6 +41,46 @@ namespace GhostExplorer2
         public virtual string SakuraName { get { return this.MasterGhostDescript.Get("sakura.name") ?? ""; } } // 未設定の場合は空文字
         public virtual string KeroName { get { return this.MasterGhostDescript.Get("kero.name") ?? ""; } } // 未設定の場合は空文字
 
+        /// <summary>
+        /// sakura側のデフォルトサーフェスID
+        /// </summary>
+        public virtual int SakuraDefaultSurfaceId
+        {
+            get
+            {
+                // descript.txt 内で sakura.seriko.defaultsurface が指定されていればその値
+                int parsed;
+                if (MasterGhostDescript.Values.ContainsKey("sakura.seriko.defaultsurface")
+                    && int.TryParse(MasterGhostDescript.Get("sakura.seriko.defaultsurface"), out parsed))
+                {
+                    return parsed;
+                }
+
+                // 上記以外の場合は標準
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// kero側のデフォルトサーフェスID
+        /// </summary>
+        public virtual int KeroDefaultSurfaceId
+        {
+            get
+            {
+                // descript.txt 内で kero.seriko.defaultsurface が指定されていればその値
+                int parsed;
+                if (MasterGhostDescript.Values.ContainsKey("kero.seriko.defaultsurface")
+                    && int.TryParse(MasterGhostDescript.Get("kero.seriko.defaultsurface"), out parsed))
+                {
+                    return parsed;
+                }
+
+                // 上記以外の場合は標準
+                return 10;
+            }
+        }
+
 
         public static Ghost Load(string dirPath)
         {
@@ -91,25 +131,8 @@ namespace GhostExplorer2
                 }
             }
 
-            // sakura側, kero側サーフェスIDの決定
-            // descript.txt の中にデフォルト指定があればそれを使用、なければ標準 (0, 10)
-            var sakuraSurfaceId = 0;
-            var keroSurfaceId = 10;
-
-            int parsed;
-            if (MasterGhostDescript.Values.ContainsKey("sakura.seriko.defaultsurface")
-                && int.TryParse(MasterGhostDescript.Get("sakura.seriko.defaultsurface"), out parsed))
-            {
-                sakuraSurfaceId = parsed;
-            }
-            if (MasterGhostDescript.Values.ContainsKey("kero.seriko.defaultsurface")
-                && int.TryParse(MasterGhostDescript.Get("kero.seriko.defaultsurface"), out parsed))
-            {
-                keroSurfaceId = parsed;
-            }
-
             // シェルを読み込み
-            this.Shell = Shell.Load(Path.Combine(DirPath, shellRelPath), sakuraSurfaceId, keroSurfaceId);
+            this.Shell = Shell.Load(Path.Combine(DirPath, shellRelPath), SakuraDefaultSurfaceId, KeroDefaultSurfaceId);
         }
     }
 }
