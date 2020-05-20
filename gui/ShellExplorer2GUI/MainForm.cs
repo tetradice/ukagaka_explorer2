@@ -329,10 +329,10 @@ namespace ShellExplorer2
         /// </summary>
         private void BtnChange_Click(object sender, EventArgs e)
         {
-            SendSSTPScript(@"\![change,shell," + this.SelectedShell.Name + @"]\e");
+            var success = SendSSTPScript(@"\![change,shell," + this.SelectedShell.Name + @"]\e");
 
-            // オプションに応じてアプリケーション終了
-            if (ChkCloseAfterChange.Checked)
+            // 送信成功した場合、オプションに応じてアプリケーション終了
+            if (success && ChkCloseAfterChange.Checked)
             {
                 Application.Exit();
             }
@@ -343,7 +343,7 @@ namespace ShellExplorer2
         /// <summary>
         /// SSTP送信
         /// </summary>
-        protected void SendSSTPScript(string script)
+        protected bool SendSSTPScript(string script)
         {
             var sstpClient = new SSTPClient();
             var req = new SSTPClient.Send14Request();
@@ -366,7 +366,7 @@ namespace ShellExplorer2
                         "エラー",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
-                    return;
+                    return false;
                 }
             } else { 
                 req.IfGhost = Tuple.Create(CallerSakuraName, CallerKeroName);
@@ -389,6 +389,7 @@ namespace ShellExplorer2
                                         MessageBoxIcon.Warning);
 
                         UpdateFMOInfoAndUpdateUI();
+                        return false;
                     } else
                     {
                         MessageBox.Show(this,
@@ -396,8 +397,13 @@ namespace ShellExplorer2
                                         "エラー",
                                         MessageBoxButtons.OK,
                                         MessageBoxIcon.Warning);
+                        return false;
                     }
                 }
+
+                // 正常終了
+                return true;
+
             } catch(SocketException ex) {
                 Debug.WriteLine(ex.ToString());
 
@@ -407,6 +413,7 @@ namespace ShellExplorer2
                                 "エラー",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
+                return false;
             }
         }
 

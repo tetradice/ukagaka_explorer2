@@ -387,10 +387,10 @@ namespace GhostExplorer2
         /// </summary>
         private void BtnChange_Click(object sender, EventArgs e)
         {
-            SendSSTPScript(@"\![change,ghost," + this.SelectedGhost.Name + @"]\e");
+            var success = SendSSTPScript(@"\![change,ghost," + this.SelectedGhost.Name + @"]\e");
 
-            // オプションに応じてアプリケーション終了
-            if (ChkCloseAfterChange.Checked)
+            // 送信成功した場合、オプションに応じてアプリケーション終了
+            if (success && ChkCloseAfterChange.Checked)
             {
                 Application.Exit();
             }
@@ -419,7 +419,7 @@ namespace GhostExplorer2
         /// <summary>
         /// SSTP送信
         /// </summary>
-        protected void SendSSTPScript(string script)
+        protected bool SendSSTPScript(string script)
         {
             var sstpClient = new SSTPClient();
             var req = new SSTPClient.Send14Request();
@@ -442,9 +442,11 @@ namespace GhostExplorer2
                         "エラー",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
-                    return;
+                    return false;
                 }
-            } else { 
+            }
+            else
+            {
                 req.IfGhost = Tuple.Create(CallerSakuraName, CallerKeroName);
             }
             req.Script = script;
@@ -465,16 +467,25 @@ namespace GhostExplorer2
                                         MessageBoxIcon.Warning);
 
                         UpdateFMOInfoAndUpdateUI();
-                    } else
+                        return false;
+                    }
+                    else
                     {
                         MessageBox.Show(this,
                                         string.Format("SSPとの通信に失敗しました。\r\n({0} {1})", res.StatusCode, res.StatusExplanation),
                                         "エラー",
                                         MessageBoxButtons.OK,
                                         MessageBoxIcon.Warning);
+                        return false;
                     }
                 }
-            } catch(SocketException ex) {
+
+                // 正常終了
+                return true;
+
+            }
+            catch (SocketException ex)
+            {
                 Debug.WriteLine(ex.ToString());
 
                 // ソケット例外発生時
@@ -483,6 +494,7 @@ namespace GhostExplorer2
                                 "エラー",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
+                return false;
             }
         }
 
