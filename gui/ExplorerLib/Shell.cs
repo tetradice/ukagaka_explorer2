@@ -48,6 +48,11 @@ namespace ExplorerLib
         public virtual string Explorer2DescriptPath { get { return Path.Combine(DirPath, @"explorer2\descript.txt"); } }
 
         /// <summary>
+        /// シェル名
+        /// </summary>
+        public virtual string Name { get { return Descript.Get("name"); } }
+
+        /// <summary>
         /// surfaces.txt 情報のリスト
         /// </summary>
         public virtual IList<SurfacesText> SurfacesTextList { get; set; }
