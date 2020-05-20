@@ -449,7 +449,7 @@ namespace ShellExplorer2
 
             var caller = args.First(); // 呼び出し元ゴースト (id or "unspecified")
             args.RemoveAt(0); // 先頭削除
-            var ghostDirPath = args.First(); // ゴーストフォルダパス
+            var ghostDirPath = args.First().TrimEnd('\\'); // ゴーストフォルダパス
 
             SakuraFMOData target = null;
             var matched = Regex.Match(caller, @"^id:(.+?)\z");
