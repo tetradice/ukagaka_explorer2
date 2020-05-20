@@ -22,8 +22,9 @@ namespace ShellExplorer2
             get
             {
                 var appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var ghostDirName = Path.GetFileName(GhostDirPath);
 
-                return Path.Combine(Path.GetDirectoryName(appPath), @"data\cache");
+                return Path.Combine(Path.GetDirectoryName(appPath), @"data\cache", ghostDirName);
             }
         }
 
