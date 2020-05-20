@@ -27,13 +27,13 @@ namespace ShellExplorer2
             }
         }
 
-        public static ShellManager Load(string ghostDirPath)
+        public static ShellManager Load(string ghostDirPath, int sakuraSurfaceId, int keroSurfaceId)
         {
             var manager = new ShellManager() { GhostDirPath = ghostDirPath };
 
             var sw = new Stopwatch();
             sw.Start();
-            manager.Load();
+            manager.Load(sakuraSurfaceId, keroSurfaceId);
             sw.Stop();
             Debug.WriteLine(string.Format("ShellManager.Load : {0}", sw.Elapsed));
             return manager;
@@ -47,7 +47,7 @@ namespace ShellExplorer2
         /// <summary>
         /// シェル情報の一括読み込み
         /// </summary>
-        public virtual void Load()
+        public virtual void Load(int sakuraSurfaceId, int keroSurfaceId)
         {
             // 既存の値はクリア
             Shells.Clear();
@@ -59,7 +59,7 @@ namespace ShellExplorer2
                 if (!File.Exists(Path.Combine(subDir, "descript.txt"))) continue;
 
                 // シェルを読み込み
-                var shell = Shell.Load(subDir, 0, 10);
+                var shell = Shell.Load(subDir, sakuraSurfaceId, keroSurfaceId);
 
                 // リストに追加
                 Shells.Add(shell);

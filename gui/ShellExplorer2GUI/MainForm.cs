@@ -471,10 +471,30 @@ namespace ShellExplorer2
             CallerHWnd = (IntPtr)target.HWnd;
 
             // チェックボックスの位置移動
-            ChkCloseAfterChange.Left = BtnChange.Left + 4;
+            ChkCloseAfterChange.Left = BtnChange.Left + 1;
 
-            // ゴースト情報読み込み
-            ShellManager = ShellManager.Load(ghostDirPath);
+            // ゴーストのdescript.txt読み込み
+            var ghostDescript = DescriptText.Load(Path.Combine(ghostDirPath, @"ghost\master\descript.txt"));
+
+            // sakura側, kero側サーフェスIDの決定
+            // descript.txt の中にデフォルト指定があればそれを使用、なければ標準 (0, 10)
+            var sakuraSurfaceId = 0;
+            var keroSurfaceId = 10;
+
+            int parsed;
+            if (ghostDescript.Values.ContainsKey("sakura.seriko.defaultsurface")
+                && int.TryParse(ghostDescript.Get("sakura.seriko.defaultsurface"), out parsed))
+            {
+                sakuraSurfaceId = parsed;
+            }
+            if (ghostDescript.Values.ContainsKey("kero.seriko.defaultsurface")
+                && int.TryParse(ghostDescript.Get("kero.seriko.defaultsurface"), out parsed))
+            {
+                keroSurfaceId = parsed;
+            }
+
+            // シェル情報読み込み
+            ShellManager = ShellManager.Load(ghostDirPath, sakuraSurfaceId, keroSurfaceId);
 
             // 最終起動時の情報を読み込む
             var dataDirPath = Path.Combine(appDirPath, "data");
