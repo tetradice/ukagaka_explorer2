@@ -1,0 +1,11 @@
+gui_debug,nonar,noupdate
+.gitignore,nonar,noupdate
+.git,nonar,noupdate
+ssp_plugin_log.txt,nonar,noupdate
+gui/Explorer2GUI.pdb,nonar,noupdate
+gui/ShellExplorer2GUI.vshost.exe,nonar,noupdate
+gui/ShellExplorer2GUI.vshost.exe.config,nonar,noupdate
+gui/ShellExplorer2GUI.vshost.exe.manifest,nonar,noupdate
+gui/ExplorerLib.pdb,nonar,noupdate
+gui/Magick.NET-Q8-AnyCPU.xml,nonar,noupdate
+gui_debug/,nonar,noupdate

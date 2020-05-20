@@ -13,3 +13,5 @@
 /gui/ExplorerLib/obj/
 /gui/ShellExplorer2GUI/bin/
 /gui/ShellExplorer2GUI/obj/
+/plugin/shellexplorer2/gui/
+/plugin/shellexplorer2/gui_debug/
