@@ -58,6 +58,7 @@
             this.lstShell.UseCompatibleStateImageBehavior = false;
             this.lstShell.View = System.Windows.Forms.View.SmallIcon;
             this.lstShell.SelectedIndexChanged += new System.EventHandler(this.lstGhost_SelectedIndexChanged);
+            this.lstShell.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lstShell_MouseDoubleClick);
             // 
             // imgListFace
             // 

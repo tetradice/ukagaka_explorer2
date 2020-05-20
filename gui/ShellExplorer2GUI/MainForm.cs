@@ -607,5 +607,14 @@ namespace ShellExplorer2
 
             base.WndProc(ref m);
         }
+
+        /// <summary>
+        /// シェルリストのダブルクリック
+        /// </summary>
+        private void lstShell_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            // 変更ボタン押下処理
+            BtnChange.PerformClick();
+        }
     }
 }
