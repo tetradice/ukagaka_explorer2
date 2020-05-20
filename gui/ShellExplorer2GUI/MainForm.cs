@@ -417,6 +417,7 @@ namespace ShellExplorer2
         {
             var rand = new Random();
             var i = rand.Next(0, lstShell.Items.Count);
+            lstShell.Items[i].Focused = true;
             lstShell.Items[i].Selected = true;
             lstShell.EnsureVisible(i);
         }
@@ -473,28 +474,11 @@ namespace ShellExplorer2
             // チェックボックスの位置移動
             ChkCloseAfterChange.Left = BtnChange.Left + 1;
 
-            // ゴーストのdescript.txt読み込み
-            var ghostDescript = DescriptText.Load(Path.Combine(ghostDirPath, @"ghost\master\descript.txt"));
-
-            // sakura側, kero側サーフェスIDの決定
-            // descript.txt の中にデフォルト指定があればそれを使用、なければ標準 (0, 10)
-            var sakuraSurfaceId = 0;
-            var keroSurfaceId = 10;
-
-            int parsed;
-            if (ghostDescript.Values.ContainsKey("sakura.seriko.defaultsurface")
-                && int.TryParse(ghostDescript.Get("sakura.seriko.defaultsurface"), out parsed))
-            {
-                sakuraSurfaceId = parsed;
-            }
-            if (ghostDescript.Values.ContainsKey("kero.seriko.defaultsurface")
-                && int.TryParse(ghostDescript.Get("kero.seriko.defaultsurface"), out parsed))
-            {
-                keroSurfaceId = parsed;
-            }
+            // ゴースト情報読み込み
+            var ghost = Ghost.Load(ghostDirPath);
 
             // シェル情報読み込み
-            ShellManager = ShellManager.Load(ghostDirPath, sakuraSurfaceId, keroSurfaceId);
+            ShellManager = ShellManager.Load(ghostDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
 
             // 最終起動時の情報を読み込む
             var dataDirPath = Path.Combine(appDirPath, "data");
@@ -519,7 +503,6 @@ namespace ShellExplorer2
             var faceImages = ShellManager.GetFaceImages(imgListFace.ImageSize);
 
             // リストビュー構築処理
-            var listGroups = new Dictionary<string, ListViewGroup>();
             foreach (var shell in ShellManager.Shells)
             {
                 // 顔画像を正常に読み込めていれば、イメージリストに追加
@@ -530,6 +513,7 @@ namespace ShellExplorer2
 
                 // リスト項目追加
                 var item = lstShell.Items.Add(key: shell.DirPath, text: shell.Name ?? "", imageKey: shell.DirPath);
+                item.Tag = shell.DirPath;
             }
 
             // 読み込み中表示を消す
@@ -541,9 +525,28 @@ namespace ShellExplorer2
             // ボタン等表示状態を更新
             UpdateUIState();
 
-            // シェルを選択
-            lstShell.Items[0].Focused = true;
-            lstShell.Items[0].Selected = true;
+            // 現在の使用シェルを選択
+            var currentShellFolderName = Path.GetFileName(ghost.CurrentShellRelDirPath);
+            foreach(ListViewItem item in lstShell.Items)
+            {
+                var shellFolderName = Path.GetFileName((string)item.Tag);
+                if (shellFolderName == currentShellFolderName)
+                {
+                    item.Focused = true;
+                    item.Selected = true;
+                    break;
+                }
+            }
+
+            // 選択対象のシェルを判別できなかった場合は、1件目を選択
+            if (this.SelectedShell == null) {
+                lstShell.Items[0].Focused = true;
+                lstShell.Items[0].Selected = true;
+            }
+
+            // スクロール
+            var selectedIndex = lstShell.SelectedItems[0].Index;
+            lstShell.EnsureVisible(selectedIndex);
         }
 
         private void MainForm_Shown(object sender, EventArgs e)

@@ -75,7 +75,7 @@ namespace GhostExplorer2
         /// <summary>
         /// リストで選択しているゴースト
         /// </summary>
-        protected Ghost SelectedGhost
+        protected GhostWithPrimaryShell SelectedGhost
         {
             get
             {
@@ -493,6 +493,7 @@ namespace GhostExplorer2
         {
             var rand = new Random();
             var i = rand.Next(0, lstGhost.Items.Count);
+            lstGhost.Items[i].Focused = true;
             lstGhost.Items[i].Selected = true;
             lstGhost.EnsureVisible(i);
         }

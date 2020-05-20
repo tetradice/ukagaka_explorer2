@@ -49,6 +49,7 @@
     <Compile Include="Exceptions\Shell.cs" />
     <Compile Include="FMO\FMO.cs" />
     <Compile Include="FMO\SakuraFMO.cs" />
+    <Compile Include="Ghost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Seriko\Animation.cs" />
     <Compile Include="Seriko\Element.cs" />

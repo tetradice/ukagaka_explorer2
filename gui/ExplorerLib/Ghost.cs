@@ -10,8 +10,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace GhostExplorer2
+namespace ExplorerLib
 {
+    /// <summary>
+    /// ゴースト情報クラス。descript.txt の情報などを保持する
+    /// </summary>
     public class Ghost
     {
         /// <summary>
@@ -34,7 +37,6 @@ namespace GhostExplorer2
         public virtual string CharacterDescript { get; set; }
 
         public virtual DescriptText MasterGhostDescript { get; protected set; }
-        public virtual Shell Shell { get; protected set; }
 
         public virtual string Name { get { return this.MasterGhostDescript.Get("name"); } }
         public virtual string SakuraName { get { return this.MasterGhostDescript.Get("sakura.name") ?? ""; } } // 未設定の場合は空文字
@@ -114,7 +116,7 @@ namespace GhostExplorer2
             }
 
             // profile\ghost.dat が存在すれば、その中から最終選択シェルを取得
-            CurrentShellRelDirPath = @"shell\master\";
+            CurrentShellRelDirPath = @"shell\master";
             var ghostProfPath = Path.Combine(DirPath, "ghost/master/profile/ghost.dat");
             if (File.Exists(ghostProfPath))
             {
@@ -126,7 +128,7 @@ namespace GhostExplorer2
                         if (line.StartsWith("shell,"))
                         {
                             var tokens = line.TrimEnd().Split(',');
-                            CurrentShellRelDirPath = tokens[1];
+                            CurrentShellRelDirPath = tokens[1].TrimEnd('\\'); // 最後の\は除去
                             break;
                         }
                     }
@@ -134,9 +136,6 @@ namespace GhostExplorer2
                 {
                 }
             }
-
-            // シェルを読み込み
-            this.Shell = Shell.Load(Path.Combine(DirPath, CurrentShellRelDirPath), SakuraDefaultSurfaceId, KeroDefaultSurfaceId);
         }
     }
 }

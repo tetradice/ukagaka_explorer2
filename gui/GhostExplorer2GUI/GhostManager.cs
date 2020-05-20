@@ -15,7 +15,7 @@ namespace GhostExplorer2
     public class GhostManager
     {
         public virtual IList<string> DirPathList { get; set; }
-        public virtual IList<Ghost> Ghosts { get; protected set; }
+        public virtual IList<GhostWithPrimaryShell> Ghosts { get; protected set; }
 
         public virtual string CacheDirPath
         {
@@ -41,7 +41,7 @@ namespace GhostExplorer2
 
         public GhostManager()
         {
-            Ghosts = new List<Ghost>();
+            Ghosts = new List<GhostWithPrimaryShell>();
         }
 
         /// <summary>
@@ -59,10 +59,10 @@ namespace GhostExplorer2
                 foreach (var subDir in Directory.GetDirectories(ghostDir))
                 {
                     // ゴーストフォルダでなければスキップ
-                    if (!Ghost.IsGhostDir(subDir)) continue;
+                    if (!GhostWithPrimaryShell.IsGhostDir(subDir)) continue;
 
                     // ゴーストの基本情報を読み込み
-                    var ghost = Ghost.Load(subDir);
+                    var ghost = GhostWithPrimaryShell.Load(subDir);
 
                     // リストに追加
                     Ghosts.Add(ghost);
@@ -77,7 +77,7 @@ namespace GhostExplorer2
         /// sakura側サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawSakuraSurface(Ghost targetGhost)
+        public virtual Bitmap DrawSakuraSurface(GhostWithPrimaryShell targetGhost)
         {
             return DrawSurfaceInternal(targetGhost, targetGhost.Shell.SakuraSurfaceModel, targetGhost.Shell.SakuraSurfaceId);
         }
@@ -86,7 +86,7 @@ namespace GhostExplorer2
         /// kero側サーフェス画像を取得  （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawKeroSurface(Ghost targetGhost)
+        public virtual Bitmap DrawKeroSurface(GhostWithPrimaryShell targetGhost)
         {
             return DrawSurfaceInternal(targetGhost, targetGhost.Shell.KeroSurfaceModel, targetGhost.Shell.KeroSurfaceId);
         }
@@ -95,7 +95,7 @@ namespace GhostExplorer2
         /// サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        protected virtual Bitmap DrawSurfaceInternal(Ghost targetGhost, Shell.SurfaceModel surfaceModel, int surfaceId)
+        protected virtual Bitmap DrawSurfaceInternal(GhostWithPrimaryShell targetGhost, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
             var cacheDir = CacheDirPath;
             var targetShell = targetGhost.Shell;
