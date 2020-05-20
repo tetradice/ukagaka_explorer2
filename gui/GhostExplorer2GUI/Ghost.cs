@@ -33,13 +33,17 @@ namespace GhostExplorer2
         public virtual string CharacterDescriptPath { get { return Path.Combine(DirPath, @"ghost\master\explorer2\character_descript.txt"); } }
         public virtual string CharacterDescript { get; set; }
 
-
         public virtual DescriptText MasterGhostDescript { get; protected set; }
         public virtual Shell Shell { get; protected set; }
 
         public virtual string Name { get { return this.MasterGhostDescript.Get("name"); } }
         public virtual string SakuraName { get { return this.MasterGhostDescript.Get("sakura.name") ?? ""; } } // 未設定の場合は空文字
         public virtual string KeroName { get { return this.MasterGhostDescript.Get("kero.name") ?? ""; } } // 未設定の場合は空文字
+
+        /// <summary>
+        /// 最終使用シェルの、ゴーストルートフォルダ基準の相対パス (profile.datから読み込む) 。未起動の場合は shell\master となる
+        /// </summary>
+        public virtual string CurrentShellRelDirPath { get; set; }
 
         /// <summary>
         /// sakura側のデフォルトサーフェスID
@@ -110,7 +114,7 @@ namespace GhostExplorer2
             }
 
             // profile\ghost.dat が存在すれば、その中から最終選択シェルを取得
-            var shellRelPath = @"shell\master\";
+            CurrentShellRelDirPath = @"shell\master\";
             var ghostProfPath = Path.Combine(DirPath, "ghost/master/profile/ghost.dat");
             if (File.Exists(ghostProfPath))
             {
@@ -122,7 +126,7 @@ namespace GhostExplorer2
                         if (line.StartsWith("shell,"))
                         {
                             var tokens = line.TrimEnd().Split(',');
-                            shellRelPath = tokens[1];
+                            CurrentShellRelDirPath = tokens[1];
                             break;
                         }
                     }
@@ -132,7 +136,7 @@ namespace GhostExplorer2
             }
 
             // シェルを読み込み
-            this.Shell = Shell.Load(Path.Combine(DirPath, shellRelPath), SakuraDefaultSurfaceId, KeroDefaultSurfaceId);
+            this.Shell = Shell.Load(Path.Combine(DirPath, CurrentShellRelDirPath), SakuraDefaultSurfaceId, KeroDefaultSurfaceId);
         }
     }
 }
