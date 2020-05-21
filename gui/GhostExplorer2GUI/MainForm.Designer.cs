@@ -40,21 +40,21 @@
             this.BtnOpenShellFolder = new System.Windows.Forms.Button();
             this.prgLoading = new System.Windows.Forms.ProgressBar();
             this.lblLoading = new System.Windows.Forms.Label();
+            this.cmbGhostDir = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.SuspendLayout();
             // 
             // lstGhost
             // 
-            this.lstGhost.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
             this.lstGhost.FullRowSelect = true;
             this.lstGhost.HideSelection = false;
             this.lstGhost.LargeImageList = this.imgListFace;
-            this.lstGhost.Location = new System.Drawing.Point(0, 0);
+            this.lstGhost.Location = new System.Drawing.Point(0, 19);
             this.lstGhost.MultiSelect = false;
             this.lstGhost.Name = "lstGhost";
+            this.lstGhost.ShowGroups = false;
             this.lstGhost.ShowItemToolTips = true;
-            this.lstGhost.Size = new System.Drawing.Size(318, 494);
+            this.lstGhost.Size = new System.Drawing.Size(318, 475);
             this.lstGhost.SmallImageList = this.imgListFace;
             this.lstGhost.TabIndex = 0;
             this.lstGhost.UseCompatibleStateImageBehavior = false;
@@ -183,11 +183,22 @@
             this.lblLoading.Text = "9999 / 9999";
             this.lblLoading.Visible = false;
             // 
+            // cmbGhostDir
+            // 
+            this.cmbGhostDir.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbGhostDir.FormattingEnabled = true;
+            this.cmbGhostDir.Location = new System.Drawing.Point(0, 0);
+            this.cmbGhostDir.Name = "cmbGhostDir";
+            this.cmbGhostDir.Size = new System.Drawing.Size(318, 20);
+            this.cmbGhostDir.TabIndex = 13;
+            this.cmbGhostDir.SelectedIndexChanged += new System.EventHandler(this.cmbGhostDir_SelectedIndexChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.cmbGhostDir);
             this.Controls.Add(this.lblLoading);
             this.Controls.Add(this.prgLoading);
             this.Controls.Add(this.BtnOpenShellFolder);
@@ -224,6 +235,7 @@
         private System.Windows.Forms.Button BtnOpenShellFolder;
         private System.Windows.Forms.ProgressBar prgLoading;
         private System.Windows.Forms.Label lblLoading;
+        private System.Windows.Forms.ComboBox cmbGhostDir;
     }
 }
 

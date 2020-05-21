@@ -554,6 +554,21 @@ namespace GhostExplorer2
                 throw new Exception(string.Format("指定されたゴーストが見つかりませんでした。 ({0})", caller));
             }
 
+            // ゴーストフォルダ選択パスの設定
+            foreach (var dirPath in ghostDirPaths)
+            {
+                cmbGhostDir.Items.Add(dirPath.TrimEnd('\\'));
+            }
+            cmbGhostDir.SelectedIndex = 0;
+
+            // パスが複数ない場合は、コンボボックス非表示
+            if (ghostDirPaths.Count == 1)
+            {
+                lstGhost.Height += lstGhost.Top;
+                lstGhost.Top = 0;
+                cmbGhostDir.Visible = false;
+            }
+
             // 呼び出し元の情報をプロパティにセット
             CallerId = target.Id;
             CallerSakuraName = target.Name;
@@ -565,10 +580,6 @@ namespace GhostExplorer2
 
             // チェックボックスの位置移動
             ChkCloseAfterChange.Left = BtnChange.Left + 4;
-
-            // グループ表示のON/OFF
-            // フォルダが2つ以上あればグループ表示する
-            lstGhost.ShowGroups = (ghostDirPaths.Count >= 2);
 
             // ゴースト情報読み込み
             GhostManager = GhostManager.Load(ghostDirPaths);
@@ -592,14 +603,6 @@ namespace GhostExplorer2
             if (!Directory.Exists(dataDirPath)) Directory.CreateDirectory(dataDirPath);
             File.WriteAllText(lastBootVersionPath, Const.Version);
 
-            // ゴースト読み込み処理
-            prgLoading.Maximum = GhostManager.Ghosts.Count;
-            prgLoading.Value = 0;
-            lblLoading.Text = string.Format("{0} / {1}", prgLoading.Value, prgLoading.Maximum);
-            lblLoading.Parent = lstGhost;
-            lblLoading.Show();
-            Task.Run(() => GhostsLoadAsync());
-
             // イメージリストに不在アイコンを追加
             AbsenceImageKeys.Clear();
             foreach (var path in Directory.GetFiles(Path.Combine(appDirPath, @"res\absence_icon"), "*.png"))
@@ -609,18 +612,52 @@ namespace GhostExplorer2
                 AbsenceImageKeys.Add(fileName);
             }
 
+            // ゴースト一覧の更新
+            UpdateGhostList();
+
+        }
+
+        protected virtual void UpdateGhostList()
+        {
+            if (GhostManager == null) return;
+
+            var selectedGhostDirPath = (string)cmbGhostDir.SelectedItem;
+
+            // リスト構築
+            var listGroups = new Dictionary<string, ListViewGroup>();
+            lstGhost.Items.Clear();
+            foreach (var ghost in GhostManager.Ghosts.Where(g => Path.GetDirectoryName(g.DirPath) == selectedGhostDirPath))
+            {
+                var item = lstGhost.Items.Add(key: ghost.DirPath, text: ghost.Name ?? "", imageKey: ghost.DirPath);
+
+                // ゴースト格納フォルダのパスを元に、グループも設定
+                if (!listGroups.ContainsKey(ghost.GhostBaseDirPath))
+                {
+                    listGroups[ghost.GhostBaseDirPath] = new ListViewGroup(ghost.GhostBaseDirPath);
+                    lstGhost.Groups.Add(listGroups[ghost.GhostBaseDirPath]);
+                }
+                item.Group = listGroups[ghost.GhostBaseDirPath];
+
+            }
+
+            // ゴーストごとのシェル読み込み処理
+            prgLoading.Maximum = GhostManager.Ghosts.Count;
+            prgLoading.Value = 0;
+            lblLoading.Text = string.Format("{0} / {1}", prgLoading.Value, prgLoading.Maximum);
+            lblLoading.Parent = lstGhost;
+            lblLoading.Show();
+            var t = Task.Run(() => ShellAndFaceImagesLoadAsync());
+
             // ゴースト情報リストの更新に伴う画面表示更新
             UpdateUIOnFMOChanged();
 
             // ボタン等表示状態を更新
             UpdateUIState();
-
         }
 
-        public async virtual void GhostsLoadAsync()
+        public async virtual void ShellAndFaceImagesLoadAsync()
         {
             var appDirPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var listGroups = new Dictionary<string, ListViewGroup>();
 
             // シェル情報を読み込む
             GhostManager.LoadShells();
@@ -629,6 +666,7 @@ namespace GhostExplorer2
             {
                 // ゴーストの顔画像を変換・取得
                 var faceImage = GhostManager.GetFaceImage(ghost, imgListFace.ImageSize);
+                await Task.Delay(300);
 
                 // リストビュー構築処理
 
@@ -640,16 +678,6 @@ namespace GhostExplorer2
                     {
                         imgListFace.Images.Add(ghost.DirPath, faceImage);
                     }
-
-                    var item = lstGhost.Items.Add(key: ghost.DirPath, text: ghost.Name ?? "", imageKey: ghost.DirPath);
-
-                    // ゴースト格納フォルダのパスを元に、グループも設定
-                    if (!listGroups.ContainsKey(ghost.GhostBaseDirPath))
-                    {
-                        listGroups[ghost.GhostBaseDirPath] = new ListViewGroup(ghost.GhostBaseDirPath);
-                        lstGhost.Groups.Add(listGroups[ghost.GhostBaseDirPath]);
-                    }
-                    item.Group = listGroups[ghost.GhostBaseDirPath];
 
                     prgLoading.Increment(1);
                     lblLoading.Text = string.Format("{0} / {1}", prgLoading.Value, prgLoading.Maximum);
@@ -721,6 +749,11 @@ namespace GhostExplorer2
             }
 
             base.WndProc(ref m);
+        }
+
+        private void cmbGhostDir_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateGhostList();
         }
     }
 }
