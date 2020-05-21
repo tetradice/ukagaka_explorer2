@@ -34,11 +34,11 @@
             this.picSurface = new System.Windows.Forms.PictureBox();
             this.BtnChange = new System.Windows.Forms.Button();
             this.BtnCall = new System.Windows.Forms.Button();
-            this.lblLoading = new System.Windows.Forms.Label();
             this.BtnRandomSelect = new System.Windows.Forms.Button();
             this.BtnReload = new System.Windows.Forms.Button();
             this.ChkCloseAfterChange = new System.Windows.Forms.CheckBox();
             this.BtnOpenShellFolder = new System.Windows.Forms.Button();
+            this.prgLoading = new System.Windows.Forms.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.SuspendLayout();
             // 
@@ -107,22 +107,6 @@
             this.BtnCall.Visible = false;
             this.BtnCall.Click += new System.EventHandler(this.BtnCall_Click);
             // 
-            // lblLoading
-            // 
-            this.lblLoading.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblLoading.AutoSize = true;
-            this.lblLoading.BackColor = System.Drawing.Color.LemonChiffon;
-            this.lblLoading.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.lblLoading.Font = new System.Drawing.Font("メイリオ", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.lblLoading.Location = new System.Drawing.Point(396, 218);
-            this.lblLoading.Name = "lblLoading";
-            this.lblLoading.Padding = new System.Windows.Forms.Padding(16, 8, 16, 8);
-            this.lblLoading.Size = new System.Drawing.Size(174, 42);
-            this.lblLoading.TabIndex = 5;
-            this.lblLoading.Text = "読み込み中です...";
-            // 
             // BtnRandomSelect
             // 
             this.BtnRandomSelect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -180,16 +164,23 @@
             this.BtnOpenShellFolder.Visible = false;
             this.BtnOpenShellFolder.Click += new System.EventHandler(this.BtnOpenShellFolder_Click);
             // 
+            // prgLoading
+            // 
+            this.prgLoading.Location = new System.Drawing.Point(12, 459);
+            this.prgLoading.Name = "prgLoading";
+            this.prgLoading.Size = new System.Drawing.Size(298, 23);
+            this.prgLoading.TabIndex = 11;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.prgLoading);
             this.Controls.Add(this.BtnOpenShellFolder);
             this.Controls.Add(this.ChkCloseAfterChange);
             this.Controls.Add(this.BtnReload);
             this.Controls.Add(this.BtnRandomSelect);
-            this.Controls.Add(this.lblLoading);
             this.Controls.Add(this.BtnCall);
             this.Controls.Add(this.BtnChange);
             this.Controls.Add(this.lstGhost);
@@ -214,11 +205,11 @@
         private System.Windows.Forms.Button BtnChange;
         private System.Windows.Forms.Button BtnCall;
         private System.Windows.Forms.ImageList imgListFace;
-        private System.Windows.Forms.Label lblLoading;
         private System.Windows.Forms.Button BtnRandomSelect;
         private System.Windows.Forms.Button BtnReload;
         private System.Windows.Forms.CheckBox ChkCloseAfterChange;
         private System.Windows.Forms.Button BtnOpenShellFolder;
+        private System.Windows.Forms.ProgressBar prgLoading;
     }
 }
 

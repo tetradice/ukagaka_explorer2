@@ -127,7 +127,7 @@ namespace GhostExplorer2
         /// 全ゴーストの顔画像の取得・変換を行う (キャッシュ処理も行う)
         /// </summary>
         /// <returns>ゴーストフォルダパスをキー、顔画像 (Bitmap) を値とするDictionary</returns>
-        public virtual IDictionary<string, Bitmap> GetFaceImages(Size faceSize)
+        public virtual Bitmap GetFaceImage(GhostWithPrimaryShell ghost, Size faceSize)
         {
             var images = new Dictionary<string, Bitmap>();
             var cacheDir = CacheDirPath;
@@ -135,53 +135,47 @@ namespace GhostExplorer2
             // キャッシュフォルダが存在しなければ作成
             if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
 
-            foreach (var ghost in Ghosts)
+            try
             {
-                try
-                {
-                    Bitmap face = null;
-                    var cachePath = Path.Combine(cacheDir, string.Format("{0}_face.png", Path.GetFileName(ghost.DirPath)));
+                Bitmap face = null;
+                var cachePath = Path.Combine(cacheDir, string.Format("{0}_face.png", Path.GetFileName(ghost.DirPath)));
 
-                    // 顔画像のキャッシュがあり、更新日時がシェルの更新日以降なら、キャッシュを使用
-                    if (File.Exists(cachePath) && File.GetLastWriteTime(cachePath) >= ghost.Shell.LastModified)
-                    {
-                        face = new Bitmap(cachePath);
-                    }
-                    else
-                    {
-                        // キャッシュがない場合、サーフェス0から顔画像を生成 (サーフェスを読み込めている場合のみ)
-                        if (ghost.Shell.SakuraSurfaceModel != null) {
-                            face = ghost.Shell.DrawFaceImage(ghost.Shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height);
-                            if (face != null)
-                            {
-                                // 顔画像のキャッシュを保存
-                                face.Save(cachePath);
-                            }
+                // 顔画像のキャッシュがあり、更新日時がシェルの更新日以降なら、キャッシュを使用
+                if (File.Exists(cachePath) && File.GetLastWriteTime(cachePath) >= ghost.Shell.LastModified)
+                {
+                    face = new Bitmap(cachePath);
+                }
+                else
+                {
+                    // キャッシュがない場合、サーフェス0から顔画像を生成 (サーフェスを読み込めている場合のみ)
+                    if (ghost.Shell.SakuraSurfaceModel != null) {
+                        face = ghost.Shell.DrawFaceImage(ghost.Shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height);
+                        if (face != null)
+                        {
+                            // 顔画像のキャッシュを保存
+                            face.Save(cachePath);
                         }
                     }
+                }
 
-                    // 正常に画像を取得できた場合のみ追加
-                    if (face != null)
-                    {
-                        images.Add(ghost.DirPath, face);
-                    }
-                }
-                catch (InvalidDescriptException ex)
-                {
-                    MessageBox.Show(string.Format("{0} の explorer2\\descript.txt に不正な記述があります。\n{1}", ghost.Name, ex.Message),
-                                    "エラー",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Warning);
-
-                    Debug.WriteLine(ex.ToString());
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.ToString());
-                }
+                // 画像を返す
+                return face;
             }
+            catch (InvalidDescriptException ex)
+            {
+                MessageBox.Show(string.Format("{0} の explorer2\\descript.txt に不正な記述があります。\n{1}", ghost.Name, ex.Message),
+                                "エラー",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
 
-            return images;
+                Debug.WriteLine(ex.ToString());
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+                return null;
+            }
         }
     }
 }

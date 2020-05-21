@@ -591,30 +591,10 @@ namespace GhostExplorer2
             if (!Directory.Exists(dataDirPath)) Directory.CreateDirectory(dataDirPath);
             File.WriteAllText(lastBootVersionPath, Const.Version);
 
-            // ゴーストの顔画像を変換・取得
-            var faceImages = GhostManager.GetFaceImages(imgListFace.ImageSize);
-
-            // リストビュー構築処理
-            var listGroups = new Dictionary<string, ListViewGroup>();
-            foreach (var ghost in GhostManager.Ghosts)
-            {
-                // 顔画像を正常に読み込めていれば、イメージリストに追加
-                if (faceImages.ContainsKey(ghost.DirPath))
-                {
-                    imgListFace.Images.Add(ghost.DirPath, faceImages[ghost.DirPath]);
-                }
-
-                // リスト項目追加
-                var item = lstGhost.Items.Add(key: ghost.DirPath, text: ghost.Name ?? "", imageKey: ghost.DirPath);
-
-                // ゴースト格納フォルダのパスを元に、グループも設定
-                if (!listGroups.ContainsKey(ghost.GhostBaseDirPath))
-                {
-                    listGroups[ghost.GhostBaseDirPath] = new ListViewGroup(ghost.GhostBaseDirPath);
-                    lstGhost.Groups.Add(listGroups[ghost.GhostBaseDirPath]);
-                }
-                item.Group = listGroups[ghost.GhostBaseDirPath];
-            }
+            // ゴースト読み込み処理
+            prgLoading.Maximum = GhostManager.Ghosts.Count;
+            prgLoading.Value = 0;
+            Task.Run(() => GhostsLoadAsync());
 
             // イメージリストに不在アイコンを追加
             AbsenceImageKeys.Clear();
@@ -625,19 +605,58 @@ namespace GhostExplorer2
                 AbsenceImageKeys.Add(fileName);
             }
 
-            // 読み込み中表示を消す
-            lblLoading.Hide();
-
             // ゴースト情報リストの更新に伴う画面表示更新
             UpdateUIOnFMOChanged();
 
             // ボタン等表示状態を更新
             UpdateUIState();
+
+        }
+
+        public async virtual void GhostsLoadAsync()
+        {
+            var appDirPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var listGroups = new Dictionary<string, ListViewGroup>();
+
+            foreach (var ghost in GhostManager.Ghosts)
+            {
+                // ゴーストの顔画像を変換・取得
+                var faceImage = GhostManager.GetFaceImage(ghost, imgListFace.ImageSize);
+
+                // リストビュー構築処理
+
+                // リスト項目追加
+                BeginInvoke((MethodInvoker)(() =>
+                {
+                    // 顔画像を正常に読み込めていれば、イメージリストに追加
+                    if (faceImage != null)
+                    {
+                        imgListFace.Images.Add(ghost.DirPath, faceImage);
+                    }
+
+                    var item = lstGhost.Items.Add(key: ghost.DirPath, text: ghost.Name ?? "", imageKey: ghost.DirPath);
+
+                    // ゴースト格納フォルダのパスを元に、グループも設定
+                    if (!listGroups.ContainsKey(ghost.GhostBaseDirPath))
+                    {
+                        listGroups[ghost.GhostBaseDirPath] = new ListViewGroup(ghost.GhostBaseDirPath);
+                        lstGhost.Groups.Add(listGroups[ghost.GhostBaseDirPath]);
+                    }
+                    item.Group = listGroups[ghost.GhostBaseDirPath];
+
+                    prgLoading.Increment(1);
+                }));
+            }
+
+            // 全部完了したらプログレスバー非表示
+            BeginInvoke((MethodInvoker)(() =>
+            {
+                prgLoading.Hide();
+            }));
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            Application.DoEvents(); // ロード表示を確実に表示させる
             LoadGhosts();
         }
 
