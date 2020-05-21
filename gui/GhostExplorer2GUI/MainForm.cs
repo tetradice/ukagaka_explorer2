@@ -76,7 +76,7 @@ namespace GhostExplorer2
         /// <summary>
         /// リストで選択しているゴースト
         /// </summary>
-        protected GhostWithPrimaryShell SelectedGhost
+        protected Ghost SelectedGhost
         {
             get
             {
@@ -622,6 +622,9 @@ namespace GhostExplorer2
             var appDirPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var listGroups = new Dictionary<string, ListViewGroup>();
 
+            // シェル情報を読み込む
+            GhostManager.LoadShells();
+
             foreach (var ghost in GhostManager.Ghosts)
             {
                 // ゴーストの顔画像を変換・取得
@@ -685,7 +688,8 @@ namespace GhostExplorer2
 
         private void BtnOpenShellFolder_Click(object sender, EventArgs e)
         {
-            Process.Start(this.SelectedGhost.Shell.DirPath);
+            var appDirPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            Process.Start(Path.Combine(appDirPath, SelectedGhost.DirPath));
         }
 
         /// <summary>

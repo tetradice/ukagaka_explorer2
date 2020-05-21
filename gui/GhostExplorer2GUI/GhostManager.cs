@@ -15,7 +15,12 @@ namespace GhostExplorer2
     public class GhostManager
     {
         public virtual IList<string> DirPathList { get; set; }
-        public virtual IList<GhostWithPrimaryShell> Ghosts { get; protected set; }
+        public virtual IList<Ghost> Ghosts { get; protected set; }
+
+        /// <summary>
+        /// ゴーストごとのシェル (ゴーストのフォルダパスをキーとするDictionary)
+        /// </summary>
+        public virtual IDictionary<string, Shell> Shells { get; protected set; }
 
         public virtual string CacheDirPath
         {
@@ -41,11 +46,12 @@ namespace GhostExplorer2
 
         public GhostManager()
         {
-            Ghosts = new List<GhostWithPrimaryShell>();
+            Ghosts = new List<Ghost>();
+            Shells = new Dictionary<string, Shell>();
         }
 
         /// <summary>
-        /// ゴースト情報の一括読み込み
+        /// ゴースト情報の一括読み込み (シェルはまだ読み込まない)
         /// </summary>
         public virtual void Load()
         {
@@ -59,10 +65,10 @@ namespace GhostExplorer2
                 foreach (var subDir in Directory.GetDirectories(ghostDir))
                 {
                     // ゴーストフォルダでなければスキップ
-                    if (!GhostWithPrimaryShell.IsGhostDir(subDir)) continue;
+                    if (!Ghost.IsGhostDir(subDir)) continue;
 
                     // ゴーストの基本情報を読み込み
-                    var ghost = GhostWithPrimaryShell.Load(subDir);
+                    var ghost = Ghost.Load(subDir);
 
                     // リストに追加
                     Ghosts.Add(ghost);
@@ -74,31 +80,52 @@ namespace GhostExplorer2
         }
 
         /// <summary>
+        /// 各ゴーストごとのシェル情報読み込み
+        /// </summary>
+        public virtual void LoadShells()
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            // 既存の値はクリア
+            Shells.Clear();
+
+            // ゴースト1体ずつ処理
+            foreach (var ghost in Ghosts)
+            {
+                var shellDir = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
+                Shells[ghost.DirPath] = Shell.Load(shellDir, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
+            }
+            sw.Stop();
+            Debug.WriteLine(string.Format("Shells Load : {0}", sw.Elapsed));
+
+        }
+
+        /// <summary>
         /// sakura側サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawSakuraSurface(GhostWithPrimaryShell targetGhost)
+        public virtual Bitmap DrawSakuraSurface(Ghost targetGhost)
         {
-            return DrawSurfaceInternal(targetGhost, targetGhost.Shell.SakuraSurfaceModel, targetGhost.Shell.SakuraSurfaceId);
+            return DrawSurfaceInternal(targetGhost, Shells[targetGhost.DirPath].SakuraSurfaceModel, Shells[targetGhost.DirPath].SakuraSurfaceId);
         }
 
         /// <summary>
         /// kero側サーフェス画像を取得  （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawKeroSurface(GhostWithPrimaryShell targetGhost)
+        public virtual Bitmap DrawKeroSurface(Ghost targetGhost)
         {
-            return DrawSurfaceInternal(targetGhost, targetGhost.Shell.KeroSurfaceModel, targetGhost.Shell.KeroSurfaceId);
+            return DrawSurfaceInternal(targetGhost, Shells[targetGhost.DirPath].KeroSurfaceModel, Shells[targetGhost.DirPath].KeroSurfaceId);
         }
 
         /// <summary>
         /// サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        protected virtual Bitmap DrawSurfaceInternal(GhostWithPrimaryShell targetGhost, Shell.SurfaceModel surfaceModel, int surfaceId)
+        protected virtual Bitmap DrawSurfaceInternal(Ghost targetGhost, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
             var cacheDir = CacheDirPath;
-            var targetShell = targetGhost.Shell;
+            var targetShell = Shells[targetGhost.DirPath];
             if (surfaceModel == null) return null;
 
             // キャッシュフォルダが存在しなければ作成
@@ -127,10 +154,11 @@ namespace GhostExplorer2
         /// 全ゴーストの顔画像の取得・変換を行う (キャッシュ処理も行う)
         /// </summary>
         /// <returns>ゴーストフォルダパスをキー、顔画像 (Bitmap) を値とするDictionary</returns>
-        public virtual Bitmap GetFaceImage(GhostWithPrimaryShell ghost, Size faceSize)
+        public virtual Bitmap GetFaceImage(Ghost ghost, Size faceSize)
         {
             var images = new Dictionary<string, Bitmap>();
             var cacheDir = CacheDirPath;
+            var shell = Shells[ghost.DirPath];
 
             // キャッシュフォルダが存在しなければ作成
             if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
@@ -141,15 +169,15 @@ namespace GhostExplorer2
                 var cachePath = Path.Combine(cacheDir, string.Format("{0}_face.png", Path.GetFileName(ghost.DirPath)));
 
                 // 顔画像のキャッシュがあり、更新日時がシェルの更新日以降なら、キャッシュを使用
-                if (File.Exists(cachePath) && File.GetLastWriteTime(cachePath) >= ghost.Shell.LastModified)
+                if (File.Exists(cachePath) && File.GetLastWriteTime(cachePath) >= shell.LastModified)
                 {
                     face = new Bitmap(cachePath);
                 }
                 else
                 {
                     // キャッシュがない場合、サーフェス0から顔画像を生成 (サーフェスを読み込めている場合のみ)
-                    if (ghost.Shell.SakuraSurfaceModel != null) {
-                        face = ghost.Shell.DrawFaceImage(ghost.Shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height);
+                    if (shell.SakuraSurfaceModel != null) {
+                        face = shell.DrawFaceImage(shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height);
                         if (face != null)
                         {
                             // 顔画像のキャッシュを保存
