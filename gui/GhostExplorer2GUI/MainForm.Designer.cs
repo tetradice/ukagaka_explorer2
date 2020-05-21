@@ -39,6 +39,7 @@
             this.ChkCloseAfterChange = new System.Windows.Forms.CheckBox();
             this.BtnOpenShellFolder = new System.Windows.Forms.Button();
             this.prgLoading = new System.Windows.Forms.ProgressBar();
+            this.lblLoading = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.SuspendLayout();
             // 
@@ -168,14 +169,26 @@
             // 
             this.prgLoading.Location = new System.Drawing.Point(12, 459);
             this.prgLoading.Name = "prgLoading";
-            this.prgLoading.Size = new System.Drawing.Size(298, 23);
+            this.prgLoading.Size = new System.Drawing.Size(204, 23);
             this.prgLoading.TabIndex = 11;
+            // 
+            // lblLoading
+            // 
+            this.lblLoading.AutoSize = true;
+            this.lblLoading.BackColor = System.Drawing.Color.Transparent;
+            this.lblLoading.Location = new System.Drawing.Point(220, 465);
+            this.lblLoading.Name = "lblLoading";
+            this.lblLoading.Size = new System.Drawing.Size(67, 12);
+            this.lblLoading.TabIndex = 12;
+            this.lblLoading.Text = "9999 / 9999";
+            this.lblLoading.Visible = false;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.lblLoading);
             this.Controls.Add(this.prgLoading);
             this.Controls.Add(this.BtnOpenShellFolder);
             this.Controls.Add(this.ChkCloseAfterChange);
@@ -210,6 +223,7 @@
         private System.Windows.Forms.CheckBox ChkCloseAfterChange;
         private System.Windows.Forms.Button BtnOpenShellFolder;
         private System.Windows.Forms.ProgressBar prgLoading;
+        private System.Windows.Forms.Label lblLoading;
     }
 }
 

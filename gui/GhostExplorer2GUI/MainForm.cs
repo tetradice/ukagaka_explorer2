@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -594,6 +595,9 @@ namespace GhostExplorer2
             // ゴースト読み込み処理
             prgLoading.Maximum = GhostManager.Ghosts.Count;
             prgLoading.Value = 0;
+            lblLoading.Text = string.Format("{0} / {1}", prgLoading.Value, prgLoading.Maximum);
+            lblLoading.Parent = lstGhost;
+            lblLoading.Show();
             Task.Run(() => GhostsLoadAsync());
 
             // イメージリストに不在アイコンを追加
@@ -645,6 +649,7 @@ namespace GhostExplorer2
                     item.Group = listGroups[ghost.GhostBaseDirPath];
 
                     prgLoading.Increment(1);
+                    lblLoading.Text = string.Format("{0} / {1}", prgLoading.Value, prgLoading.Maximum);
                 }));
             }
 
@@ -652,6 +657,7 @@ namespace GhostExplorer2
             BeginInvoke((MethodInvoker)(() =>
             {
                 prgLoading.Hide();
+                lblLoading.Hide();
             }));
         }
 
