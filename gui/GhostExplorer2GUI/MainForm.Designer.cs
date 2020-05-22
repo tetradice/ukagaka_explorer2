@@ -36,7 +36,6 @@
             this.BtnChange = new System.Windows.Forms.Button();
             this.BtnCall = new System.Windows.Forms.Button();
             this.BtnRandomSelect = new System.Windows.Forms.Button();
-            this.BtnReload = new System.Windows.Forms.Button();
             this.ChkCloseAfterChange = new System.Windows.Forms.CheckBox();
             this.BtnOpenShellFolder = new System.Windows.Forms.Button();
             this.prgLoading = new System.Windows.Forms.ProgressBar();
@@ -128,22 +127,7 @@
             this.BtnRandomSelect.TabIndex = 7;
             this.BtnRandomSelect.Text = "ランダム選択";
             this.BtnRandomSelect.UseVisualStyleBackColor = true;
-            this.BtnRandomSelect.Visible = false;
             this.BtnRandomSelect.Click += new System.EventHandler(this.BtnRandomSelect_Click);
-            // 
-            // BtnReload
-            // 
-            this.BtnReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BtnReload.AutoSize = true;
-            this.BtnReload.Location = new System.Drawing.Point(449, 448);
-            this.BtnReload.Name = "BtnReload";
-            this.BtnReload.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
-            this.BtnReload.Size = new System.Drawing.Size(121, 34);
-            this.BtnReload.TabIndex = 8;
-            this.BtnReload.Text = "★リロード";
-            this.BtnReload.UseVisualStyleBackColor = true;
-            this.BtnReload.Visible = false;
-            this.BtnReload.Click += new System.EventHandler(this.BtnReload_Click);
             // 
             // ChkCloseAfterChange
             // 
@@ -164,7 +148,7 @@
             // 
             this.BtnOpenShellFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.BtnOpenShellFolder.AutoSize = true;
-            this.BtnOpenShellFolder.Location = new System.Drawing.Point(576, 448);
+            this.BtnOpenShellFolder.Location = new System.Drawing.Point(449, 448);
             this.BtnOpenShellFolder.Name = "BtnOpenShellFolder";
             this.BtnOpenShellFolder.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
             this.BtnOpenShellFolder.Size = new System.Drawing.Size(158, 34);
@@ -251,7 +235,6 @@
             this.Controls.Add(this.prgLoading);
             this.Controls.Add(this.BtnOpenShellFolder);
             this.Controls.Add(this.ChkCloseAfterChange);
-            this.Controls.Add(this.BtnReload);
             this.Controls.Add(this.BtnRandomSelect);
             this.Controls.Add(this.BtnCall);
             this.Controls.Add(this.BtnChange);
@@ -281,7 +264,6 @@
         private System.Windows.Forms.Button BtnCall;
         private System.Windows.Forms.ImageList imgListFace;
         private System.Windows.Forms.Button BtnRandomSelect;
-        private System.Windows.Forms.Button BtnReload;
         private System.Windows.Forms.CheckBox ChkCloseAfterChange;
         private System.Windows.Forms.Button BtnOpenShellFolder;
         private System.Windows.Forms.ProgressBar prgLoading;

@@ -266,8 +266,8 @@ namespace GhostExplorer2
             // ゴースト切り替えボタンは、呼び出し元ゴーストが残っていないと押下できない
             BtnChange.Enabled = ChkCloseAfterChange.Enabled = !(CallerLost);
 
-            // ランダム選択ボタンは、読み込みが完了していれば表示
-            BtnRandomSelect.Visible = true;
+            // ランダム選択ボタンは、1件以上のゴーストがいる場合のみ押下可能
+            BtnRandomSelect.Enabled = (GhostManager.Ghosts.Any());
 
             // ゴーストの立ち絵は、選択されているゴーストがいて、かつ不在でない場合のみ表示
             SelectedGhostSurfaceVisible = (this.SelectedGhost != null && !AbsenceInfo.ContainsKey(this.SelectedGhost.DirPath));
@@ -277,7 +277,6 @@ namespace GhostExplorer2
 
             // デバッグ用
 #if DEBUG
-            BtnReload.Visible = true;
             BtnOpenShellFolder.Visible = true;
 #endif
         }
@@ -888,23 +887,6 @@ namespace GhostExplorer2
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            Setup();
-        }
-
-        private void BtnReload_Click(object sender, EventArgs e)
-        {
-            //// 顔画像をすべて解放
-            //foreach(Image img in imgListFace.Images)
-            //{
-            //    img.Dispose();
-            //}
-            //imgListFace.Images.Clear();
-            //lstGhost.Clear();
-
-            //// キャッシュフォルダを削除
-            //if (Directory.Exists(GhostManager.CacheDirPath)) Directory.Delete(GhostManager.CacheDirPath, recursive: true);
-
-            // 再読み込み
             Setup();
         }
 
