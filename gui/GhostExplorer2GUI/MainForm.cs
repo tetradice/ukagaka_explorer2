@@ -22,6 +22,8 @@ namespace GhostExplorer2
     public partial class MainForm : Form
     {
         protected GhostManager GhostManager;
+        protected Dictionary<string, Shell> Shells = new Dictionary<string, Shell>();
+        protected Dictionary<string, Bitmap> FaceImages = new Dictionary<string, Bitmap>();
         protected Bitmap CurrentSakuraSurface;
         protected Bitmap CurrentKeroSurface;
         protected List<string> SurfaceErrorMessages;
@@ -274,46 +276,56 @@ namespace GhostExplorer2
             // エラーメッセージリストを初期化
             SurfaceErrorMessages.Clear();
 
-            // sakura側のサーフェス画像を取得
-            try
+            // シェルが読み込み状態かどうかで処理を分ける
+            if (Shells.ContainsKey(this.SelectedGhost.DirPath))
             {
-                CurrentSakuraSurface = GhostManager.DrawSakuraSurface(this.SelectedGhost);
+                var shell = Shells[this.SelectedGhost.DirPath];
 
-                // サーフェスが何らかの原因で見つからなかった場合はエラー扱い
-                if (CurrentSakuraSurface == null)
+                // sakura側のサーフェス画像を取得
+                try
                 {
+                    CurrentSakuraSurface = GhostManager.DrawSakuraSurface(this.SelectedGhost, shell);
+
+                    // サーフェスが何らかの原因で見つからなかった場合はエラー扱い
+                    if (CurrentSakuraSurface == null)
+                    {
+                        SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
+                    }
+                }
+                catch (IllegalImageFormatException ex)
+                {
+                    CurrentSakuraSurface = null;
+                    Debug.WriteLine(ex.ToString());
+                    SurfaceErrorMessages.Add("(本体側)" + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    CurrentSakuraSurface = null;
+                    Debug.WriteLine(ex.ToString());
                     SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
                 }
-            }
-            catch (IllegalImageFormatException ex)
-            {
-                CurrentSakuraSurface = null;
-                Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add("(本体側)" + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                CurrentSakuraSurface = null;
-                Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
-            }
 
-            // kero側のサーフェス画像を取得
-            try
+                // kero側のサーフェス画像を取得
+                try
+                {
+                    CurrentKeroSurface = GhostManager.DrawKeroSurface(this.SelectedGhost, shell);
+                }
+                catch (IllegalImageFormatException ex)
+                {
+                    CurrentKeroSurface = null;
+                    Debug.WriteLine(ex.ToString());
+                    SurfaceErrorMessages.Add("(パートナー側)" + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    CurrentKeroSurface = null;
+                    Debug.WriteLine(ex.ToString());
+                    SurfaceErrorMessages.Add(@"パートナー側の立ち絵描画に失敗しました。");
+                }
+            } else
             {
-                CurrentKeroSurface = GhostManager.DrawKeroSurface(this.SelectedGhost);
-            }
-            catch (IllegalImageFormatException ex)
-            {
-                CurrentKeroSurface = null;
-                Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add("(パートナー側)" + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                CurrentKeroSurface = null;
-                Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add(@"パートナー側の立ち絵描画に失敗しました。");
+                // シェルが未読み込み状態ならエラー
+                SurfaceErrorMessages.Add("シェル情報の読み込みが完了していません。もう少し経ってから選択し直してみてください。");
             }
 
             // 表示状態切り替え
@@ -681,6 +693,7 @@ namespace GhostExplorer2
             }
 
             // ゴーストごとのシェル・画像読み込み処理
+            prgLoading.Show();
             prgLoading.Maximum = GhostManager.Ghosts.Count;
             prgLoading.Value = 0;
             GhostImageCancellationTokenSource = new CancellationTokenSource();
@@ -693,62 +706,81 @@ namespace GhostExplorer2
         /// </summary>
         public async virtual Task GhostImagesLoadAsync(CancellationToken cToken)
         {
-            Debug.WriteLine(string.Format("<{0}> GhostImagesLoadAsync Start >>>", Thread.CurrentThread.ManagedThreadId));
-
-            // シェル情報 (surfaces.txt の情報など) の読み込み
-            foreach (var ghost in GhostManager.Ghosts)
+            try
             {
-                // シェル情報を読み込む
-                GhostManager.LoadShell(ghost);
-                Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                Debug.WriteLine(string.Format("<{0}> GhostImagesLoadAsync Start >>>", Thread.CurrentThread.ManagedThreadId));
 
-                // プログレスバー進める
-                BeginInvoke((MethodInvoker)(() =>
+                // シェル情報 (surfaces.txt の情報など) の読み込み
+                foreach (var ghost in GhostManager.Ghosts)
                 {
-                    prgLoading.Increment(1);
-                }));
-
-                // キャンセル処理
-                if (cToken.IsCancellationRequested)
-                {
-                    Debug.WriteLine(string.Format("<{0}> canceled", Thread.CurrentThread.ManagedThreadId, ghost.Name));
-                    return;
-                }
-            }
-
-            // シェル情報読み込みまで完了したらプログレスバー非表示
-            BeginInvoke((MethodInvoker)(() =>
-            {
-                prgLoading.Hide();
-            }));
-
-
-            // 顔画像の取得
-            foreach (var ghost in GhostManager.Ghosts)
-            {
-                // ゴーストの顔画像を変換・取得
-                var faceImage = GhostManager.GetFaceImage(ghost, imgListFace.ImageSize);
-                Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
-
-                // リスト項目追加
-                BeginInvoke((MethodInvoker)(() =>
-                {
-                    // 顔画像を正常に読み込めていれば、イメージリストに追加
-                    if (faceImage != null)
+                    // まだ読み込んでいなければ、シェル情報を読み込む
+                    if (!Shells.ContainsKey(ghost.DirPath))
                     {
-                        imgListFace.Images.Add(ghost.DirPath, faceImage);
+                        Shells[ghost.DirPath] = GhostManager.LoadShell(ghost);
+                        Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                        Thread.Sleep(300);
                     }
+
+                    // プログレスバー進める
+                    BeginInvoke((MethodInvoker)(() =>
+                    {
+                        prgLoading.Increment(1);
+                    }));
+
+                    // キャンセル処理
+                    if (cToken.IsCancellationRequested)
+                    {
+                        Debug.WriteLine(string.Format("<{0}> canceled", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                        return;
+                    }
+                }
+
+                // シェル情報読み込みまで完了したらプログレスバー非表示
+                BeginInvoke((MethodInvoker)(() =>
+                {
+                    prgLoading.Hide();
                 }));
 
-                // キャンセル処理
-                if (cToken.IsCancellationRequested)
-                {
-                    Debug.WriteLine(string.Format("<{0}> canceled", Thread.CurrentThread.ManagedThreadId, ghost.Name));
-                    return;
-                }
-            }
 
-            Debug.WriteLine(string.Format("<{0}> <<< GhostImagesLoadAsync End", Thread.CurrentThread.ManagedThreadId));
+                // 顔画像の取得
+                foreach (var ghost in GhostManager.Ghosts)
+                {
+                    // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
+                    if (!FaceImages.ContainsKey(ghost.DirPath))
+                    {
+                        FaceImages[ghost.DirPath] = GhostManager.GetFaceImage(ghost, Shells[ghost.DirPath], imgListFace.ImageSize);
+                        Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                        Thread.Sleep(500);
+                    }
+
+                    // リスト項目追加
+                    BeginInvoke((MethodInvoker)(() =>
+                    {
+                    // 顔画像を正常に読み込めていれば、イメージリストに追加
+                    if (FaceImages[ghost.DirPath] != null)
+                        {
+                            imgListFace.Images.Add(ghost.DirPath, FaceImages[ghost.DirPath]);
+                        }
+                    }));
+
+                    // キャンセル処理
+                    if (cToken.IsCancellationRequested)
+                    {
+                        Debug.WriteLine(string.Format("<{0}> canceled", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                        return;
+                    }
+                }
+
+                Debug.WriteLine(string.Format("<{0}> <<< GhostImagesLoadAsync End", Thread.CurrentThread.ManagedThreadId));
+
+            } catch(Exception ex)
+            {
+                // ロード中にエラーが発生し、補足できなかった場合は、エラーダイアログを表示する
+                MessageBox.Show("シェル情報の読み込み中にシステムエラーが発生しました。\nご迷惑をおかけし、申し訳ありません。\n\n" + ex.ToString()
+                              , "エラー"
+                              , MessageBoxButtons.OK
+                              , MessageBoxIcon.Error);
+            }
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
