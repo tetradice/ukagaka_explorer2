@@ -104,6 +104,9 @@ namespace ExplorerLib
         /// </summary>
         public virtual void Load()
         {
+            var charsetPattern = new Regex(@"charset\s,\s*(.+?)\s*\z");
+            var entryPattern = new Regex(@"(.+?)\s*,\s*(.+?)\s*\z");
+
             // 既存の値はクリア
             Scopes.Clear();
             // ファイル更新日時セット
@@ -116,7 +119,7 @@ namespace ExplorerLib
             foreach (string line in preLines)
             {
                 // charset行が見つかった場合は、文字コードを設定してループ終了
-                var matched = Regex.Match(line, @"charset\s,\s*(.+?)\s*\z");
+                var matched = charsetPattern.Match(line);
                 if (matched.Success)
                 {
                     var charset = matched.Groups[1].Value;

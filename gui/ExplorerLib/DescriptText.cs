@@ -41,6 +41,9 @@ namespace ExplorerLib
         /// </summary>
         public virtual void Load()
         {
+            var charsetPattern = new Regex(@"charset\s,\s*(.+?)\s*\z");
+            var entryPattern = new Regex(@"(.+?)\s*,\s*(.+?)\s*\z");
+
             // 既存の値はクリア
             Values.Clear();
 
@@ -54,7 +57,7 @@ namespace ExplorerLib
             foreach (string line in preLines)
             {
                 // charset行が見つかった場合は、文字コードを設定してループ終了
-                var matched = Regex.Match(line, @"charset\s,\s*(.+?)\s*\z");
+                var matched = charsetPattern.Match(line);
                 if (matched.Success)
                 {
                     var charset = matched.Groups[1].Value;
@@ -67,7 +70,7 @@ namespace ExplorerLib
             var lines = File.ReadLines(Path, encoding: encoding);
             foreach (string line in lines)
             {
-                var matched = Regex.Match(line, @"(.+?)\s*,\s*(.+?)\s*\z");
+                var matched = entryPattern.Match(line);
                 if (matched.Success)
                 {
                     var key = matched.Groups[1].Value;
