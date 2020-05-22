@@ -721,9 +721,10 @@ namespace GhostExplorer2
                     }
 
                     // プログレスバー進める
-                    BeginInvoke((MethodInvoker)(() =>
+                    Invoke((MethodInvoker)(() =>
                     {
                         prgLoading.Increment(1);
+                        Debug.WriteLine(string.Format("<{0}> Increment: {1}/{2}", Thread.CurrentThread.ManagedThreadId, prgLoading.Value, prgLoading.Maximum));
                     }));
 
                     // キャンセル処理
@@ -735,7 +736,7 @@ namespace GhostExplorer2
                 }
 
                 // シェル情報読み込みまで完了したらプログレスバー非表示
-                BeginInvoke((MethodInvoker)(() =>
+                Invoke((MethodInvoker)(() =>
                 {
                     prgLoading.Hide();
                 }));
@@ -752,10 +753,10 @@ namespace GhostExplorer2
                     }
 
                     // リスト項目追加
-                    BeginInvoke((MethodInvoker)(() =>
+                    Invoke((MethodInvoker)(() =>
                     {
-                    // 顔画像を正常に読み込めていれば、イメージリストに追加
-                    if (FaceImages[ghost.DirPath] != null)
+                        // 顔画像を正常に読み込めていれば、イメージリストに追加
+                        if (FaceImages[ghost.DirPath] != null)
                         {
                             imgListFace.Images.Add(ghost.DirPath, FaceImages[ghost.DirPath]);
                         }
