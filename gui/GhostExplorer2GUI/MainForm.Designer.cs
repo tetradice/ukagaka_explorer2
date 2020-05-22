@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.lstGhost = new System.Windows.Forms.ListView();
             this.imgListFace = new System.Windows.Forms.ImageList(this.components);
             this.picSurface = new System.Windows.Forms.PictureBox();
@@ -41,10 +42,12 @@
             this.prgLoading = new System.Windows.Forms.ProgressBar();
             this.cmbGhostDir = new System.Windows.Forms.ComboBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.cmbSort = new System.Windows.Forms.ComboBox();
             this.txtFilter = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // lstGhost
@@ -195,6 +198,7 @@
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.panel1.BackColor = System.Drawing.Color.White;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Controls.Add(this.cmbSort);
             this.panel1.Controls.Add(this.txtFilter);
             this.panel1.Location = new System.Drawing.Point(0, 465);
@@ -202,6 +206,16 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(318, 29);
             this.panel1.TabIndex = 14;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.ImageLocation = "";
+            this.pictureBox1.Location = new System.Drawing.Point(3, 1);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(24, 24);
+            this.pictureBox1.TabIndex = 2;
+            this.pictureBox1.TabStop = false;
             // 
             // cmbSort
             // 
@@ -219,9 +233,9 @@
             // txtFilter
             // 
             this.txtFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtFilter.Location = new System.Drawing.Point(25, 4);
+            this.txtFilter.Location = new System.Drawing.Point(29, 4);
             this.txtFilter.Name = "txtFilter";
-            this.txtFilter.Size = new System.Drawing.Size(161, 19);
+            this.txtFilter.Size = new System.Drawing.Size(157, 19);
             this.txtFilter.TabIndex = 0;
             this.txtFilter.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtFilter_KeyDown);
             this.txtFilter.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFilter_KeyPress);
@@ -253,6 +267,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -274,6 +289,7 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.ComboBox cmbSort;
         private System.Windows.Forms.TextBox txtFilter;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 

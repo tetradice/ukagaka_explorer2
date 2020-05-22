@@ -972,9 +972,6 @@ namespace GhostExplorer2
 
         private void txtFilter_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Enter)
-            {
-            }
         }
 
         private void txtFilter_KeyPress(object sender, KeyPressEventArgs e)
