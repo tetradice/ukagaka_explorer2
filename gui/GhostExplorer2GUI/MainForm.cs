@@ -104,6 +104,11 @@ namespace GhostExplorer2
         protected CancellationTokenSource GhostImageCancellationTokenSource;
 
         /// <summary>
+        /// プロファイル情報 (設定など)
+        /// </summary>
+        protected Profile CurrentProfile;
+
+        /// <summary>
         /// コンストラクタ
         /// </summary>
         public MainForm()
@@ -589,33 +594,19 @@ namespace GhostExplorer2
             // チェックボックスの位置移動
             ChkCloseAfterChange.Left = BtnChange.Left + 4;
 
-            // JSONシリアライザーを生成
-            var serializer = new DataContractJsonSerializer(typeof(Profile));
 
             // Profile読み込み
-            var profPath = Util.GetProfilePath();
-            Profile profile = null;
-            if (File.Exists(profPath))
-            {
-                using (var input = new FileStream(profPath, FileMode.Open))
-                {
-                    profile = (Profile)serializer.ReadObject(input);
-                }
-            }
+            CurrentProfile = Util.LoadProfile();
+            if (CurrentProfile == null) CurrentProfile = new Profile(); // 存在しなければ生成
 
             // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
-            if(profile.LastBootVersion != null && Const.Version != profile.LastBootVersion)
+            if (CurrentProfile.LastBootVersion != null && Const.Version != CurrentProfile.LastBootVersion)
             {
                 Directory.Delete(Util.GetCacheDirPath(), recursive: true);
             }
 
-            // 最終起動情報を書き込む
-            if(profile == null) profile = new Profile();
-            profile.LastBootVersion = Const.Version;
-            using(var output = new FileStream(profPath, FileMode.Create))
-            {
-                serializer.WriteObject(output, profile);
-            }
+            // 最終起動情報をセット
+            CurrentProfile.LastBootVersion = Const.Version;
 
             // イメージリストに不在アイコンを追加
             AbsenceImageKeys.Clear();
@@ -627,7 +618,16 @@ namespace GhostExplorer2
             }
 
             // ゴーストフォルダ選択ドロップダウンの項目を選択 (内部で選択時イベント発生)
-            cmbGhostDir.SelectedIndex = 0;
+            // 前回の選択フォルダと一致するものがあればそれを選択
+            // なければ1項目を選択
+            var lastUseIndex = cmbGhostDir.FindStringExact(CurrentProfile.LastUsePath);
+            if(lastUseIndex >= 0)
+            {
+                cmbGhostDir.SelectedIndex = lastUseIndex;
+            } else
+            {
+                cmbGhostDir.SelectedIndex = 0;
+            }
         }
 
         /// <summary>
@@ -638,12 +638,18 @@ namespace GhostExplorer2
             // 現在実行中のシェル読み込みタスクがあれば、キャンセル操作を行い、中断を待つ
             if(GhostImageLoadingTask != null)
             {
+                Debug.WriteLine(string.Format("Cancel loading task>>>"));
                 GhostImageCancellationTokenSource.Cancel();
                 GhostImageLoadingTask.Wait();
-
-                Debug.WriteLine(string.Format("cancel complete"));
+                Debug.WriteLine(string.Format("<<<Cancel loading task"));
             }
 
+            // プロファイルに最終選択パスを書き込む
+            var selectedGhostDirPath = (string)cmbGhostDir.SelectedItem;
+            CurrentProfile.LastUsePath = selectedGhostDirPath;
+            Util.SaveProfile(CurrentProfile);
+
+            // ゴースト情報の読み込みと一覧表示更新
             UpdateGhostList();
         }
 
