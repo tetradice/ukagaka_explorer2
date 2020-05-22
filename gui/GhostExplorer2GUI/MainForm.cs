@@ -718,7 +718,6 @@ namespace GhostExplorer2
                     {
                         Shells[ghost.DirPath] = GhostManager.LoadShell(ghost);
                         Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
-                        Thread.Sleep(300);
                     }
 
                     // プログレスバー進める
@@ -750,7 +749,6 @@ namespace GhostExplorer2
                     {
                         FaceImages[ghost.DirPath] = GhostManager.GetFaceImage(ghost, Shells[ghost.DirPath], imgListFace.ImageSize);
                         Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
-                        Thread.Sleep(500);
                     }
 
                     // リスト項目追加
