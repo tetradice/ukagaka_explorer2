@@ -73,25 +73,22 @@ namespace GhostExplorer2
             // ゴースト別の使用頻度情報を抽出
             var totalBootTimes = new Dictionary<string, long>();
             var lastBootSeconds = new Dictionary<string, long>();
-            if (Realize2Text != null)
+            foreach (var ghost in Ghosts)
             {
-                foreach (var ghost in Ghosts)
+                Realize2Text.Record rec = null;
+                if(Realize2Text != null) rec = Realize2Text.GhostRecords.FirstOrDefault(r => r.Name == ghost.Name);
+                if (rec != null)
                 {
-                    Realize2Text.Record rec = null;
-                    if(Realize2Text != null) rec = Realize2Text.GhostRecords.FirstOrDefault(r => r.Name == ghost.Name);
-                    if (rec != null)
-                    {
-                        totalBootTimes[ghost.Name] = rec.TotalBootByMinute;
-                        lastBootSeconds[ghost.Name] = rec.LastBootSecond;
-                    }
-                    else
-                    {
-                        // 情報が見つからなければ0扱い
-                        totalBootTimes[ghost.Name] = 0;
-                        lastBootSeconds[ghost.Name] = 0;
-                    }
+                    totalBootTimes[ghost.Name] = rec.TotalBootByMinute;
+                    lastBootSeconds[ghost.Name] = rec.LastBootSecond;
                 }
-            } 
+                else
+                {
+                    // 情報が見つからなければ0扱い
+                    totalBootTimes[ghost.Name] = 0;
+                    lastBootSeconds[ghost.Name] = 0;
+                }
+            }
 
             // 最後にソート
             switch (SortType)
