@@ -693,7 +693,6 @@ namespace GhostExplorer2
             }
 
             // ゴーストごとのシェル・画像読み込み処理
-            prgLoading.Show();
             prgLoading.Maximum = GhostManager.Ghosts.Count;
             prgLoading.Value = 0;
             GhostImageCancellationTokenSource = new CancellationTokenSource();
@@ -708,6 +707,11 @@ namespace GhostExplorer2
         {
             try
             {
+                var progressVisible = (GhostManager.Ghosts.Count >= 200); // プログレスバーはゴーストが200件を超えた場合に初めて表示
+                Invoke((MethodInvoker)(() =>
+                {
+                    prgLoading.Visible = progressVisible;
+                }));
                 Debug.WriteLine(string.Format("<{0}> GhostImagesLoadAsync Start >>>", Thread.CurrentThread.ManagedThreadId));
 
                 // シェル情報 (surfaces.txt の情報など) の読み込み
@@ -721,11 +725,13 @@ namespace GhostExplorer2
                     }
 
                     // プログレスバー進める
-                    Invoke((MethodInvoker)(() =>
+                    if (progressVisible)
                     {
-                        prgLoading.Increment(1);
-                        Debug.WriteLine(string.Format("<{0}> Increment: {1}/{2}", Thread.CurrentThread.ManagedThreadId, prgLoading.Value, prgLoading.Maximum));
-                    }));
+                        Invoke((MethodInvoker)(() =>
+                        {
+                            prgLoading.Increment(1);
+                        }));
+                    }
 
                     // キャンセル処理
                     if (cToken.IsCancellationRequested)
