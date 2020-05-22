@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,6 +49,8 @@
   <ItemGroup>
     <Compile Include="Const.cs" />
     <Compile Include="GhostManager.cs" />
+    <Compile Include="Profile.cs" />
+    <Compile Include="Util.cs" />
     <Compile Include="Win32API.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>

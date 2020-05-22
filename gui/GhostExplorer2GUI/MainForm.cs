@@ -10,6 +10,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -91,6 +92,16 @@ namespace GhostExplorer2
                 return GhostManager.Ghosts[selectedIndex];
             }
         }
+
+        /// <summary>
+        /// シェル・顔画像読み込みのために実行している非同期タスク
+        /// </summary>
+        protected Task GhostImageLoadingTask = null;
+
+        /// <summary>
+        /// シェル・顔画像読み込みを中断するためのトークンソース
+        /// </summary>
+        protected CancellationTokenSource GhostImageCancellationTokenSource;
 
         /// <summary>
         /// コンストラクタ
@@ -512,12 +523,10 @@ namespace GhostExplorer2
         }
 
         /// <summary>
-        /// ゴースト情報一括読み込み
+        /// 起動後の初期設定 (設定読み込み、ゴースト情報読み込みなど)
         /// </summary>
-        protected virtual void LoadGhosts()
+        protected virtual void Setup()
         {
-            var appDirPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
             // 既存情報クリア
             lstGhost.Clear();
             imgListFace.Images.Clear();
@@ -559,7 +568,6 @@ namespace GhostExplorer2
             {
                 cmbGhostDir.Items.Add(dirPath.TrimEnd('\\'));
             }
-            cmbGhostDir.SelectedIndex = 0;
 
             // パスが複数ない場合は、コンボボックス非表示
             if (ghostDirPaths.Count == 1)
@@ -581,47 +589,73 @@ namespace GhostExplorer2
             // チェックボックスの位置移動
             ChkCloseAfterChange.Left = BtnChange.Left + 4;
 
-            // ゴースト情報読み込み
-            GhostManager = GhostManager.Load(ghostDirPaths);
+            // JSONシリアライザーを生成
+            var serializer = new DataContractJsonSerializer(typeof(Profile));
 
-            // 最終起動時の情報を読み込む
-            var dataDirPath = Path.Combine(appDirPath, "data");
-            string lastBootVersion = null;
-            var lastBootVersionPath = Path.Combine(dataDirPath, @"lastBootVersion.txt");
-            if (File.Exists(lastBootVersionPath))
+            // Profile読み込み
+            var profPath = Util.GetProfilePath();
+            Profile profile = null;
+            if (File.Exists(profPath))
             {
-                lastBootVersion = File.ReadAllText(lastBootVersionPath).Trim();
+                using (var input = new FileStream(profPath, FileMode.Open))
+                {
+                    profile = (Profile)serializer.ReadObject(input);
+                }
             }
 
             // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
-            if(lastBootVersion != null && Const.Version != lastBootVersion)
+            if(profile.LastBootVersion != null && Const.Version != profile.LastBootVersion)
             {
-                Directory.Delete(GhostManager.CacheDirPath, recursive: true);
+                Directory.Delete(Util.GetCacheDirPath(), recursive: true);
             }
 
             // 最終起動情報を書き込む
-            if (!Directory.Exists(dataDirPath)) Directory.CreateDirectory(dataDirPath);
-            File.WriteAllText(lastBootVersionPath, Const.Version);
+            if(profile == null) profile = new Profile();
+            profile.LastBootVersion = Const.Version;
+            using(var output = new FileStream(profPath, FileMode.Create))
+            {
+                serializer.WriteObject(output, profile);
+            }
 
             // イメージリストに不在アイコンを追加
             AbsenceImageKeys.Clear();
-            foreach (var path in Directory.GetFiles(Path.Combine(appDirPath, @"res\absence_icon"), "*.png"))
+            foreach (var path in Directory.GetFiles(Path.Combine(Util.GetAppDirPath(), @"res\absence_icon"), "*.png"))
             {
                 var fileName = Path.GetFileName(path);
                 imgListFace.Images.Add(fileName, new Bitmap(path));
                 AbsenceImageKeys.Add(fileName);
             }
 
-            // ゴースト一覧の更新
-            UpdateGhostList();
-
+            // ゴーストフォルダ選択ドロップダウンの項目を選択 (内部で選択時イベント発生)
+            cmbGhostDir.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// ゴーストフォルダ選択ドロップダウン変更時処理
+        /// </summary>
+        private void cmbGhostDir_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // 現在実行中のシェル読み込みタスクがあれば、キャンセル操作を行い、中断を待つ
+            if(GhostImageLoadingTask != null)
+            {
+                GhostImageCancellationTokenSource.Cancel();
+                GhostImageLoadingTask.Wait();
+
+                Debug.WriteLine(string.Format("cancel complete"));
+            }
+
+            UpdateGhostList();
+        }
+
+        /// <summary>
+        /// ゴースト情報の読み込みと一覧表示更新
+        /// </summary>
         protected virtual void UpdateGhostList()
         {
-            if (GhostManager == null) return;
-
             var selectedGhostDirPath = (string)cmbGhostDir.SelectedItem;
+
+            // ゴースト情報読み込み
+            GhostManager = GhostManager.Load(selectedGhostDirPath);
 
             // リスト構築
             var listGroups = new Dictionary<string, ListViewGroup>();
@@ -640,35 +674,55 @@ namespace GhostExplorer2
 
             }
 
-            // ゴーストごとのシェル読み込み処理
+            // ゴーストごとのシェル・画像読み込み処理
             prgLoading.Maximum = GhostManager.Ghosts.Count;
             prgLoading.Value = 0;
-            lblLoading.Text = string.Format("{0} / {1}", prgLoading.Value, prgLoading.Maximum);
-            lblLoading.Parent = lstGhost;
-            lblLoading.Show();
-            var t = Task.Run(() => ShellAndFaceImagesLoadAsync());
-
-            // ゴースト情報リストの更新に伴う画面表示更新
-            UpdateUIOnFMOChanged();
-
-            // ボタン等表示状態を更新
-            UpdateUIState();
+            GhostImageCancellationTokenSource = new CancellationTokenSource();
+            var token = GhostImageCancellationTokenSource.Token;
+            GhostImageLoadingTask = Task.Factory.StartNew(() => GhostImagesLoadAsync(token), token);
         }
 
-        public async virtual void ShellAndFaceImagesLoadAsync()
+        /// <summary>
+        /// シェル情報および顔画像を読み込む
+        /// </summary>
+        public async virtual Task GhostImagesLoadAsync(CancellationToken cToken)
         {
-            var appDirPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            Debug.WriteLine(string.Format("<{0}> GhostImagesLoadAsync Start >>>", Thread.CurrentThread.ManagedThreadId));
 
-            // シェル情報を読み込む
-            GhostManager.LoadShells();
+            // シェル情報 (surfaces.txt の情報など) の読み込み
+            foreach (var ghost in GhostManager.Ghosts)
+            {
+                // シェル情報を読み込む
+                GhostManager.LoadShell(ghost);
+                Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
 
+                // プログレスバー進める
+                BeginInvoke((MethodInvoker)(() =>
+                {
+                    prgLoading.Increment(1);
+                }));
+
+                // キャンセル処理
+                if (cToken.IsCancellationRequested)
+                {
+                    Debug.WriteLine(string.Format("<{0}> canceled", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                    return;
+                }
+            }
+
+            // シェル情報読み込みまで完了したらプログレスバー非表示
+            BeginInvoke((MethodInvoker)(() =>
+            {
+                prgLoading.Hide();
+            }));
+
+
+            // 顔画像の取得
             foreach (var ghost in GhostManager.Ghosts)
             {
                 // ゴーストの顔画像を変換・取得
                 var faceImage = GhostManager.GetFaceImage(ghost, imgListFace.ImageSize);
-                await Task.Delay(300);
-
-                // リストビュー構築処理
+                Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
 
                 // リスト項目追加
                 BeginInvoke((MethodInvoker)(() =>
@@ -678,23 +732,22 @@ namespace GhostExplorer2
                     {
                         imgListFace.Images.Add(ghost.DirPath, faceImage);
                     }
-
-                    prgLoading.Increment(1);
-                    lblLoading.Text = string.Format("{0} / {1}", prgLoading.Value, prgLoading.Maximum);
                 }));
+
+                // キャンセル処理
+                if (cToken.IsCancellationRequested)
+                {
+                    Debug.WriteLine(string.Format("<{0}> canceled", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                    return;
+                }
             }
 
-            // 全部完了したらプログレスバー非表示
-            BeginInvoke((MethodInvoker)(() =>
-            {
-                prgLoading.Hide();
-                lblLoading.Hide();
-            }));
+            Debug.WriteLine(string.Format("<{0}> <<< GhostImagesLoadAsync End", Thread.CurrentThread.ManagedThreadId));
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
         {
-            LoadGhosts();
+            Setup();
         }
 
         private void BtnReload_Click(object sender, EventArgs e)
@@ -711,13 +764,12 @@ namespace GhostExplorer2
             //if (Directory.Exists(GhostManager.CacheDirPath)) Directory.Delete(GhostManager.CacheDirPath, recursive: true);
 
             // 再読み込み
-            LoadGhosts();
+            Setup();
         }
 
         private void BtnOpenShellFolder_Click(object sender, EventArgs e)
         {
-            var appDirPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            Process.Start(Path.Combine(appDirPath, SelectedGhost.DirPath));
+            Process.Start(Path.Combine(Util.GetAppDirPath(), SelectedGhost.DirPath));
         }
 
         /// <summary>
@@ -751,9 +803,6 @@ namespace GhostExplorer2
             base.WndProc(ref m);
         }
 
-        private void cmbGhostDir_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            UpdateGhostList();
-        }
+
     }
 }

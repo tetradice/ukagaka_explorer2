@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,7 +15,7 @@ namespace GhostExplorer2
 {
     public class GhostManager
     {
-        public virtual IList<string> DirPathList { get; set; }
+        public virtual string GhostDirPath { get; set; }
         public virtual IList<Ghost> Ghosts { get; protected set; }
 
         /// <summary>
@@ -22,19 +23,9 @@ namespace GhostExplorer2
         /// </summary>
         public virtual IDictionary<string, Shell> Shells { get; protected set; }
 
-        public virtual string CacheDirPath
+        public static GhostManager Load(string ghostDirPath)
         {
-            get
-            {
-                var appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-
-                return Path.Combine(Path.GetDirectoryName(appPath), @"data\cache");
-            }
-        }
-
-        public static GhostManager Load(IList<string> dirPathList)
-        {
-            var manager = new GhostManager() { DirPathList = dirPathList };
+            var manager = new GhostManager() { GhostDirPath = ghostDirPath };
 
             var sw = new Stopwatch();
             sw.Start();
@@ -58,21 +49,17 @@ namespace GhostExplorer2
             // 既存の値はクリア
             Ghosts.Clear();
 
-            // フォルダ1つずつ処理
-            foreach(var ghostDir in DirPathList)
+            // ゴーストフォルダのサブフォルダを列挙
+            foreach (var subDir in Directory.GetDirectories(GhostDirPath))
             {
-                // ゴーストフォルダのサブフォルダを列挙
-                foreach (var subDir in Directory.GetDirectories(ghostDir))
-                {
-                    // ゴーストフォルダでなければスキップ
-                    if (!Ghost.IsGhostDir(subDir)) continue;
+                // ゴーストフォルダでなければスキップ
+                if (!Ghost.IsGhostDir(subDir)) continue;
 
-                    // ゴーストの基本情報を読み込み
-                    var ghost = Ghost.Load(subDir);
+                // ゴーストの基本情報を読み込み
+                var ghost = Ghost.Load(subDir);
 
-                    // リストに追加
-                    Ghosts.Add(ghost);
-                }
+                // リストに追加
+                Ghosts.Add(ghost);
             }
 
             // 最後に名前＋フォルダパス順でソート
@@ -80,24 +67,12 @@ namespace GhostExplorer2
         }
 
         /// <summary>
-        /// 各ゴーストごとのシェル情報読み込み
+        /// 対象ゴーストのシェル情報読み込み
         /// </summary>
-        public virtual void LoadShells()
+        public virtual void LoadShell(Ghost ghost)
         {
-            var sw = new Stopwatch();
-            sw.Start();
-            // 既存の値はクリア
-            Shells.Clear();
-
-            // ゴースト1体ずつ処理
-            foreach (var ghost in Ghosts)
-            {
-                var shellDir = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
-                Shells[ghost.DirPath] = Shell.Load(shellDir, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
-            }
-            sw.Stop();
-            Debug.WriteLine(string.Format("Shells Load : {0}", sw.Elapsed));
-
+            var shellDir = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
+            Shells[ghost.DirPath] = Shell.Load(shellDir, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
         }
 
         /// <summary>
@@ -124,7 +99,7 @@ namespace GhostExplorer2
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
         protected virtual Bitmap DrawSurfaceInternal(Ghost targetGhost, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
-            var cacheDir = CacheDirPath;
+            var cacheDir = Util.GetCacheDirPath();
             var targetShell = Shells[targetGhost.DirPath];
             if (surfaceModel == null) return null;
 
@@ -157,7 +132,7 @@ namespace GhostExplorer2
         public virtual Bitmap GetFaceImage(Ghost ghost, Size faceSize)
         {
             var images = new Dictionary<string, Bitmap>();
-            var cacheDir = CacheDirPath;
+            var cacheDir = Util.GetCacheDirPath();
             var shell = Shells[ghost.DirPath];
 
             // キャッシュフォルダが存在しなければ作成
