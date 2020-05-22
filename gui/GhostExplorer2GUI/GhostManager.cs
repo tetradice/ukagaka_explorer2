@@ -16,11 +16,13 @@ namespace GhostExplorer2
     public class GhostManager
     {
         public virtual string GhostDirPath { get; set; }
+        public virtual string FilterWord { get; set; }
+        public virtual string SortType { get; set; }
         public virtual IList<Ghost> Ghosts { get; protected set; }
 
-        public static GhostManager Load(string ghostDirPath)
+        public static GhostManager Load(string ghostDirPath, string filterWord, string sortType)
         {
-            var manager = new GhostManager() { GhostDirPath = ghostDirPath };
+            var manager = new GhostManager() { GhostDirPath = ghostDirPath, FilterWord = filterWord, SortType = sortType };
 
             var sw = new Stopwatch();
             sw.Start();
@@ -52,12 +54,37 @@ namespace GhostExplorer2
                 // ゴーストの基本情報を読み込み
                 var ghost = Ghost.Load(subDir);
 
+                // キーワードが指定されており、かつキーワードに合致しなければスキップ
+                if (!string.IsNullOrWhiteSpace(FilterWord))
+                {
+                    if(!(ghost.Name.Contains(FilterWord)
+                         || ghost.SakuraName.Contains(FilterWord)
+                         || ghost.KeroName.Contains(FilterWord)))
+                    {
+                        continue;
+                    }
+                }
+
                 // リストに追加
                 Ghosts.Add(ghost);
             }
 
-            // 最後に名前＋フォルダパス順でソート
-            Ghosts = Ghosts.OrderBy(g => Tuple.Create(g.Name, g.DirPath)).ToList();
+            // 最後にソート
+            switch (SortType)
+            {
+                case Const.SortType.ByBootTime:
+                    Ghosts = Ghosts.OrderBy(g => Tuple.Create(g.Name, g.DirPath)).ToList();
+                    break;
+
+                case Const.SortType.ByRecent:
+                    Ghosts = Ghosts.OrderBy(g => Tuple.Create(g.Name, g.DirPath)).ToList();
+                    break;
+
+                default:
+                    // ゴースト名＋フォルダパス順
+                    Ghosts = Ghosts.OrderBy(g => Tuple.Create(g.Name, g.DirPath)).ToList();
+                    break;
+            }
         }
 
         /// <summary>

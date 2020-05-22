@@ -16,6 +16,9 @@ namespace GhostExplorer2
         [DataMember]
         public string LastUsePath { get; set; }
 
+        [DataMember]
+        public string LastSortType { get; set; }
+
         public Profile()
         {
         }

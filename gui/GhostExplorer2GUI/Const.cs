@@ -10,5 +10,12 @@ namespace GhostExplorer2
     {
         public const string Version = "0.2.0";
         public const string SSTPSender = "GhostExplorer2";
+
+        public static class SortType
+        {
+            public const string ByName = "ByName";
+            public const string ByRecent = "ByRecent";
+            public const string ByBootTime = "ByBootTime";
+        }
     }
 }

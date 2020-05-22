@@ -21,6 +21,12 @@ namespace GhostExplorer2
 {
     public partial class MainForm : Form
     {
+        public class SortTypeItem
+        {
+            public string Label { get; set; }
+            public string Value { get; set; }
+        }
+
         protected GhostManager GhostManager;
         protected Dictionary<string, Shell> Shells = new Dictionary<string, Shell>();
         protected Dictionary<string, Bitmap> FaceImages = new Dictionary<string, Bitmap>();
@@ -30,6 +36,7 @@ namespace GhostExplorer2
         protected string DescriptionText;
         private Font DescriptionFont;
         private RectangleF DescriptionRect;
+        protected string OldFilterText = "";
 
         // 呼び出し元ゴースト情報
         protected string CallerId;
@@ -133,6 +140,11 @@ namespace GhostExplorer2
             // FMOの変更通知を受け取るために、WindowMessage "Sakura" を登録
             // http://emily.shillest.net/specwiki/?SSP/仕様書/FMO
             WMSakuraAPI = Win32API.RegisterWindowMessage("Sakura");
+
+            // ソートドロップダウン初期設定
+            cmbSort.Items.Add(new SortTypeItem() { Value = Const.SortType.ByName, Label = "名前順" });
+            cmbSort.Items.Add(new SortTypeItem() { Value = Const.SortType.ByRecent, Label = "最近起動した順" });
+            cmbSort.Items.Add(new SortTypeItem() { Value = Const.SortType.ByBootTime, Label = "累計起動した順" });
         }
 
         /// <summary>
@@ -629,26 +641,47 @@ namespace GhostExplorer2
                 AbsenceImageKeys.Add(fileName);
             }
 
-            // ゴーストフォルダ選択ドロップダウンの項目を選択 (内部で選択時イベント発生)
+            // ゴーストフォルダ選択ドロップダウンの項目を選択
             // 前回の選択フォルダと一致するものがあればそれを選択
-            // なければ1項目を選択
-            var lastUseIndex = cmbGhostDir.FindStringExact(CurrentProfile.LastUsePath);
-            if(lastUseIndex >= 0)
+            // なければ先頭項目を選択
             {
-                cmbGhostDir.SelectedIndex = lastUseIndex;
-            } else
-            {
-                cmbGhostDir.SelectedIndex = 0;
+                var lastUseIndex = cmbGhostDir.FindStringExact(CurrentProfile.LastUsePath);
+                if (lastUseIndex >= 0)
+                {
+                    cmbGhostDir.SelectedIndex = lastUseIndex;
+                }
+                else
+                {
+                    cmbGhostDir.SelectedIndex = 0;
+                }
             }
+
+            // ソート選択ドロップダウンの項目を選択
+            // 前回の選択フォルダと一致するものがあればそれを選択
+            // なければ先頭項目を選択
+            {
+                var lastSortIndex = cmbSort.FindStringExact(CurrentProfile.LastSortType);
+                if (lastSortIndex >= 0)
+                {
+                    cmbSort.SelectedIndex = lastSortIndex;
+                }
+                else
+                {
+                    cmbSort.SelectedIndex = 0;
+                }
+            }
+
+            // ゴースト情報の読み込みと一覧表示更新
+            UpdateGhostList();
         }
 
         /// <summary>
-        /// ゴーストフォルダ選択ドロップダウン変更時処理
+        /// 検索条件変更
         /// </summary>
-        private void cmbGhostDir_SelectedIndexChanged(object sender, EventArgs e)
+        protected void OnSearchConditionChanged(bool saveProfile = true)
         {
             // 現在実行中のシェル読み込みタスクがあれば、キャンセル操作を行い、中断を待つ
-            if(GhostImageLoadingTask != null)
+            if (GhostImageLoadingTask != null)
             {
                 Debug.WriteLine(string.Format("Cancel loading task>>>"));
                 GhostImageCancellationTokenSource.Cancel();
@@ -656,10 +689,13 @@ namespace GhostExplorer2
                 Debug.WriteLine(string.Format("<<<Cancel loading task"));
             }
 
-            // プロファイルに最終選択パスを書き込む
-            var selectedGhostDirPath = (string)cmbGhostDir.SelectedItem;
-            CurrentProfile.LastUsePath = selectedGhostDirPath;
-            Util.SaveProfile(CurrentProfile);
+            // プロファイルに検索条件を書き込む
+            if (saveProfile)
+            {
+                CurrentProfile.LastUsePath = (string)cmbGhostDir.SelectedItem;
+                CurrentProfile.LastSortType = (string)cmbSort.SelectedValue;
+                Util.SaveProfile(CurrentProfile);
+            }
 
             // ゴースト情報の読み込みと一覧表示更新
             UpdateGhostList();
@@ -671,9 +707,11 @@ namespace GhostExplorer2
         protected virtual void UpdateGhostList()
         {
             var selectedGhostDirPath = (string)cmbGhostDir.SelectedItem;
+            var filterWord = txtFilter.Text.Trim();
+            var sortType = (string)cmbSort.SelectedValue;
 
             // ゴースト情報読み込み
-            GhostManager = GhostManager.Load(selectedGhostDirPath);
+            GhostManager = GhostManager.Load(selectedGhostDirPath, filterWord, sortType);
 
             // リスト構築
             var listGroups = new Dictionary<string, ListViewGroup>();
@@ -846,6 +884,43 @@ namespace GhostExplorer2
             base.WndProc(ref m);
         }
 
+        /// <summary>
+        /// ゴーストフォルダ変更
+        /// </summary>
+        private void cmbGhostDir_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            OnSearchConditionChanged();
+        }
 
+        /// <summary>
+        /// ソート変更
+        /// </summary>
+        private void cmbSort_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            OnSearchConditionChanged();
+        }
+
+        private void txtFilter_Leave(object sender, EventArgs e)
+        {
+            // 前回値と変更されている場合のみゴースト一覧更新
+            if (txtFilter.Text != OldFilterText)
+            {
+                OnSearchConditionChanged();
+            }
+            OldFilterText = txtFilter.Text;
+        }
+
+        private void txtFilter_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Enter)
+            {
+                // 前回値と変更されている場合のみゴースト一覧更新
+                if (txtFilter.Text != OldFilterText)
+                {
+                    OnSearchConditionChanged();
+                }
+                OldFilterText = txtFilter.Text;
+            }
+        }
     }
 }

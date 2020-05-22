@@ -40,7 +40,11 @@
             this.BtnOpenShellFolder = new System.Windows.Forms.Button();
             this.prgLoading = new System.Windows.Forms.ProgressBar();
             this.cmbGhostDir = new System.Windows.Forms.ComboBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.cmbSort = new System.Windows.Forms.ComboBox();
+            this.txtFilter = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // lstGhost
@@ -51,11 +55,12 @@
             this.lstGhost.HideSelection = false;
             this.lstGhost.LargeImageList = this.imgListFace;
             this.lstGhost.Location = new System.Drawing.Point(0, 19);
+            this.lstGhost.Margin = new System.Windows.Forms.Padding(0);
             this.lstGhost.MultiSelect = false;
             this.lstGhost.Name = "lstGhost";
             this.lstGhost.ShowGroups = false;
             this.lstGhost.ShowItemToolTips = true;
-            this.lstGhost.Size = new System.Drawing.Size(318, 475);
+            this.lstGhost.Size = new System.Drawing.Size(318, 447);
             this.lstGhost.SmallImageList = this.imgListFace;
             this.lstGhost.TabIndex = 0;
             this.lstGhost.UseCompatibleStateImageBehavior = false;
@@ -169,7 +174,7 @@
             // prgLoading
             // 
             this.prgLoading.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.prgLoading.Location = new System.Drawing.Point(12, 438);
+            this.prgLoading.Location = new System.Drawing.Point(12, 411);
             this.prgLoading.Name = "prgLoading";
             this.prgLoading.Size = new System.Drawing.Size(197, 23);
             this.prgLoading.TabIndex = 11;
@@ -179,16 +184,54 @@
             this.cmbGhostDir.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbGhostDir.FormattingEnabled = true;
             this.cmbGhostDir.Location = new System.Drawing.Point(0, 0);
+            this.cmbGhostDir.Margin = new System.Windows.Forms.Padding(0);
             this.cmbGhostDir.Name = "cmbGhostDir";
             this.cmbGhostDir.Size = new System.Drawing.Size(318, 20);
             this.cmbGhostDir.TabIndex = 13;
-            this.cmbGhostDir.SelectedIndexChanged += new System.EventHandler(this.cmbGhostDir_SelectedIndexChanged);
+            this.cmbGhostDir.SelectionChangeCommitted += new System.EventHandler(this.cmbGhostDir_SelectionChangeCommitted);
+            // 
+            // panel1
+            // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.panel1.BackColor = System.Drawing.Color.White;
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.cmbSort);
+            this.panel1.Controls.Add(this.txtFilter);
+            this.panel1.Location = new System.Drawing.Point(0, 465);
+            this.panel1.Margin = new System.Windows.Forms.Padding(0);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(318, 29);
+            this.panel1.TabIndex = 14;
+            // 
+            // cmbSort
+            // 
+            this.cmbSort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cmbSort.DisplayMember = "Label";
+            this.cmbSort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSort.FormattingEnabled = true;
+            this.cmbSort.Location = new System.Drawing.Point(192, 4);
+            this.cmbSort.Name = "cmbSort";
+            this.cmbSort.Size = new System.Drawing.Size(121, 20);
+            this.cmbSort.TabIndex = 1;
+            this.cmbSort.ValueMember = "Value";
+            this.cmbSort.SelectionChangeCommitted += new System.EventHandler(this.cmbSort_SelectionChangeCommitted);
+            // 
+            // txtFilter
+            // 
+            this.txtFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.txtFilter.Location = new System.Drawing.Point(25, 4);
+            this.txtFilter.Name = "txtFilter";
+            this.txtFilter.Size = new System.Drawing.Size(161, 19);
+            this.txtFilter.TabIndex = 0;
+            this.txtFilter.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtFilter_KeyDown);
+            this.txtFilter.Leave += new System.EventHandler(this.txtFilter_Leave);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.cmbGhostDir);
             this.Controls.Add(this.prgLoading);
             this.Controls.Add(this.BtnOpenShellFolder);
@@ -207,6 +250,8 @@
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -225,6 +270,9 @@
         private System.Windows.Forms.Button BtnOpenShellFolder;
         private System.Windows.Forms.ProgressBar prgLoading;
         private System.Windows.Forms.ComboBox cmbGhostDir;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ComboBox cmbSort;
+        private System.Windows.Forms.TextBox txtFilter;
     }
 }
 
