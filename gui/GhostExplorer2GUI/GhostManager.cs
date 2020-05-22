@@ -15,14 +15,15 @@ namespace GhostExplorer2
 {
     public class GhostManager
     {
+        public virtual Realize2Text Realize2Text { get; set; }
         public virtual string GhostDirPath { get; set; }
         public virtual string FilterWord { get; set; }
         public virtual string SortType { get; set; }
         public virtual IList<Ghost> Ghosts { get; protected set; }
 
-        public static GhostManager Load(string ghostDirPath, string filterWord, string sortType)
+        public static GhostManager Load(Realize2Text realize2Text, string ghostDirPath, string filterWord, string sortType)
         {
-            var manager = new GhostManager() { GhostDirPath = ghostDirPath, FilterWord = filterWord, SortType = sortType };
+            var manager = new GhostManager() { Realize2Text = realize2Text, GhostDirPath = ghostDirPath, FilterWord = filterWord, SortType = sortType };
 
             var sw = new Stopwatch();
             sw.Start();
@@ -57,7 +58,7 @@ namespace GhostExplorer2
                 // キーワードが指定されており、かつキーワードに合致しなければスキップ
                 if (!string.IsNullOrWhiteSpace(FilterWord))
                 {
-                    if(!(ghost.Name.Contains(FilterWord)
+                    if (!(ghost.Name.Contains(FilterWord)
                          || ghost.SakuraName.Contains(FilterWord)
                          || ghost.KeroName.Contains(FilterWord)))
                     {
@@ -69,15 +70,38 @@ namespace GhostExplorer2
                 Ghosts.Add(ghost);
             }
 
+            // ゴースト別の使用頻度情報を抽出
+            var totalBootTimes = new Dictionary<string, long>();
+            var lastBootSeconds = new Dictionary<string, long>();
+            if (Realize2Text != null)
+            {
+                foreach (var ghost in Ghosts)
+                {
+                    Realize2Text.Record rec = null;
+                    if(Realize2Text != null) rec = Realize2Text.GhostRecords.FirstOrDefault(r => r.Name == ghost.Name);
+                    if (rec != null)
+                    {
+                        totalBootTimes[ghost.Name] = rec.TotalBootByMinute;
+                        lastBootSeconds[ghost.Name] = rec.LastBootSecond;
+                    }
+                    else
+                    {
+                        // 情報が見つからなければ0扱い
+                        totalBootTimes[ghost.Name] = 0;
+                        lastBootSeconds[ghost.Name] = 0;
+                    }
+                }
+            } 
+
             // 最後にソート
             switch (SortType)
             {
                 case Const.SortType.ByBootTime:
-                    Ghosts = Ghosts.OrderBy(g => Tuple.Create(g.Name, g.DirPath)).ToList();
+                    Ghosts = Ghosts.OrderByDescending(g => totalBootTimes[g.Name]).ToList();
                     break;
 
                 case Const.SortType.ByRecent:
-                    Ghosts = Ghosts.OrderBy(g => Tuple.Create(g.Name, g.DirPath)).ToList();
+                    Ghosts = Ghosts.OrderByDescending(g => lastBootSeconds[g.Name]).ToList();
                     break;
 
                 default:

@@ -51,6 +51,11 @@ namespace GhostExplorer2
         protected string LastSSPExePath;
 
         /// <summary>
+        /// realize2.txt の情報
+        /// </summary>
+        protected Realize2Text Realize2Text;
+
+        /// <summary>
         /// 不在アイコンの画像キーリスト
         /// </summary>
         protected List<string> AbsenceImageKeys = new List<string>();
@@ -563,6 +568,13 @@ namespace GhostExplorer2
             // FMO情報更新
             UpdateFMOInfo();
 
+            // Realize2Textを読み込む
+            var realize2Path = Path.Combine(Path.GetDirectoryName(LastSSPExePath), @"data\profile\realize2.txt");
+            if (File.Exists(realize2Path))
+            {
+                Realize2Text = Realize2Text.Load(realize2Path);
+            }
+
             // コマンドライン引数を解釈
             var args = Environment.GetCommandLineArgs().ToList();
             args.RemoveAt(0); // 先頭はexe名のため削除
@@ -660,7 +672,18 @@ namespace GhostExplorer2
             // 前回の選択フォルダと一致するものがあればそれを選択
             // なければ先頭項目を選択
             {
-                var lastSortIndex = cmbSort.FindStringExact(CurrentProfile.LastSortType);
+
+                int lastSortIndex = -1;
+                for (var i = 0; i < cmbSort.Items.Count; i++)
+                {
+                    var item = (SortTypeItem)cmbSort.Items[i];
+                    if (item.Value == CurrentProfile.LastSortType)
+                    {
+                        lastSortIndex = i;
+                        break;
+                    }
+                }
+
                 if (lastSortIndex >= 0)
                 {
                     cmbSort.SelectedIndex = lastSortIndex;
@@ -693,7 +716,8 @@ namespace GhostExplorer2
             if (saveProfile)
             {
                 CurrentProfile.LastUsePath = (string)cmbGhostDir.SelectedItem;
-                CurrentProfile.LastSortType = (string)cmbSort.SelectedValue;
+                var sortType = ((SortTypeItem)cmbSort.SelectedItem).Value;
+                CurrentProfile.LastSortType = sortType;
                 Util.SaveProfile(CurrentProfile);
             }
 
@@ -708,26 +732,59 @@ namespace GhostExplorer2
         {
             var selectedGhostDirPath = (string)cmbGhostDir.SelectedItem;
             var filterWord = txtFilter.Text.Trim();
-            var sortType = (string)cmbSort.SelectedValue;
+            var sortType = ((SortTypeItem)cmbSort.SelectedItem).Value;
 
             // ゴースト情報読み込み
-            GhostManager = GhostManager.Load(selectedGhostDirPath, filterWord, sortType);
+            GhostManager = GhostManager.Load(Realize2Text, selectedGhostDirPath, filterWord, sortType);
 
             // リスト構築
             var listGroups = new Dictionary<string, ListViewGroup>();
             lstGhost.Items.Clear();
-            foreach (var ghost in GhostManager.Ghosts.Where(g => Path.GetDirectoryName(g.DirPath) == selectedGhostDirPath))
+
+            // 1件以上存在する場合
+            if (GhostManager.Ghosts.Any())
             {
-                var item = lstGhost.Items.Add(key: ghost.DirPath, text: ghost.Name ?? "", imageKey: ghost.DirPath);
-
-                // ゴースト格納フォルダのパスを元に、グループも設定
-                if (!listGroups.ContainsKey(ghost.GhostBaseDirPath))
+                // リスト項目追加
+                foreach (var ghost in GhostManager.Ghosts)
                 {
-                    listGroups[ghost.GhostBaseDirPath] = new ListViewGroup(ghost.GhostBaseDirPath);
-                    lstGhost.Groups.Add(listGroups[ghost.GhostBaseDirPath]);
-                }
-                item.Group = listGroups[ghost.GhostBaseDirPath];
+                    var item = lstGhost.Items.Add(key: ghost.DirPath, text: ghost.Name ?? "", imageKey: ghost.DirPath);
 
+                    // ゴースト格納フォルダのパスを元に、グループも設定
+                    if (!listGroups.ContainsKey(ghost.GhostBaseDirPath))
+                    {
+                        listGroups[ghost.GhostBaseDirPath] = new ListViewGroup(ghost.GhostBaseDirPath);
+                        lstGhost.Groups.Add(listGroups[ghost.GhostBaseDirPath]);
+                    }
+                    item.Group = listGroups[ghost.GhostBaseDirPath];
+
+                }
+
+
+                // 最初に1件目のシェル情報、顔画像のみ同期的に読み込んでおく
+                var firstGhost = GhostManager.Ghosts[0];
+                if (!Shells.ContainsKey(firstGhost.DirPath))
+                {
+                    Shells[firstGhost.DirPath] = GhostManager.LoadShell(firstGhost);
+                    Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, firstGhost.Name));
+
+                    // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
+                    if (!FaceImages.ContainsKey(firstGhost.DirPath))
+                    {
+                        FaceImages[firstGhost.DirPath] = GhostManager.GetFaceImage(firstGhost, Shells[firstGhost.DirPath], imgListFace.ImageSize);
+                        Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, firstGhost.Name));
+                    }
+
+                    // 顔画像を正常に読み込めていれば、イメージリストに追加
+                    if (FaceImages[firstGhost.DirPath] != null)
+                    {
+                        imgListFace.Images.Add(firstGhost.DirPath, FaceImages[firstGhost.DirPath]);
+                    }
+                }
+
+                // 先頭を選択
+                lstGhost.Items[0].Focused = true;
+                lstGhost.Items[0].Selected = true;
+                lstGhost.EnsureVisible(0);
             }
 
             // ゴーストごとのシェル・画像読み込み処理
@@ -736,6 +793,9 @@ namespace GhostExplorer2
             GhostImageCancellationTokenSource = new CancellationTokenSource();
             var token = GhostImageCancellationTokenSource.Token;
             GhostImageLoadingTask = Task.Factory.StartNew(() => GhostImagesLoadAsync(token), token);
+
+            // UI状態更新
+            UpdateUIState();
         }
 
         /// <summary>
@@ -746,7 +806,7 @@ namespace GhostExplorer2
             try
             {
                 var progressVisible = (GhostManager.Ghosts.Count >= 200); // プログレスバーはゴーストが200件を超えた場合に初めて表示
-                Invoke((MethodInvoker)(() =>
+                BeginInvoke((MethodInvoker)(() =>
                 {
                     prgLoading.Visible = progressVisible;
                 }));
@@ -765,7 +825,7 @@ namespace GhostExplorer2
                     // プログレスバー進める
                     if (progressVisible)
                     {
-                        Invoke((MethodInvoker)(() =>
+                        BeginInvoke((MethodInvoker)(() =>
                         {
                             prgLoading.Increment(1);
                         }));
@@ -797,7 +857,7 @@ namespace GhostExplorer2
                     }
 
                     // リスト項目追加
-                    Invoke((MethodInvoker)(() =>
+                    BeginInvoke((MethodInvoker)(() =>
                     {
                         // 顔画像を正常に読み込めていれば、イメージリストに追加
                         if (FaceImages[ghost.DirPath] != null)
@@ -914,12 +974,21 @@ namespace GhostExplorer2
         {
             if(e.KeyCode == Keys.Enter)
             {
+            }
+        }
+
+        private void txtFilter_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if(e.KeyChar == '\r')
+            {
                 // 前回値と変更されている場合のみゴースト一覧更新
                 if (txtFilter.Text != OldFilterText)
                 {
                     OnSearchConditionChanged();
                 }
                 OldFilterText = txtFilter.Text;
+                e.Handled = true;
+
             }
         }
     }
