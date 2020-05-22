@@ -21,7 +21,7 @@ namespace GhostExplorer2
 {
     public partial class MainForm : Form
     {
-        public class SortTypeItem
+        public class DropDownItem
         {
             public string Label { get; set; }
             public string Value { get; set; }
@@ -147,9 +147,9 @@ namespace GhostExplorer2
             WMSakuraAPI = Win32API.RegisterWindowMessage("Sakura");
 
             // ソートドロップダウン初期設定
-            cmbSort.Items.Add(new SortTypeItem() { Value = Const.SortType.ByName, Label = "名前順" });
-            cmbSort.Items.Add(new SortTypeItem() { Value = Const.SortType.ByRecent, Label = "最近起動した順" });
-            cmbSort.Items.Add(new SortTypeItem() { Value = Const.SortType.ByBootTime, Label = "累計起動した順" });
+            cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByName, Label = "名前順" });
+            cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByRecent, Label = "最近起動した順" });
+            cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByBootTime, Label = "累計起動した順" });
         }
 
         /// <summary>
@@ -606,7 +606,9 @@ namespace GhostExplorer2
             // ゴーストフォルダ選択パスの設定
             foreach (var dirPath in ghostDirPaths)
             {
-                cmbGhostDir.Items.Add(dirPath.TrimEnd('\\'));
+                var trimmedPath = dirPath.TrimEnd('\\');
+                var label = string.Format("{0} [{1}]", Path.GetFileName(trimmedPath), trimmedPath);
+                cmbGhostDir.Items.Add(new DropDownItem() { Value = trimmedPath, Label = label });
             }
 
             // パスが複数ない場合は、コンボボックス非表示
@@ -656,7 +658,17 @@ namespace GhostExplorer2
             // 前回の選択フォルダと一致するものがあればそれを選択
             // なければ先頭項目を選択
             {
-                var lastUseIndex = cmbGhostDir.FindStringExact(CurrentProfile.LastUsePath);
+                int lastUseIndex = -1;
+                for (var i = 0; i < cmbGhostDir.Items.Count; i++)
+                {
+                    var item = (DropDownItem)cmbGhostDir.Items[i];
+                    if (item.Value == CurrentProfile.LastUsePath)
+                    {
+                        lastUseIndex = i;
+                        break;
+                    }
+                }
+
                 if (lastUseIndex >= 0)
                 {
                     cmbGhostDir.SelectedIndex = lastUseIndex;
@@ -675,7 +687,7 @@ namespace GhostExplorer2
                 int lastSortIndex = -1;
                 for (var i = 0; i < cmbSort.Items.Count; i++)
                 {
-                    var item = (SortTypeItem)cmbSort.Items[i];
+                    var item = (DropDownItem)cmbSort.Items[i];
                     if (item.Value == CurrentProfile.LastSortType)
                     {
                         lastSortIndex = i;
@@ -714,8 +726,9 @@ namespace GhostExplorer2
             // プロファイルに検索条件を書き込む
             if (saveProfile)
             {
-                CurrentProfile.LastUsePath = (string)cmbGhostDir.SelectedItem;
-                var sortType = ((SortTypeItem)cmbSort.SelectedItem).Value;
+                var selectedGhostDirPath = ((DropDownItem)cmbGhostDir.SelectedItem).Value;
+                CurrentProfile.LastUsePath = selectedGhostDirPath;
+                var sortType = ((DropDownItem)cmbSort.SelectedItem).Value;
                 CurrentProfile.LastSortType = sortType;
                 Util.SaveProfile(CurrentProfile);
             }
@@ -729,9 +742,9 @@ namespace GhostExplorer2
         /// </summary>
         protected virtual void UpdateGhostList()
         {
-            var selectedGhostDirPath = (string)cmbGhostDir.SelectedItem;
+            var selectedGhostDirPath = ((DropDownItem)cmbGhostDir.SelectedItem).Value;
             var filterWord = txtFilter.Text.Trim();
-            var sortType = ((SortTypeItem)cmbSort.SelectedItem).Value;
+            var sortType = ((DropDownItem)cmbSort.SelectedItem).Value;
 
             // ゴースト情報読み込み
             GhostManager = GhostManager.Load(Realize2Text, selectedGhostDirPath, filterWord, sortType);

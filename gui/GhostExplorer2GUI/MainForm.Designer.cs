@@ -168,13 +168,16 @@
             // 
             // cmbGhostDir
             // 
+            this.cmbGhostDir.DisplayMember = "Label";
             this.cmbGhostDir.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbGhostDir.Font = new System.Drawing.Font("ＭＳ ゴシック", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.cmbGhostDir.FormattingEnabled = true;
             this.cmbGhostDir.Location = new System.Drawing.Point(0, 0);
             this.cmbGhostDir.Margin = new System.Windows.Forms.Padding(0);
             this.cmbGhostDir.Name = "cmbGhostDir";
             this.cmbGhostDir.Size = new System.Drawing.Size(318, 20);
             this.cmbGhostDir.TabIndex = 13;
+            this.cmbGhostDir.ValueMember = "Value";
             this.cmbGhostDir.SelectionChangeCommitted += new System.EventHandler(this.cmbGhostDir_SelectionChangeCommitted);
             // 
             // panel1
