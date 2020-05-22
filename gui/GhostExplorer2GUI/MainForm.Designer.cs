@@ -45,6 +45,8 @@
             // 
             // lstGhost
             // 
+            this.lstGhost.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.lstGhost.FullRowSelect = true;
             this.lstGhost.HideSelection = false;
             this.lstGhost.LargeImageList = this.imgListFace;
@@ -166,9 +168,10 @@
             // 
             // prgLoading
             // 
-            this.prgLoading.Location = new System.Drawing.Point(12, 459);
+            this.prgLoading.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.prgLoading.Location = new System.Drawing.Point(12, 438);
             this.prgLoading.Name = "prgLoading";
-            this.prgLoading.Size = new System.Drawing.Size(298, 23);
+            this.prgLoading.Size = new System.Drawing.Size(197, 23);
             this.prgLoading.TabIndex = 11;
             // 
             // cmbGhostDir
