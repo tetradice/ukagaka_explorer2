@@ -628,7 +628,7 @@ namespace GhostExplorer2
             BtnChange.Text = string.Format("{0}から切り替え", CallerSakuraName);
 
             // チェックボックスの位置移動
-            ChkCloseAfterChange.Left = BtnChange.Left + 4;
+            ChkCloseAfterChange.Left = BtnChange.Left + 1;
 
 
             // Profile読み込み
