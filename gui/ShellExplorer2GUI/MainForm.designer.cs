@@ -35,7 +35,6 @@
             this.BtnChange = new System.Windows.Forms.Button();
             this.lblLoading = new System.Windows.Forms.Label();
             this.BtnRandomSelect = new System.Windows.Forms.Button();
-            this.BtnReload = new System.Windows.Forms.Button();
             this.ChkCloseAfterChange = new System.Windows.Forms.CheckBox();
             this.BtnOpenShellFolder = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
@@ -102,7 +101,7 @@
             this.lblLoading.BackColor = System.Drawing.Color.LemonChiffon;
             this.lblLoading.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblLoading.Font = new System.Drawing.Font("メイリオ", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.lblLoading.Location = new System.Drawing.Point(396, 218);
+            this.lblLoading.Location = new System.Drawing.Point(760, 403);
             this.lblLoading.Name = "lblLoading";
             this.lblLoading.Padding = new System.Windows.Forms.Padding(16, 8, 16, 8);
             this.lblLoading.Size = new System.Drawing.Size(174, 42);
@@ -123,20 +122,6 @@
             this.BtnRandomSelect.Visible = false;
             this.BtnRandomSelect.Click += new System.EventHandler(this.BtnRandomSelect_Click);
             // 
-            // BtnReload
-            // 
-            this.BtnReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BtnReload.AutoSize = true;
-            this.BtnReload.Location = new System.Drawing.Point(449, 448);
-            this.BtnReload.Name = "BtnReload";
-            this.BtnReload.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
-            this.BtnReload.Size = new System.Drawing.Size(121, 34);
-            this.BtnReload.TabIndex = 8;
-            this.BtnReload.Text = "★リロード";
-            this.BtnReload.UseVisualStyleBackColor = true;
-            this.BtnReload.Visible = false;
-            this.BtnReload.Click += new System.EventHandler(this.BtnReload_Click);
-            // 
             // ChkCloseAfterChange
             // 
             this.ChkCloseAfterChange.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -156,7 +141,7 @@
             // 
             this.BtnOpenShellFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.BtnOpenShellFolder.AutoSize = true;
-            this.BtnOpenShellFolder.Location = new System.Drawing.Point(576, 448);
+            this.BtnOpenShellFolder.Location = new System.Drawing.Point(449, 448);
             this.BtnOpenShellFolder.Name = "BtnOpenShellFolder";
             this.BtnOpenShellFolder.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
             this.BtnOpenShellFolder.Size = new System.Drawing.Size(158, 34);
@@ -173,7 +158,6 @@
             this.ClientSize = new System.Drawing.Size(964, 494);
             this.Controls.Add(this.BtnOpenShellFolder);
             this.Controls.Add(this.ChkCloseAfterChange);
-            this.Controls.Add(this.BtnReload);
             this.Controls.Add(this.BtnRandomSelect);
             this.Controls.Add(this.lblLoading);
             this.Controls.Add(this.BtnChange);
@@ -185,6 +169,7 @@
             this.Text = "シェルエクスプローラ通（α版）";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
+            this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).EndInit();
             this.ResumeLayout(false);
@@ -200,7 +185,6 @@
         private System.Windows.Forms.ImageList imgListFace;
         private System.Windows.Forms.Label lblLoading;
         private System.Windows.Forms.Button BtnRandomSelect;
-        private System.Windows.Forms.Button BtnReload;
         private System.Windows.Forms.CheckBox ChkCloseAfterChange;
         private System.Windows.Forms.Button BtnOpenShellFolder;
     }

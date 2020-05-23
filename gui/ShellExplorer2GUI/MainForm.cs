@@ -82,6 +82,11 @@ namespace ShellExplorer2
         }
 
         /// <summary>
+        /// プロファイル情報 (設定など)
+        /// </summary>
+        protected Profile CurrentProfile;
+
+        /// <summary>
         /// コンストラクタ
         /// </summary>
         public MainForm()
@@ -104,6 +109,21 @@ namespace ShellExplorer2
             // FMOの変更通知を受け取るために、WindowMessage "Sakura" を登録
             // http://emily.shillest.net/specwiki/?SSP/仕様書/FMO
             WMSakuraAPI = Win32API.RegisterWindowMessage("Sakura");
+
+            // Profile読み込み
+            CurrentProfile = Util.LoadProfile();
+            if (CurrentProfile == null) CurrentProfile = new Profile(); // 存在しなければ生成
+
+            // ウインドウサイズが保存されていれば反映
+            if (CurrentProfile.MainWindowWidth >= 1 && CurrentProfile.MainWindowHeight >= 1)
+            {
+                this.Width = CurrentProfile.MainWindowWidth;
+                this.Height = CurrentProfile.MainWindowHeight;
+            }
+
+            // ローディング表示を中央に配置
+            lblLoading.Left = (this.Width - lblLoading.Width) / 2;
+            lblLoading.Top = (this.Height - lblLoading.Height) / 2;
         }
 
         /// <summary>
@@ -183,7 +203,6 @@ namespace ShellExplorer2
 
             // デバッグ用
 #if DEBUG
-            BtnReload.Visible = true;
             BtnOpenShellFolder.Visible = true;
 #endif
         }
@@ -434,7 +453,7 @@ namespace ShellExplorer2
         /// </summary>
         protected virtual void LoadShells()
         {
-            var appDirPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var appDirPath = Util.GetAppDirPath();
 
             // 既存情報クリア
             lstShell.Clear();
@@ -487,24 +506,15 @@ namespace ShellExplorer2
             // シェル情報読み込み
             ShellManager = ShellManager.Load(ghostDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
 
-            // 最終起動時の情報を読み込む
-            var dataDirPath = Path.Combine(appDirPath, "data");
-            string lastBootVersion = null;
-            var lastBootVersionPath = Path.Combine(dataDirPath, @"lastBootVersion.txt");
-            if (File.Exists(lastBootVersionPath))
-            {
-                lastBootVersion = File.ReadAllText(lastBootVersionPath).Trim();
-            }
-
             // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
-            if(lastBootVersion != null && Const.Version != lastBootVersion)
+            if (CurrentProfile.LastBootVersion != null && Const.Version != CurrentProfile.LastBootVersion)
             {
-                Directory.Delete(ShellManager.CacheDirPath, recursive: true);
+                Directory.Delete(Util.GetCacheDirPath(), recursive: true);
             }
 
-            // 最終起動情報を書き込む
-            if (!Directory.Exists(dataDirPath)) Directory.CreateDirectory(dataDirPath);
-            File.WriteAllText(lastBootVersionPath, Const.Version);
+            // 最終起動情報をセットして、Profileを保存
+            CurrentProfile.LastBootVersion = Const.Version;
+            Util.SaveProfile(CurrentProfile);
 
             // ゴーストの顔画像を変換・取得
             var faceImages = ShellManager.GetFaceImages(imgListFace.ImageSize);
@@ -562,23 +572,6 @@ namespace ShellExplorer2
             LoadShells();
         }
 
-        private void BtnReload_Click(object sender, EventArgs e)
-        {
-            //// 顔画像をすべて解放
-            //foreach(Image img in imgListFace.Images)
-            //{
-            //    img.Dispose();
-            //}
-            //imgListFace.Images.Clear();
-            //lstGhost.Clear();
-
-            //// キャッシュフォルダを削除
-            //if (Directory.Exists(ShellManager.CacheDirPath)) Directory.Delete(ShellManager.CacheDirPath, recursive: true);
-
-            // 再読み込み
-            LoadShells();
-        }
-
         private void BtnOpenShellFolder_Click(object sender, EventArgs e)
         {
             Process.Start(this.SelectedShell.DirPath);
@@ -622,6 +615,17 @@ namespace ShellExplorer2
         {
             // 変更ボタン押下処理
             BtnChange.PerformClick();
+        }
+
+        /// <summary>
+        /// リサイズ完了
+        /// </summary>
+        private void MainForm_ResizeEnd(object sender, EventArgs e)
+        {
+            // リサイズ完了時には、ウインドウサイズを保存
+            CurrentProfile.MainWindowWidth = this.Width;
+            CurrentProfile.MainWindowHeight = this.Height;
+            Util.SaveProfile(CurrentProfile);
         }
     }
 }

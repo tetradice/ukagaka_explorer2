@@ -150,6 +150,18 @@ namespace GhostExplorer2
             cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByName, Label = "名前順" });
             cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByRecent, Label = "最近起動した順" });
             cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByBootTime, Label = "累計起動した順" });
+
+
+            // Profile読み込み
+            CurrentProfile = Util.LoadProfile();
+            if (CurrentProfile == null) CurrentProfile = new Profile(); // 存在しなければ生成
+
+            // ウインドウサイズが保存されていれば反映
+            if (CurrentProfile.MainWindowWidth >= 1 && CurrentProfile.MainWindowHeight >= 1)
+            {
+                this.Width = CurrentProfile.MainWindowWidth;
+                this.Height = CurrentProfile.MainWindowHeight;
+            }
         }
 
         /// <summary>
@@ -631,20 +643,6 @@ namespace GhostExplorer2
             // チェックボックスの位置移動
             ChkCloseAfterChange.Left = BtnChange.Left + 1;
 
-
-            // Profile読み込み
-            CurrentProfile = Util.LoadProfile();
-            if (CurrentProfile == null) CurrentProfile = new Profile(); // 存在しなければ生成
-
-            // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
-            if (CurrentProfile.LastBootVersion != null && Const.Version != CurrentProfile.LastBootVersion)
-            {
-                Directory.Delete(Util.GetCacheDirPath(), recursive: true);
-            }
-
-            // 最終起動情報をセット
-            CurrentProfile.LastBootVersion = Const.Version;
-
             // イメージリストに不在アイコンを追加
             AbsenceImageKeys.Clear();
             foreach (var path in Directory.GetFiles(Path.Combine(Util.GetAppDirPath(), @"res\absence_icon"), "*.png"))
@@ -653,6 +651,16 @@ namespace GhostExplorer2
                 imgListFace.Images.Add(fileName, new Bitmap(path));
                 AbsenceImageKeys.Add(fileName);
             }
+
+            // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
+            if (CurrentProfile.LastBootVersion != null && Const.Version != CurrentProfile.LastBootVersion)
+            {
+                Directory.Delete(Util.GetCacheDirPath(), recursive: true);
+            }
+
+            // 最終起動情報をセットして、Profileを保存
+            CurrentProfile.LastBootVersion = Const.Version;
+            Util.SaveProfile(CurrentProfile);
 
             // ゴーストフォルダ選択ドロップダウンの項目を選択
             // 前回の選択フォルダと一致するものがあればそれを選択
@@ -982,6 +990,17 @@ namespace GhostExplorer2
                 e.Handled = true;
 
             }
+        }
+
+        /// <summary>
+        /// リサイズ完了
+        /// </summary>
+        private void MainForm_ResizeEnd(object sender, EventArgs e)
+        {
+            // リサイズ完了時には、ウインドウサイズを保存
+            CurrentProfile.MainWindowWidth = this.Width;
+            CurrentProfile.MainWindowHeight = this.Height;
+            Util.SaveProfile(CurrentProfile);
         }
     }
 }

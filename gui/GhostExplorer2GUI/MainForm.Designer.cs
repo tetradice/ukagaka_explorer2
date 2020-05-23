@@ -249,6 +249,7 @@
             this.Text = "ゴーストエクスプローラ通（α版）";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
+            this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);
             this.Resize += new System.EventHandler(this.MainForm_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).EndInit();
             this.panel1.ResumeLayout(false);

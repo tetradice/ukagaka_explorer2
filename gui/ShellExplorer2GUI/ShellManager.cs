@@ -17,17 +17,6 @@ namespace ShellExplorer2
         public virtual string GhostDirPath { get; set; }
         public virtual IList<Shell> Shells { get; protected set; }
 
-        public virtual string CacheDirPath
-        {
-            get
-            {
-                var appPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-                var ghostDirName = Path.GetFileName(GhostDirPath);
-
-                return Path.Combine(Path.GetDirectoryName(appPath), @"data\cache", ghostDirName);
-            }
-        }
-
         public static ShellManager Load(string ghostDirPath, int sakuraSurfaceId, int keroSurfaceId)
         {
             var manager = new ShellManager() { GhostDirPath = ghostDirPath };
@@ -94,7 +83,7 @@ namespace ShellExplorer2
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
         protected virtual Bitmap DrawSurfaceInternal(Shell targetShell, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
-            var cacheDir = CacheDirPath;
+            var cacheDir = Util.GetCacheDirPath();
             if (surfaceModel == null) return null;
 
             // キャッシュフォルダが存在しなければ作成
@@ -126,7 +115,7 @@ namespace ShellExplorer2
         public virtual IDictionary<string, Bitmap> GetFaceImages(Size faceSize)
         {
             var images = new Dictionary<string, Bitmap>();
-            var cacheDir = CacheDirPath;
+            var cacheDir = Util.GetCacheDirPath();
 
             // キャッシュフォルダが存在しなければ作成
             if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
