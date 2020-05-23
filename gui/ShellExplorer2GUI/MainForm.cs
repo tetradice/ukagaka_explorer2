@@ -122,8 +122,8 @@ namespace ShellExplorer2
             }
 
             // ローディング表示を中央に配置
-            lblLoading.Left = (this.Width - lblLoading.Width) / 2;
-            lblLoading.Top = (this.Height - lblLoading.Height) / 2;
+            lblLoading.Left = (this.ClientSize.Width - lblLoading.Width) / 2;
+            lblLoading.Top = (this.ClientSize.Height - lblLoading.Height) / 2;
         }
 
         /// <summary>

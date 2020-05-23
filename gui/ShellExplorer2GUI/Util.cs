@@ -69,11 +69,20 @@ namespace ShellExplorer2
         /// </summary>
         public static void SaveProfile(Profile profile)
         {
+            var profPath = GetProfilePath();
+            var profDirPath = Path.GetDirectoryName(profPath);
+
+            // フォルダが存在しなければ作成
+            if (!Directory.Exists(profDirPath))
+            {
+                Directory.CreateDirectory(profDirPath);
+            }
+
             // JSONシリアライザーを生成
             var serializer = new DataContractJsonSerializer(typeof(Profile));
 
             // 書き込み
-            using (var output = new FileStream(GetProfilePath(), FileMode.Create))
+            using (var output = new FileStream(profPath, FileMode.Create))
             {
                 serializer.WriteObject(output, profile);
             }
