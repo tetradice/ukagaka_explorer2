@@ -38,7 +38,7 @@ OnMenuExec
   _cmd = "%(_dir_path)gui\ShellExplorer2GUI.exe"
   _options = "id:%(_id) "
   _options += ' "'
-  _options += REPLACE(reference[4], "\", "\\")
+  _options += RE_REPLACE(reference[4], '\\$', "") // 末尾の \ は捨てる (ダブルクォートをエスケープしてしまうため)
   _options += '"'
 
   // コマンドを実行

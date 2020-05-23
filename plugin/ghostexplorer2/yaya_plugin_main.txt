@@ -41,7 +41,7 @@ OnMenuExec
   // ゴーストフォルダパス追加
   for _i = 0 ; _i < ARRAYSIZE(stored_ghost_path_list) ; _i++ {
     _options += ' "'
-    _options += REPLACE(stored_ghost_path_list[_i], "\", "\\")
+    _options += RE_REPLACE(stored_ghost_path_list[_i], '\\$', "") // 末尾の \ は捨てる (ダブルクォートをエスケープしてしまうため)
     _options += '"'
   }
 
