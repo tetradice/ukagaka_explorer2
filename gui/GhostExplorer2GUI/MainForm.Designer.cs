@@ -212,7 +212,7 @@
             this.cmbSort.FormattingEnabled = true;
             this.cmbSort.Location = new System.Drawing.Point(192, 4);
             this.cmbSort.Name = "cmbSort";
-            this.cmbSort.Size = new System.Drawing.Size(121, 20);
+            this.cmbSort.Size = new System.Drawing.Size(117, 20);
             this.cmbSort.TabIndex = 1;
             this.cmbSort.ValueMember = "Value";
             this.cmbSort.SelectionChangeCommitted += new System.EventHandler(this.cmbSort_SelectionChangeCommitted);
