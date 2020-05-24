@@ -29,9 +29,17 @@ namespace ShellExplorer2
         /// <summary>
         /// cacheフォルダのパスを取得
         /// </summary>
-        public static string GetCacheDirPath()
+        public static string GetCacheBaseDirPath()
         {
             return Path.Combine(GetDataDirPath(), "cache");
+        }
+
+        /// <summary>
+        /// ゴースト別cacheフォルダのパスを取得
+        /// </summary>
+        public static string GetCacheDirPath(string ghostDirName)
+        {
+            return Path.Combine(GetCacheBaseDirPath(), ghostDirName);
         }
 
         /// <summary>

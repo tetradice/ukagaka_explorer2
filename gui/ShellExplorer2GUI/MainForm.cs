@@ -509,7 +509,7 @@ namespace ShellExplorer2
             // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
             if (CurrentProfile.LastBootVersion != null && Const.Version != CurrentProfile.LastBootVersion)
             {
-                Directory.Delete(Util.GetCacheDirPath(), recursive: true);
+                Directory.Delete(Util.GetCacheBaseDirPath(), recursive: true);
             }
 
             // 最終起動情報をセットして、Profileを保存

@@ -83,7 +83,7 @@ namespace ShellExplorer2
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
         protected virtual Bitmap DrawSurfaceInternal(Shell targetShell, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
-            var cacheDir = Util.GetCacheDirPath();
+            var cacheDir = Util.GetCacheDirPath(Path.GetFileName(GhostDirPath));
             if (surfaceModel == null) return null;
 
             // キャッシュフォルダが存在しなければ作成
@@ -115,7 +115,7 @@ namespace ShellExplorer2
         public virtual IDictionary<string, Bitmap> GetFaceImages(Size faceSize)
         {
             var images = new Dictionary<string, Bitmap>();
-            var cacheDir = Util.GetCacheDirPath();
+            var cacheDir = Util.GetCacheDirPath(Path.GetFileName(GhostDirPath));
 
             // キャッシュフォルダが存在しなければ作成
             if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
