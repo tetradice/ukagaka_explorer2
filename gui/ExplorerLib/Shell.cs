@@ -224,11 +224,13 @@ namespace ExplorerLib
         /// </summary>
         /// <param name="enabledBindGroupIds">有効になっている着せ替えグループIDのコレクション</param>
         /// <param name="alreadyPassedSurfaceIds">読み込み済みのサーフェスIDコレクション (循環参照による無限ループを防ぐために使用)</param>
+        /// <param name="parentPatternComposingMethod">animation定義で指定した合成メソッド (animation定義の中で指定されたサーフェスIDの情報を読み込む場合に使用)</param>
         /// <returns>サーフェス情報。読み込みに失敗した場合はnull</returns>
         public virtual SurfaceModel LoadSurfaceModel(
               int surfaceId
             , ISet<int> enabledBindGroupIds
             , ISet<int> alreadyPassedSurfaceIds = null
+            , Seriko.ComposingMethodType? parentPatternComposingMethod = null
         )
         {
             // currentLoadedSurfaceIds が未指定の場合は生成
@@ -299,7 +301,8 @@ namespace ExplorerLib
                     // 画像がある場合はレイヤとして追加
                     if (surfacePath != null)
                     {
-                        surfaceModel.Layers.Add(new SurfaceModel.Layer(surfacePath));
+                        var method = (parentPatternComposingMethod.HasValue ? parentPatternComposingMethod.Value : Seriko.ComposingMethodType.Base);
+                        surfaceModel.Layers.Add(new SurfaceModel.Layer(surfacePath, method));
                     }
                 }
 
@@ -358,7 +361,7 @@ namespace ExplorerLib
                             if (!childSurfaceModels.ContainsKey(pattern.SurfaceId))
                             {
                                 alreadyPassedSurfaceIds.Add(surfaceId);
-                                childSurfaceModels[pattern.SurfaceId] = LoadSurfaceModel(pattern.SurfaceId, enabledBindGroupIds);
+                                childSurfaceModels[pattern.SurfaceId] = LoadSurfaceModel(pattern.SurfaceId, enabledBindGroupIds, alreadyPassedSurfaceIds, pattern.Method);
                             }
                             var childSurfaceModel = childSurfaceModels[pattern.SurfaceId];
 
@@ -421,10 +424,28 @@ namespace ExplorerLib
                     }
 
                     // レイヤ描画
-                    using (var g = Graphics.FromImage(surface))
+                    // メソッドによって処理を分ける
+                    if(layer.ComposingMethod == Seriko.ComposingMethodType.Reduce)
                     {
-                        // 描画
-                        g.DrawImage(layerBmp, layer.X, layer.Y, layerBmp.Width, layerBmp.Height);
+                        // reduce
+                        surface = ComposeBitmaps(surface, layerBmp, (outputData, newBmpData, pos) =>
+                        {
+                            // ベースレイヤ、新規レイヤ両方の不透明度を取得
+                            var baseOpacity = outputData[pos + 3];
+                            var newOpacity = newBmpData[pos + 3];
+
+                            // 不透明度を乗算
+                            var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
+                            outputData[pos + 3] = (byte)Math.Round(rate * 255);
+                        });
+                    } else
+                    {
+                        // 上記以外はoverlay扱いで、普通に重ねていく
+                        using (var g = Graphics.FromImage(surface))
+                        {
+                            // 描画
+                            g.DrawImage(layerBmp, layer.X, layer.Y, layerBmp.Width, layerBmp.Height);
+                        }
                     }
                 }
             }
@@ -445,6 +466,91 @@ namespace ExplorerLib
 
             // 合成後のサーフェスを返す
             return surface;
+        }
+
+        /// <summary>
+        /// 画像（レイヤ）の合成処理を行い、結果を返す汎用メソッド
+        /// </summary>
+        public virtual Bitmap ComposeBitmaps(Bitmap baseBmp, Bitmap newBmp, Action<byte[], byte[], int> pixelProcess)
+        {
+            Bitmap output;
+
+            // 元画像とマスク画像のサイズが異なる場合はエラーとする
+            if (baseBmp.Size != newBmp.Size)
+            {
+                throw new ArgumentException("合成元レイヤと追加レイヤの画像サイズが異なります。");
+            }
+
+            // 追加レイヤはアルファチャンネルありの32ビットbmpである必要がある
+            if (!newBmp.PixelFormat.HasFlag(PixelFormat.Format32bppArgb))
+            {
+                throw new ArgumentException("newLayerとして渡された画像のフォーマットが、Format32bppArgbではありません。");
+            }
+
+            // まずは出力用に、元レイヤをコピーして、アルファチャンネルありの32ビットbmpを生成
+            output = baseBmp.Clone(new Rectangle(0, 0, baseBmp.Width, baseBmp.Height), PixelFormat.Format32bppArgb);
+
+            // 新規レイヤをコピーして、アルファチャンネルありの32ビットbmpに変換
+            // (インデックスカラーや8ビットカラーなどにも対応できるようにするため)
+            newBmp = newBmp.Clone(new Rectangle(0, 0, (int)newBmp.Width, (int)newBmp.Height), PixelFormat.Format32bppArgb);
+
+            // 出力画像の1ピクセルあたりのバイト数を取得する (両方とも32ビットのため4固定)
+            var pixelByteSize = 4;
+
+            // 出力bmpとマスクbmpをロック
+            BitmapData outputBmpData = output.LockBits(
+                new Rectangle(0, 0, output.Width, output.Height),
+                ImageLockMode.ReadWrite, output.PixelFormat);
+            BitmapData newBmpData = newBmp.LockBits(
+                new Rectangle(0, 0, (int)newBmp.Width, (int)newBmp.Height),
+                ImageLockMode.ReadOnly, (PixelFormat)newBmp.PixelFormat);
+
+            try
+            {
+                if (outputBmpData.Stride < 0)
+                {
+                    throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
+                }
+                if (newBmpData.Stride < 0)
+                {
+                    throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
+                }
+
+                // 新規レイヤのピクセルデータをバイト型配列で取得する
+                IntPtr newBmpPtr = newBmpData.Scan0;
+                var newBmpPixels = new byte[newBmpData.Stride * newBmp.Height];
+                System.Runtime.InteropServices.Marshal.Copy(newBmpPtr, newBmpPixels, 0, newBmpPixels.Length);
+
+                // 出力画像のピクセルデータをバイト型配列で取得する
+                IntPtr outputPtr = outputBmpData.Scan0;
+                var outputPixels = new byte[outputBmpData.Stride * output.Height];
+                System.Runtime.InteropServices.Marshal.Copy(outputPtr, outputPixels, 0, outputPixels.Length);
+
+                // 出力画像の全ピクセルに対して処理
+                for (var y = 0; y < newBmp.Height; y++)
+                {
+                    for (var x = 0; x < newBmp.Width; x++)
+                    {
+                        //ピクセルデータでのピクセル(x,y)の開始位置を計算する
+                        var pos = y * newBmpData.Stride + x * pixelByteSize;
+
+                        //ピクセル単位処理を実行
+                        pixelProcess.Invoke(outputPixels, newBmpPixels, pos);
+                    }
+                }
+
+                //ピクセルデータを元に戻す
+                System.Runtime.InteropServices.Marshal.Copy(outputPixels, 0, outputPtr, outputPixels.Length);
+            }
+            finally
+            {
+
+                // 画像のロックを解除
+                output.UnlockBits(outputBmpData);
+                newBmp.UnlockBits(newBmpData);
+            }
+
+            return output;
         }
 
         /// <summary>
