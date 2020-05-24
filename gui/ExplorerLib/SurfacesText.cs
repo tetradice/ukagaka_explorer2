@@ -12,7 +12,6 @@ namespace ExplorerLib
     /// <summary>
     /// surfaces.txt を表すクラス
     /// </summary>
-    /// <remarks>本アプリケーションで必要なのはelementの解釈のみのため、本クラスはSERIKO, MAYUNAのパース機能を含みません。</remarks>
     public class SurfacesText
     {
         /// <summary>
