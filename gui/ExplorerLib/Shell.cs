@@ -469,7 +469,7 @@ namespace ExplorerLib
         }
 
         /// <summary>
-        /// 画像（レイヤ）の合成処理を行い、結果を返す汎用メソッド
+        /// ピクセル単位で画像（レイヤ）の合成処理を行い、結果を返す汎用メソッド
         /// </summary>
         public virtual Bitmap ComposeBitmaps(Bitmap baseBmp, Bitmap newBmp, Action<byte[], byte[], int> pixelProcess)
         {
@@ -479,12 +479,6 @@ namespace ExplorerLib
             if (baseBmp.Size != newBmp.Size)
             {
                 throw new ArgumentException("合成元レイヤと追加レイヤの画像サイズが異なります。");
-            }
-
-            // 追加レイヤはアルファチャンネルありの32ビットbmpである必要がある
-            if (!newBmp.PixelFormat.HasFlag(PixelFormat.Format32bppArgb))
-            {
-                throw new ArgumentException("newLayerとして渡された画像のフォーマットが、Format32bppArgbではありません。");
             }
 
             // まずは出力用に、元レイヤをコピーして、アルファチャンネルありの32ビットbmpを生成
@@ -668,84 +662,26 @@ namespace ExplorerLib
                 {
                     // pnaありの場合は、PNAによる透過処理
                     // from <https://dobon.net/vb/dotnet/graphics/drawnegativeimage.html>
-                    Bitmap output;
+
+                    // pnaマスク画像の読み込み
+                    var maskOrig = new Bitmap(pnaPath);
+
+                    // 元画像とマスク画像のサイズが異なる場合はエラーとする
+                    if (maskOrig.Size != surface.Size)
                     {
-                        // まずは出力用に、元画像をコピーして、アルファチャンネルありの32ビットbmpを生成
-                        output = surface.Clone(new Rectangle(0, 0, surface.Width, surface.Height), PixelFormat.Format32bppArgb);
-
-                        // pnmaマスク画像の読み込み
-                        var maskOrig = new Bitmap(pnaPath);
-
-                        // 元画像とマスク画像のサイズが異なる場合はエラーとする
-                        if (maskOrig.Size != surface.Size)
-                        {
-                            throw new IllegalImageFormatException("pngとpnaのサイズが異なります。");
-                        }
-
-                        // マスク画像をコピーして、アルファチャンネルありの32ビットbmpに変換
-                        // (インデックスカラーや8ビットカラーなどにも対応できるようにするため)
-                        var mask = maskOrig.Clone(new Rectangle(0, 0, maskOrig.Width, maskOrig.Height), PixelFormat.Format32bppArgb);
-
-                        // 出力画像の1ピクセルあたりのバイト数を取得する (両方とも32ビットのため4固定)
-                        var pixelByteSize = 4;
-
-                        // 出力bmpとマスクbmpをロック
-                        BitmapData outputBmpData = output.LockBits(
-                            new Rectangle(0, 0, output.Width, output.Height),
-                            ImageLockMode.ReadWrite, output.PixelFormat);
-                        BitmapData maskBmpData = mask.LockBits(
-                            new Rectangle(0, 0, mask.Width, mask.Height),
-                            ImageLockMode.ReadOnly, mask.PixelFormat);
-
-                        try
-                        {
-                            if (outputBmpData.Stride < 0)
-                            {
-                                throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。 - {0}", surfacePath));
-                            }
-                            if (maskBmpData.Stride < 0)
-                            {
-                                throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。 - {0}", pnaPath));
-                            }
-
-                            // マスク画像のピクセルデータをバイト型配列で取得する
-                            IntPtr maskPtr = maskBmpData.Scan0;
-                            var maskPixels = new byte[maskBmpData.Stride * mask.Height];
-                            System.Runtime.InteropServices.Marshal.Copy(maskPtr, maskPixels, 0, maskPixels.Length);
-
-                            // 出力画像のピクセルデータをバイト型配列で取得する
-                            IntPtr outputPtr = outputBmpData.Scan0;
-                            var outputPixels = new byte[outputBmpData.Stride * output.Height];
-                            System.Runtime.InteropServices.Marshal.Copy(outputPtr, outputPixels, 0, outputPixels.Length);
-
-                            // 出力画像の全ピクセルに透過情報を適用
-                            for (var y = 0; y < mask.Height; y++)
-                            {
-                                for (var x = 0; x < mask.Width; x++)
-                                {
-                                    //ピクセルデータでのピクセル(x,y)の開始位置を計算する
-                                    var pos = y * maskBmpData.Stride + x * pixelByteSize;
-
-                                    // 色を取得
-                                    var color = Color.FromArgb(maskPixels[pos + 2], maskPixels[pos + 1], maskPixels[pos]);
-
-                                    // 輝度を取得し、それをそのまま不透明度として設定する
-                                    var brightness = (byte)Math.Round(color.GetBrightness() * 255); // 0 - 1.0で表される輝度値を、0 - 255の範囲に変換
-                                    outputPixels[pos + 3] = brightness;
-                                }
-                            }
-
-                            //ピクセルデータを元に戻す
-                            System.Runtime.InteropServices.Marshal.Copy(outputPixels, 0, outputPtr, outputPixels.Length);
-                        }
-                        finally
-                        {
-
-                            // 画像のロックを解除
-                            output.UnlockBits(outputBmpData);
-                            mask.UnlockBits(maskBmpData);
-                        }
+                        throw new IllegalImageFormatException("pngとpnaのサイズが異なります。");
                     }
+
+                    // 透過実行
+                    var output = ComposeBitmaps(surface, maskOrig, (outputData, maskBmpData, pos) =>
+                    {
+                        // 色を取得
+                        var color = Color.FromArgb(maskBmpData[pos + 2], maskBmpData[pos + 1], maskBmpData[pos]);
+
+                        // 輝度を取得し、それをそのまま不透明度として設定する
+                        var brightness = (byte)Math.Round(color.GetBrightness() * 255); // 0 - 1.0で表される輝度値を、0 - 255の範囲に変換
+                        outputData[pos + 3] = brightness;
+                    });
 
                     return output;
                 }
