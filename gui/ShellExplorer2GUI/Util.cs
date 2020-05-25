@@ -95,5 +95,14 @@ namespace ShellExplorer2
                 serializer.WriteObject(output, profile);
             }
         }
+
+        /// <summary>
+        /// \![change,ghost] などの引数として使うためのエスケープ処理
+        /// </summary>
+        /// <returns></returns>
+        public static string QuoteForSakuraScriptParameter(string value)
+        {
+            return string.Format(@"""{0}""", value);
+        }
     }
 }

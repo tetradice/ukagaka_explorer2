@@ -444,7 +444,7 @@ namespace GhostExplorer2
         /// </summary>
         private void BtnChange_Click(object sender, EventArgs e)
         {
-            var success = SendSSTPScript(@"\![change,ghost," + this.SelectedGhost.Name + @"]\e");
+            var success = SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
 
             // 送信成功した場合、オプションに応じてアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)
@@ -470,7 +470,7 @@ namespace GhostExplorer2
                 return;
             }
 
-            SendSSTPScript(@"\![call,ghost," + this.SelectedGhost.Name + @"]\e");
+            SendSSTPScript(@"\![call,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
         }
 
         /// <summary>
