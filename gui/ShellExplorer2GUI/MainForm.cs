@@ -348,7 +348,7 @@ namespace ShellExplorer2
         /// </summary>
         private void BtnChange_Click(object sender, EventArgs e)
         {
-            var success = SendSSTPScript(@"\![change,shell," + this.SelectedShell.Name + @"]\e");
+            var success = SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(this.SelectedShell.Name) + @"]\e");
 
             // 送信成功した場合、オプションに応じてアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)
