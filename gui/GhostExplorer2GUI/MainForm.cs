@@ -444,7 +444,18 @@ namespace GhostExplorer2
         /// </summary>
         private void BtnChange_Click(object sender, EventArgs e)
         {
-            var success = SendSSTPScript(@"\![change,ghost," + this.SelectedGhost.Name + @"]\e");
+            var success = SendSSTPScript(@"\![raise,OnGhostChanging]\e");
+
+            Task.Run(() =>
+            {
+                for (var i2 = 0; i2 < 30; i2++)
+                {
+                    SendSSTPGetProperty();
+                    Thread.Sleep(2000);
+                }
+            });
+
+            //var success = SendSSTPScript(@"\![change,ghost," + this.SelectedGhost.Name + @"]\e");
 
             // 送信成功した場合、オプションに応じてアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)
@@ -474,6 +485,27 @@ namespace GhostExplorer2
         }
 
         /// <summary>
+        /// SSTP EXECUTEでGetPropertyを送信
+        /// </summary>
+        protected string SendSSTPGetProperty()
+        {
+            var sstpClient = new SSTPClient();
+            var req = new SSTPClient.Execute13Request();
+            req.Sender = Const.SSTPSender;
+            req.Command = "GetProperty[currentghost.status]";
+
+            SSTPClient.Response res;
+            if (SendSSTPScript(req, out res))
+            {
+                return res.StatusExplanation;
+            } else
+            {
+                return null;
+            }
+        }
+
+
+        /// <summary>
         /// SSTP送信
         /// </summary>
         protected bool SendSSTPScript(string script)
@@ -482,6 +514,7 @@ namespace GhostExplorer2
             var req = new SSTPClient.Send14Request();
             req.Id = CallerId;
             req.Sender = Const.SSTPSender;
+
             if (CallerLost)
             {
                 // 呼び出し元ゴーストがいなくなっている場合、適当なゴースト1体に対して送信
@@ -508,9 +541,28 @@ namespace GhostExplorer2
             }
             req.Script = script;
 
+            return SendSSTPScript(req);
+        }
+
+        /// <summary>
+        /// SSTP送信
+        /// </summary>
+        protected bool SendSSTPScript(SSTPClient.Request req)
+        {
+            SSTPClient.Response res;
+            return SendSSTPScript(req, out res);
+        }
+
+        /// <summary>
+        /// SSTP送信
+        /// </summary>
+        protected bool SendSSTPScript(SSTPClient.Request req, out SSTPClient.Response res)
+        {
+            res = null;
+            var sstpClient = new SSTPClient();
             try
             {
-                var res = sstpClient.SendRequest(req);
+                res = sstpClient.SendRequest(req);
 
                 // エラーレスポンス時
                 if (!res.Success)

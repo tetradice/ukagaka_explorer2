@@ -56,6 +56,23 @@ namespace ExplorerLib
             }
         }
 
+        public class Execute13Request : Request
+        {
+            public const string COMMAND_STRING = "EXECUTE SSTP/1.3";
+            public virtual string Sender { get; set; }
+            public virtual string Command { get; set; }
+
+            public override string ToString()
+            {
+                var headers = new Dictionary<string, string>();
+                headers["Charset"] = "UTF-8";
+                headers["Sender"] = Sender;
+                headers["Command"] = Command;
+
+                return Request.BuildMessage(COMMAND_STRING, headers);
+            }
+        }
+
         public class Response
         {
             /// <summary>
@@ -67,7 +84,16 @@ namespace ExplorerLib
             /// 説明句
             /// </summary>
             public virtual string StatusExplanation { get; set; }
+
+            /// <summary>
+            /// 成功レスポンスか
+            /// </summary>
             public virtual bool Success { get { return StatusCode >= 200 && StatusCode <= 299; } }
+
+            /// <summary>
+            /// 付加情報 (EXECUTEなどのときに取得可能)
+            /// </summary>
+            public virtual string AdditionalValue { get; set; }
 
             /// <summary>
             /// ステータス行パターン
@@ -80,12 +106,28 @@ namespace ExplorerLib
             /// <returns>成功した場合はResponseオブジェクト、失敗した場合はnull</returns>
             public static Response Parse(string responseText)
             {
-                var matched = ResponseLinePattern.Match(responseText);
+                var lines = responseText.Replace("\r\n", "\n").Split('\n');
+
+                // まずは1行目を解析
+                var matched = ResponseLinePattern.Match(lines[0]);
                 if (matched.Success)
                 {
                     var res = new Response();
                     res.StatusCode = int.Parse(matched.Groups[1].Value);
                     res.StatusExplanation = matched.Groups[2].Value.TrimEnd();
+
+                    // 2行目以降があれば続けて解析
+                    for(var i = 1; i < lines.Length; i++)
+                    {
+                        var line = lines[i].Trim();
+
+                        // 空白でなければ結果を取得
+                        if (!string.IsNullOrEmpty(line))
+                        {
+                            res.AdditionalValue = line;
+                        }
+                    }
+                    
 
                     return res;
                 }
@@ -146,8 +188,8 @@ namespace ExplorerLib
 
                         // 受信したデータを文字列に変換
                         var resMsg = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
-                        // 末尾の\nを削除
-                        resMsg = resMsg.TrimEnd('\n');
+                        // 末尾の\0, \nを削除
+                        resMsg = resMsg.TrimEnd('\0').TrimEnd();
 
                         Debug.WriteLine(resMsg);
 
