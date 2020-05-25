@@ -27,11 +27,11 @@ namespace ExplorerLib
         /// </summary>
         public class Scope
         {
-            public virtual Dictionary<string, string> Values { get; set; }
+            public virtual List<Tuple<string, string>> Entries { get; set; }
 
             public Scope()
             {
-                this.Values = new Dictionary<string, string>();
+                this.Entries = new List<Tuple<string, string>>();
             }
         }
 
@@ -39,18 +39,17 @@ namespace ExplorerLib
         /// SERIKOのバージョン
         /// </summary>
         public virtual Seriko.VersionType SerikoVersion {
-            get {
-                if(
-                    Scopes.ContainsKey("descript")
-                    && Scopes["descript"].Values.ContainsKey("version")
-                    && Scopes["descript"].Values["version"] == "1"
-                )
+            get
+            {
+                if (Scopes.ContainsKey("descript"))
                 {
-                    return Seriko.VersionType.V2;
-                } else
-                {
-                    return Seriko.VersionType.V1;
+                    var version = Scopes["descript"].Entries.FirstOrDefault(p => p.Item1 == "version");
+                    if (version != null && version.Item2 == "1")
+                    {
+                        return Seriko.VersionType.V2;
+                    }
                 }
+                return Seriko.VersionType.V1;
             }
         }
 
@@ -61,18 +60,15 @@ namespace ExplorerLib
         {
             get
             {
-                if (
-                    Scopes.ContainsKey("descript")
-                    && Scopes["descript"].Values.ContainsKey("animation-sort")
-                    && Scopes["descript"].Values["animation-sort"] == "ascend"
-                )
+                if (Scopes.ContainsKey("descript"))
                 {
-                    return SortType.Asc;
+                    var animationSort = Scopes["descript"].Entries.FirstOrDefault(p => p.Item1 == "animation-sort");
+                    if (animationSort != null && animationSort.Item2 == "ascend")
+                    {
+                        return SortType.Asc;
+                    }
                 }
-                else
-                {
-                    return SortType.Desc;
-                }
+                return SortType.Desc;
             }
         }
 
@@ -189,7 +185,7 @@ namespace ExplorerLib
                     if (currentScope != null)
                     {
                         if (!Scopes.ContainsKey(currentScope)) Scopes[currentScope] = new Scope();
-                        Scopes[currentScope].Values[pair[0].ToLower()] = pair[1]; // 仕様上は不正と思われるが、たまに大文字混じりでキーを指定しているケースがあるためdowncase
+                        Scopes[currentScope].Entries.Add(Tuple.Create(pair[0], pair[1])); // 仕様上は不正と思われるが、たまに大文字混じりでキーを指定しているケースがあるためdowncase
                     }
                 }
 
@@ -226,7 +222,7 @@ namespace ExplorerLib
             foreach (var pair in this.Scopes)
             {
                 var scopeName = pair.Key;
-                var scopeValues = pair.Value.Values;
+                var scopeValues = pair.Value.Entries;
 
                 // サーフェスIDとマッチするスコープでなければスキップ
                 if (!IsMatchingScope(scopeName, surfaceId)) continue;
@@ -236,13 +232,13 @@ namespace ExplorerLib
                 {
                     // element処理
                     {
-                        var matched = elemKeyRegex.Match(valuePair.Key);
+                        var matched = elemKeyRegex.Match(valuePair.Item1);
                         if (matched.Success)
                         {
                             var elem = new Seriko.Element { Id = int.Parse(matched.Groups[1].Value) };
 
                             // 指定書式に従っていればパースして、エレメントリストに追加
-                            var matched2 = elemValueRegex.Match(valuePair.Value);
+                            var matched2 = elemValueRegex.Match(valuePair.Item2);
                             if (matched2.Success)
                             {
                                 var methodValue = matched2.Groups["method"].Value;
@@ -271,7 +267,7 @@ namespace ExplorerLib
                     // animation.interval処理 (bind, もしくはbind+○○のみを対象とする)
                     {
 
-                        var matched = intervalKeyRegex.Match(valuePair.Key);
+                        var matched = intervalKeyRegex.Match(valuePair.Item1);
                         if (matched.Success)
                         {
                             var id = int.Parse(matched.Groups[1].Value);
@@ -283,23 +279,23 @@ namespace ExplorerLib
                             }
 
                             // intervalの処理
-                            if (valuePair.Value == "bind")
+                            if (valuePair.Item2 == "bind")
                             {
                                 // bind単体の場合は全パターン表示
                                 animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.All;
                                 animations[id].UsingBindGroup = true;
                             }
-                            else if (valuePair.Value.Contains("sometimes")
-                                     || valuePair.Value.Contains("rarely")
-                                     || valuePair.Value.Contains("random")
-                                     || valuePair.Value.Contains("periodic")
-                                     || valuePair.Value.Contains("runonce"))
+                            else if (valuePair.Item2.Contains("sometimes")
+                                     || valuePair.Item2.Contains("rarely")
+                                     || valuePair.Item2.Contains("random")
+                                     || valuePair.Item2.Contains("periodic")
+                                     || valuePair.Item2.Contains("runonce"))
                             {
                                 // 上記指定を含む場合は最終パターンのみ表示
                                 animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.LastOnly;
 
                                 // bindも含む場合はbindgroupも見る
-                                if (valuePair.Value.Contains("bind"))
+                                if (valuePair.Item2.Contains("bind"))
                                 {
                                     animations[id].UsingBindGroup = true;
                                 }
@@ -310,14 +306,14 @@ namespace ExplorerLib
 
                     // animation.pattern処理
                     {
-                        var matched = patKeyRegex.Match(valuePair.Key);
+                        var matched = patKeyRegex.Match(valuePair.Item1);
                         if (matched.Success)
                         {
                             var animId = int.Parse(matched.Groups["animID"].Value);
                             var patId = int.Parse(matched.Groups["patID"].Value);
 
                             // 値が指定書式に従っていれば、パースしてpattern定義に追加
-                            var matched2 = patValueRegex.Match(valuePair.Value);
+                            var matched2 = patValueRegex.Match(valuePair.Item2);
                             if (matched2.Success)
                             {
                                 var methodValue = matched2.Groups["method"].Value;
