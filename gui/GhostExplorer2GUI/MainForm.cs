@@ -445,7 +445,10 @@ namespace GhostExplorer2
         async private void BtnChange_Click(object sender, EventArgs e)
         {
             // まずはOnGhostChangingイベントを発生させる
-            var success = SendSSTPScript(@"\![raise,OnGhostChanging]\e");
+            var success = SendSSTPScript(string.Format(@"\![raise,OnGhostChanging,{0},manual,{1},{2}]\e"
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.SakuraName)
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.Name)
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.DirPath)));
 
             // 送信成功した場合、オプションに応じてアプリケーションを隠す
             if (success && ChkCloseAfterChange.Checked)
@@ -457,10 +460,10 @@ namespace GhostExplorer2
             await WaitCurrentGhostTalkEnd();
 
             // ゴースト変更
-            SendSSTPScript(@"\![change,ghost," + this.SelectedGhost.Name + @"]\e");
+            SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
 
             // ゴースト変更後にアプリケーション終了
-            if (ChkCloseAfterChange.Checked)
+            if (success && ChkCloseAfterChange.Checked)
             {
                 Application.Exit();
             }
@@ -476,7 +479,7 @@ namespace GhostExplorer2
             // ゴースト呼び出しの前にFMO情報の更新を試みる
             UpdateFMOInfo();
 
-            // 立っているゴーストが一人もおらず、かつSSP.exeのパスが特定できるなら、SSP.exeの起動を試みる
+            // 立っているゴーストが一人もおらず、かつSSP.exeのパスが特定できるなら、代わりにSSP.exeの起動を試みる
             if (!FMOGhostList.Any() && LastSSPExePath != null)
             {
                 Process.Start(LastSSPExePath, string.Format(@"/g ""{0}""", this.SelectedGhost.Name));
@@ -484,13 +487,16 @@ namespace GhostExplorer2
             }
 
             // まずはOnGhostCallingイベントを発生させる
-            SendSSTPScript(@"\![raise,OnGhostCalling]\e");
+            SendSSTPScript(string.Format(@"\![raise,OnGhostCalling,{0},manual,{1},{2}]\e"
+                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.SakuraName)
+                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.Name)
+                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.DirPath)));
 
             // 1秒だけ待つ
             await Task.Delay(1000);
 
             // ゴーストを呼ぶ
-            SendSSTPScript(@"\![call,ghost," + this.SelectedGhost.Name + @"]\e");
+            SendSSTPScript(@"\![call,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
         }
 
         /// <summary>

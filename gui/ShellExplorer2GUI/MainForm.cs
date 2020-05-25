@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -346,17 +347,82 @@ namespace ShellExplorer2
         /// <summary>
         /// シェル切り替えボタン押下
         /// </summary>
-        private void BtnChange_Click(object sender, EventArgs e)
+        async private void BtnChange_Click(object sender, EventArgs e)
         {
-            var success = SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(this.SelectedShell.Name) + @"]\e");
+            // まずはOnShellChangingイベントを発生させる
+            var success = SendSSTPScript(string.Format(@"\![raise,OnShellChanging,{0},{1},{2}]\e"
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedShell.Name)
+                                                     , "" // reference1 (現在のシェル名) を正しく取得する手段がないと思われる
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedShell.DirPath)));
 
-            // 送信成功した場合、オプションに応じてアプリケーション終了
+            // 送信成功した場合、オプションに応じてアプリケーションを隠す
+            if (success && ChkCloseAfterChange.Checked)
+            {
+                this.Hide();
+            }
+
+            // トーク終了を待つ
+            await WaitCurrentGhostTalkEnd();
+
+            // ゴースト変更
+            SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(this.SelectedShell.Name) + @"]\e");
+
+            // ゴースト変更後にアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)
             {
                 Application.Exit();
             }
 
             UpdateUIState();
+
+        }
+
+        /// <summary>
+        /// SSTP EXECUTEでGetPropertyを送信
+        /// </summary>
+        protected string SendSSTPGetProperty(string key)
+        {
+            var sstpClient = new SSTPClient();
+            var req = new SSTPClient.Execute13Request();
+            req.Sender = Const.SSTPSender;
+            req.Command = "GetProperty[" + key + "]";
+
+            SSTPClient.Response res;
+            if (SendSSTPScript(req, out res))
+            {
+                return res.AdditionalValue;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 現在ゴーストのトーク終了を待つ
+        /// </summary>
+        /// <returns></returns>
+        protected async Task WaitCurrentGhostTalkEnd()
+        {
+            // ステータスを1秒おきに取得しながらtalkingの終了を待つ
+            await Task.Run(() =>
+            {
+                // 最大で60回リトライ
+                for (var i = 0; i < 60; i++)
+                {
+                    // SSTPでstatus取得
+                    var status = SendSSTPGetProperty("currentghost.status");
+
+                    // statusが返らない、もしくはtalkingが含まれていない場合はトーク終了とみなす
+                    if (string.IsNullOrEmpty(status) || !status.Split(',').Contains("talking"))
+                    {
+                        break;
+                    }
+
+                    // 1秒ごとにstatus取得
+                    Thread.Sleep(1000);
+                }
+            });
         }
 
         /// <summary>
@@ -368,6 +434,7 @@ namespace ShellExplorer2
             var req = new SSTPClient.Send14Request();
             req.Id = CallerId;
             req.Sender = Const.SSTPSender;
+
             if (CallerLost)
             {
                 // 呼び出し元ゴーストがいなくなっている場合、適当なゴースト1体に対して送信
@@ -387,14 +454,35 @@ namespace ShellExplorer2
                         MessageBoxIcon.Warning);
                     return false;
                 }
-            } else { 
+            }
+            else
+            {
                 req.IfGhost = Tuple.Create(CallerSakuraName, CallerKeroName);
             }
             req.Script = script;
 
+            return SendSSTPScript(req);
+        }
+
+        /// <summary>
+        /// SSTP送信
+        /// </summary>
+        protected bool SendSSTPScript(SSTPClient.Request req)
+        {
+            SSTPClient.Response res;
+            return SendSSTPScript(req, out res);
+        }
+
+        /// <summary>
+        /// SSTP送信
+        /// </summary>
+        protected bool SendSSTPScript(SSTPClient.Request req, out SSTPClient.Response res)
+        {
+            res = null;
+            var sstpClient = new SSTPClient();
             try
             {
-                var res = sstpClient.SendRequest(req);
+                res = sstpClient.SendRequest(req);
 
                 // エラーレスポンス時
                 if (!res.Success)
@@ -409,7 +497,8 @@ namespace ShellExplorer2
 
                         UpdateFMOInfoAndUpdateUI();
                         return false;
-                    } else
+                    }
+                    else
                     {
                         MessageBox.Show(this,
                                         string.Format("SSPとの通信に失敗しました。\r\n({0} {1})", res.StatusCode, res.StatusExplanation),
@@ -423,7 +512,9 @@ namespace ShellExplorer2
                 // 正常終了
                 return true;
 
-            } catch(SocketException ex) {
+            }
+            catch (SocketException ex)
+            {
                 Debug.WriteLine(ex.ToString());
 
                 // ソケット例外発生時
