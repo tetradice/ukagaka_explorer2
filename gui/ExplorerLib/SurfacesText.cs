@@ -207,16 +207,13 @@ namespace ExplorerLib
             var elemKeyRegex = new Regex(@"\Aelement(\d+)\z");
             var elemValueRegex = new Regex(@"\A(?<method>[a-z]+),(?<filename>[^,]+),(?<offsetx>\d+),(?<offsety>\d+)\z");
 
-            // SERIKOバージョンでパターンを分ける
-            var intervalKeyRegex = (SerikoVersion == Seriko.VersionType.V2
-                                    ? new Regex(@"\Aanimation(\d+).interval")
-                                    : new Regex(@"\A(\d+)interval"));
-            var patKeyRegex = (SerikoVersion == Seriko.VersionType.V2
-                               ? new Regex(@"\Aanimation(?<animID>\d+).pattern(?<patID>\d+)\z")
-                               : new Regex(@"\A(?<animID>\d+)pattern(?<patID>\d+)\z"));
-            var patValueRegex = (SerikoVersion == Seriko.VersionType.V2
-                                 ? new Regex(@"\A(?<method>[a-z]+),(?<surfaceID>[\d-]+),[\d-]+(?:,(?<offsetX>[\d-]+),(?<offsetY>[\d-]+))?\z")
-                                 : new Regex(@"\A(?<surfaceID>[\d-]+),[\d-]+,(?<method>[a-z]+)(?:,(?<offsetX>[\d-]+),(?<offsetY>[\d-]+))\z"));
+            // SERIKO V1, V2のパターンを両方とも解釈 (version表記と矛盾していても読む)
+            var intervalKeyRegexV2 = new Regex(@"\Aanimation(\d+).interval");
+            var intervalKeyRegexV1 = new Regex(@"\A(\d+)interval");
+            var patKeyRegexV2 = new Regex(@"\Aanimation(?<animID>\d+).pattern(?<patID>\d+)\z");
+            var patKeyRegexV1 = new Regex(@"\A(?<animID>\d+)pattern(?<patID>\d+)\z");
+            var patValueRegexV2 = new Regex(@"\A(?<method>[a-z]+),(?<surfaceID>[\d-]+),[\d-]+(?:,(?<offsetX>[\d-]+),(?<offsetY>[\d-]+))?\z");
+            var patValueRegexV1 = new Regex(@"\A(?<surfaceID>[\d-]+),[\d-]+,(?<method>[a-z]+)(?:,(?<offsetX>[\d-]+),(?<offsetY>[\d-]+))\z");
 
             // スコープ1つごとに処理
             foreach (var pair in this.Scopes)
@@ -264,14 +261,25 @@ namespace ExplorerLib
                         }
                     }
 
-                    // animation.interval処理 (bind, もしくはbind+○○のみを対象とする)
+                    // animation.interval処理
                     {
-
-                        var matched = intervalKeyRegex.Match(valuePair.Item1);
+                        // V1, V2両方の形式を読み込み対象とする
+                        int id = -1;
+                        var matched = intervalKeyRegexV2.Match(valuePair.Item1);
                         if (matched.Success)
                         {
-                            var id = int.Parse(matched.Groups[1].Value);
+                            id = int.Parse(matched.Groups[1].Value);
+                        } else
+                        {
+                            var matchedV1 = intervalKeyRegexV1.Match(valuePair.Item1);
+                            if (matchedV1.Success)
+                            {
+                                id = int.Parse(matchedV1.Groups[1].Value);
+                            }
+                        }
 
+                        if (id >= 0)
+                        {
                             // animation定義が未登録であれば追加
                             if (!animations.ContainsKey(id))
                             {
@@ -304,16 +312,17 @@ namespace ExplorerLib
                         }
                     }
 
-                    // animation.pattern処理
+
+                    // animation.pattern処理 (V2形式)
                     {
-                        var matched = patKeyRegex.Match(valuePair.Item1);
+                        var matched = patKeyRegexV2.Match(valuePair.Item1);
                         if (matched.Success)
                         {
                             var animId = int.Parse(matched.Groups["animID"].Value);
                             var patId = int.Parse(matched.Groups["patID"].Value);
 
                             // 値が指定書式に従っていれば、パースしてpattern定義に追加
-                            var matched2 = patValueRegex.Match(valuePair.Item2);
+                            var matched2 = patValueRegexV2.Match(valuePair.Item2);
                             if (matched2.Success)
                             {
                                 var methodValue = matched2.Groups["method"].Value;
@@ -321,34 +330,48 @@ namespace ExplorerLib
                                 var offsetX = (matched2.Groups["offsetX"].Success ? int.Parse(matched2.Groups["offsetX"].Value) : 0);
                                 var offsetY = (matched2.Groups["offsetY"].Success ? int.Parse(matched2.Groups["offsetY"].Value) : 0);
 
-                                // animation定義が未登録であれば追加
-                                if (!animations.ContainsKey(animId))
-                                {
-                                    animations.Add(animId, new Seriko.Animation());
-                                }
-                                var anim = animations[animId];
-
-                                // patternを生成して追加
-                                var pat = new Seriko.Animation.Pattern() { Id = patId };
-                                pat.Method = Seriko.ComposingMethodType.Overlay;
-                                if (methodValue == "add") pat.Method = Seriko.ComposingMethodType.Add;
-                                if (methodValue == "asis") pat.Method = Seriko.ComposingMethodType.Asis;
-                                if (methodValue == "base") pat.Method = Seriko.ComposingMethodType.Base;
-                                if (methodValue == "bind") pat.Method = Seriko.ComposingMethodType.Bind;
-                                if (methodValue == "insert") pat.Method = Seriko.ComposingMethodType.Insert;
-                                if (methodValue == "interpolate") pat.Method = Seriko.ComposingMethodType.Interpolate;
-                                if (methodValue == "overlay") pat.Method = Seriko.ComposingMethodType.Overlay;
-                                if (methodValue == "overlayfast") pat.Method = Seriko.ComposingMethodType.OverlayFast;
-                                if (methodValue == "reduce") pat.Method = Seriko.ComposingMethodType.Reduce;
-                                if (methodValue == "replace") pat.Method = Seriko.ComposingMethodType.Replace;
-
-                                pat.SurfaceId = patternSurfaceId;
-                                pat.OffsetX = offsetX;
-                                pat.OffsetY = offsetY;
-
-                                anim.Patterns.Add(pat);
+                                addAnimationPattern(
+                                    animations
+                                    , animId
+                                    , patId
+                                    , methodValue
+                                    , patternSurfaceId
+                                    , offsetX
+                                    , offsetY
+                                );
                             }
 
+                            continue;
+                        }
+                    }
+
+                    // animation.pattern処理 (V1形式)
+                    {
+                        var matched = patKeyRegexV1.Match(valuePair.Item1);
+                        if (matched.Success)
+                        {
+                            var animId = int.Parse(matched.Groups["animID"].Value);
+                            var patId = int.Parse(matched.Groups["patID"].Value);
+
+                            // 値が指定書式に従っていれば、パースしてpattern定義に追加
+                            var matched2 = patValueRegexV1.Match(valuePair.Item2);
+                            if (matched2.Success)
+                            {
+                                var methodValue = matched2.Groups["method"].Value;
+                                var patternSurfaceId = int.Parse(matched2.Groups["surfaceID"].Value);
+                                var offsetX = (matched2.Groups["offsetX"].Success ? int.Parse(matched2.Groups["offsetX"].Value) : 0);
+                                var offsetY = (matched2.Groups["offsetY"].Success ? int.Parse(matched2.Groups["offsetY"].Value) : 0);
+
+                                addAnimationPattern(
+                                    animations
+                                    , animId
+                                    , patId
+                                    , methodValue
+                                    , patternSurfaceId
+                                    , offsetX
+                                    , offsetY
+                                );
+                            }
 
                             continue;
                         }
@@ -360,6 +383,47 @@ namespace ExplorerLib
             // 結果を返す
             return Tuple.Create<IList<Seriko.Element>, IDictionary<int, Seriko.Animation>>(elements, animations);
         }
+
+        /// <summary>
+        /// アニメーションパターンの追加処理
+        /// </summary>
+        protected static void addAnimationPattern(
+            IDictionary<int, Seriko.Animation> animations
+            , int animId
+            , int patId
+            , string methodValue
+            , int patternSurfaceId
+            , int offsetX
+            , int offsetY
+        ) {
+            // animation定義が未登録であれば追加
+            if (!animations.ContainsKey(animId))
+            {
+                animations.Add(animId, new Seriko.Animation());
+            }
+            var anim = animations[animId];
+
+            // patternを生成して追加
+            var pat = new Seriko.Animation.Pattern() { Id = patId };
+            pat.Method = Seriko.ComposingMethodType.Overlay;
+            if (methodValue == "add") pat.Method = Seriko.ComposingMethodType.Add;
+            if (methodValue == "asis") pat.Method = Seriko.ComposingMethodType.Asis;
+            if (methodValue == "base") pat.Method = Seriko.ComposingMethodType.Base;
+            if (methodValue == "bind") pat.Method = Seriko.ComposingMethodType.Bind;
+            if (methodValue == "insert") pat.Method = Seriko.ComposingMethodType.Insert;
+            if (methodValue == "interpolate") pat.Method = Seriko.ComposingMethodType.Interpolate;
+            if (methodValue == "overlay") pat.Method = Seriko.ComposingMethodType.Overlay;
+            if (methodValue == "overlayfast") pat.Method = Seriko.ComposingMethodType.OverlayFast;
+            if (methodValue == "reduce") pat.Method = Seriko.ComposingMethodType.Reduce;
+            if (methodValue == "replace") pat.Method = Seriko.ComposingMethodType.Replace;
+
+            pat.SurfaceId = patternSurfaceId;
+            pat.OffsetX = offsetX;
+            pat.OffsetY = offsetY;
+
+            anim.Patterns.Add(pat);
+        }
+
 
         /// <summary>
         /// スコープ名とサーフェスIDを照合して、そのサーフェスIDに関する定義かどうかを判定
