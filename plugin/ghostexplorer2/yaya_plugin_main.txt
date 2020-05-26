@@ -64,5 +64,5 @@ ghostpathlist
 
 version
 {
-	'GhostExplorer2-0.3.0'
+	'GhostExplorer2-0.3.1'
 }
