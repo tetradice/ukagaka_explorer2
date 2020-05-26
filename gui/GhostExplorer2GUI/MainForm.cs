@@ -243,20 +243,8 @@ namespace GhostExplorer2
                         }
                     }
 
-                    // フォルダパスでリスト項目を探す
-                    if (lstGhost.Items.ContainsKey(ghost.DirPath))
-                    {
-                        // 不在判定
-                        if (AbsenceInfo.ContainsKey(ghost.DirPath))
-                        {
-                            // いない
-                            lstGhost.Items[ghost.DirPath].ImageKey = AbsenceInfo[ghost.DirPath];
-                        } else
-                        {
-                            // いる
-                            lstGhost.Items[ghost.DirPath].ImageKey = ghost.DirPath;
-                        }
-                    }
+                    // ゴーストの顔画像表示を更新
+                    UpdateFaceImageKey(ghost);
                 }
             }
 
@@ -275,11 +263,28 @@ namespace GhostExplorer2
             // ゴースト切り替え/呼び出しボタン、および付随する設定チェックボックスは、ゴースト選択中のみ表示
             BtnCall.Visible = BtnChange.Visible = ChkCloseAfterChange.Visible = (this.SelectedGhost != null);
 
+            // ゴースト呼び出しボタンは、通常は常に押下可能
+            BtnCall.Enabled = true;
+            
             // ゴースト切り替えボタンは、呼び出し元ゴーストが残っていないと押下できない
             BtnChange.Enabled = ChkCloseAfterChange.Enabled = !(CallerLost);
 
             // ランダム選択ボタンは、1件以上のゴーストがいる場合のみ押下可能
             BtnRandomSelect.Enabled = (GhostManager.Ghosts.Any());
+
+            // 選択ゴーストがすでに不在の場合は、上記に優先してボタンを無効化
+            if (this.SelectedGhost != null && AbsenceInfo.ContainsKey(this.SelectedGhost.DirPath))
+            {
+                BtnCall.Enabled = false;
+                BtnChange.Enabled = ChkCloseAfterChange.Enabled = false;
+            }
+
+            // 呼び出し元ゴーストと選択ゴーストが同じであれば、切り替えは実行できない
+            if (SelectedGhost.SakuraName == CallerSakuraName && SelectedGhost.KeroName == CallerKeroName)
+            {
+                BtnCall.Enabled = false;
+                BtnChange.Enabled = ChkCloseAfterChange.Enabled = false;
+            }
 
             // ゴーストの立ち絵は、選択されているゴーストがいて、かつ不在でない場合のみ表示
             SelectedGhostSurfaceVisible = (this.SelectedGhost != null && !AbsenceInfo.ContainsKey(this.SelectedGhost.DirPath));
@@ -776,7 +781,6 @@ namespace GhostExplorer2
                         lstGhost.Groups.Add(listGroups[ghost.GhostBaseDirPath]);
                     }
                     item.Group = listGroups[ghost.GhostBaseDirPath];
-
                 }
 
 
@@ -799,6 +803,9 @@ namespace GhostExplorer2
                     {
                         imgListFace.Images.Add(firstGhost.DirPath, FaceImages[firstGhost.DirPath]);
                     }
+
+                    // 顔画像表示を更新
+                    UpdateFaceImageKey(firstGhost);
                 }
 
                 // 先頭を選択
@@ -814,8 +821,8 @@ namespace GhostExplorer2
             var token = GhostImageCancellationTokenSource.Token;
             GhostImageLoadingTask = Task.Factory.StartNew(() => GhostImagesLoadAsync(token), token);
 
-            // UI状態更新
-            UpdateUIState();
+            // ゴースト情報リストの更新に伴う画面表示更新
+            UpdateUIOnFMOChanged();
         }
 
         /// <summary>
@@ -876,7 +883,7 @@ namespace GhostExplorer2
                         Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
                     }
 
-                    // リスト項目追加
+                    // UI反映
                     BeginInvoke((MethodInvoker)(() =>
                     {
                         // 顔画像を正常に読み込めていれば、イメージリストに追加
@@ -884,6 +891,9 @@ namespace GhostExplorer2
                         {
                             imgListFace.Images.Add(ghost.DirPath, FaceImages[ghost.DirPath]);
                         }
+
+                        // 顔画像表示を更新
+                        UpdateFaceImageKey(ghost);
                     }));
 
                     // キャンセル処理
@@ -903,6 +913,27 @@ namespace GhostExplorer2
                               , "エラー"
                               , MessageBoxButtons.OK
                               , MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 指定ゴーストの顔画像を更新 (不在かどうかに応じて処理を分ける)
+        /// </summary>
+        protected void UpdateFaceImageKey(Ghost ghost)
+        {
+            // リスト内に項目がなければ何もしない
+            if (!lstGhost.Items.ContainsKey(ghost.DirPath)) return;
+
+            // 不在判定
+            if (AbsenceInfo.ContainsKey(ghost.DirPath))
+            {
+                // いない
+                lstGhost.Items[ghost.DirPath].ImageKey = AbsenceInfo[ghost.DirPath];
+            }
+            else
+            {
+                // いる
+                lstGhost.Items[ghost.DirPath].ImageKey = ghost.DirPath;
             }
         }
 
