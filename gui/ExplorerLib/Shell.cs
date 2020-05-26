@@ -425,28 +425,28 @@ namespace ExplorerLib
 
                     // レイヤ描画
                     // メソッドによって処理を分ける
-                    if(layer.ComposingMethod == Seriko.ComposingMethodType.Reduce)
-                    {
-                        // reduce
-                        surface = ComposeBitmaps(surface, layerBmp, (outputData, newBmpData, pos) =>
-                        {
-                            // ベースレイヤ、新規レイヤ両方の不透明度を取得
-                            var baseOpacity = outputData[pos + 3];
-                            var newOpacity = newBmpData[pos + 3];
+                    //if(layer.ComposingMethod == Seriko.ComposingMethodType.Reduce)
+                    //{
+                    //    // reduce
+                    //    surface = ComposeBitmaps(surface, layerBmp, (outputData, newBmpData, pos) =>
+                    //    {
+                    //        // ベースレイヤ、新規レイヤ両方の不透明度を取得
+                    //        var baseOpacity = outputData[pos + 3];
+                    //        var newOpacity = newBmpData[pos + 3];
 
-                            // 不透明度を乗算
-                            var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
-                            outputData[pos + 3] = (byte)Math.Round(rate * 255);
-                        });
-                    } else
-                    {
+                    //        // 不透明度を乗算
+                    //        var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
+                    //        outputData[pos + 3] = (byte)Math.Round(rate * 255);
+                    //    });
+                    //} else
+                    //{
                         // 上記以外はoverlay扱いで、普通に重ねていく
                         using (var g = Graphics.FromImage(surface))
                         {
                             // 描画
                             g.DrawImage(layerBmp, layer.X, layer.Y, layerBmp.Width, layerBmp.Height);
                         }
-                    }
+                    //}
                 }
             }
 
