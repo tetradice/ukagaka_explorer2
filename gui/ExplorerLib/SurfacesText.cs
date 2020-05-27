@@ -249,7 +249,7 @@ namespace ExplorerLib
                                 if (methodValue == "reduce") elem.Method = Seriko.ComposingMethodType.Reduce;
                                 if (methodValue == "replace") elem.Method = Seriko.ComposingMethodType.Replace;
 
-                                elem.FileName = matched2.Groups["filename"].Value;
+                                elem.FileName = matched2.Groups["filename"].Value.ToLower();
                                 if (!elem.FileName.EndsWith(".png")) elem.FileName = elem.FileName + ".png"; // 拡張子が .png でなければ自動補完 (れいちぇるなど対応)
                                 var offsetX = 0;
                                 if (matched2.Groups["offsetx"].Success) int.TryParse(matched2.Groups["offsetx"].Value, out offsetX);
