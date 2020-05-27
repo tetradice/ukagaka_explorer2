@@ -8,7 +8,7 @@ namespace GhostExplorer2
 {
     public static class Const
     {
-        public const string Version = "0.3.0";
+        public const string Version = "0.3.1";
         public const string SSTPSender = "GhostExplorer2";
 
         public static class SortType
