@@ -301,7 +301,8 @@ namespace ExplorerLib
                                      || valuePair.Item2.Contains("rarely")
                                      || valuePair.Item2.Contains("random")
                                      || valuePair.Item2.Contains("periodic")
-                                     || valuePair.Item2.Contains("runonce"))
+                                     || valuePair.Item2.Contains("runonce")
+                                     || valuePair.Item2.Contains("always"))
                             {
                                 // 上記指定を含む場合は最終パターンのみ表示
                                 animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.LastOnly;
