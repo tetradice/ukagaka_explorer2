@@ -8,10 +8,57 @@ using System.Threading.Tasks;
 namespace ExplorerLib.Exceptions
 {
     /// <summary>
+    /// 立ち絵処理不可能なシェルを読み込んだ
+    /// </summary>
+    [Serializable()]
+    public class UnhandlableShellException : Exception
+    {
+        public UnhandlableShellException() : base()
+        {
+        }
+
+        public UnhandlableShellException(string message) : base(message)
+        {
+        }
+
+        public UnhandlableShellException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected UnhandlableShellException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
+
+    /// <summary>
+    /// デフォルトサーフェスが存在しないシェルを読み込んだ
+    /// </summary>
+    [Serializable()]
+    public class DefaultSurfaceNotFoundException : UnhandlableShellException
+    {
+        public DefaultSurfaceNotFoundException() : base()
+        {
+        }
+
+        public DefaultSurfaceNotFoundException(string message) : base(message)
+        {
+        }
+
+        public DefaultSurfaceNotFoundException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected DefaultSurfaceNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
+
+
+    /// <summary>
     /// 不正なフォーマットの画像ファイルを読み込んだ (例: png, pnaのサイズが一致しない)
     /// </summary>
     [Serializable()]
-    public class IllegalImageFormatException : Exception
+    public class IllegalImageFormatException : UnhandlableShellException
     {
         public IllegalImageFormatException() : base()
         {

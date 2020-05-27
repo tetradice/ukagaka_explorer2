@@ -325,7 +325,7 @@ namespace GhostExplorer2
                         SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
                     }
                 }
-                catch (IllegalImageFormatException ex)
+                catch (UnhandlableShellException ex)
                 {
                     CurrentSakuraSurface = null;
                     Debug.WriteLine(ex.ToString());
@@ -343,7 +343,7 @@ namespace GhostExplorer2
                 {
                     CurrentKeroSurface = GhostManager.DrawKeroSurface(this.SelectedGhost, shell);
                 }
-                catch (IllegalImageFormatException ex)
+                catch (UnhandlableShellException ex)
                 {
                     CurrentKeroSurface = null;
                     Debug.WriteLine(ex.ToString());
