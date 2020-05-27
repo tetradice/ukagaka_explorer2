@@ -212,8 +212,8 @@ namespace ExplorerLib
             var intervalKeyRegexV1 = new Regex(@"\A(\d+)interval");
             var patKeyRegexV2 = new Regex(@"\Aanimation(?<animID>\d+).pattern(?<patID>\d+)\z");
             var patKeyRegexV1 = new Regex(@"\A(?<animID>\d+)pattern(?<patID>\d+)\z");
-            var patValueRegexV2 = new Regex(@"\A(?<method>[a-z]+),(?<surfaceID>[\d-]+),[\d-]+(?:,(?<offsetX>[\d-]+),(?<offsetY>[\d-]+))?\z");
-            var patValueRegexV1 = new Regex(@"\A(?<surfaceID>[\d-]+),[\d-]+,(?<method>[a-z]+)(?:,(?<offsetX>[\d-]+),(?<offsetY>[\d-]+))\z");
+            var patValueRegexV2 = new Regex(@"\A(?<method>[a-z]+),(?<surfaceID>[\d-]+),[\d-]+(?:,(?<offsetX>[^,]+),(?<offsetY>[^,]+))?\z");
+            var patValueRegexV1 = new Regex(@"\A(?<surfaceID>[\d-]+),[\d-]+,(?<method>[a-z]+)(?:,(?<offsetX>[^,]+),(?<offsetY>[^,]+))\z");
 
             // スコープ1つごとに処理
             foreach (var pair in this.Scopes)
@@ -251,8 +251,12 @@ namespace ExplorerLib
 
                                 elem.FileName = matched2.Groups["filename"].Value;
                                 if (!elem.FileName.EndsWith(".png")) elem.FileName = elem.FileName + ".png"; // 拡張子が .png でなければ自動補完 (れいちぇるなど対応)
-                                elem.OffsetX = int.Parse(matched2.Groups["offsetx"].Value);
-                                elem.OffsetY = int.Parse(matched2.Groups["offsety"].Value);
+                                var offsetX = 0;
+                                if (matched2.Groups["offsetx"].Success) int.TryParse(matched2.Groups["offsetx"].Value, out offsetX);
+                                elem.OffsetX = offsetX;
+                                var offsetY = 0;
+                                if (matched2.Groups["offsety"].Success) int.TryParse(matched2.Groups["offsety"].Value, out offsetY);
+                                elem.OffsetY = offsetY;
 
                                 elements.Add(elem);
                             }
@@ -327,8 +331,10 @@ namespace ExplorerLib
                             {
                                 var methodValue = matched2.Groups["method"].Value;
                                 var patternSurfaceId = int.Parse(matched2.Groups["surfaceID"].Value);
-                                var offsetX = (matched2.Groups["offsetX"].Success ? int.Parse(matched2.Groups["offsetX"].Value) : 0);
-                                var offsetY = (matched2.Groups["offsetY"].Success ? int.Parse(matched2.Groups["offsetY"].Value) : 0);
+                                var offsetX = 0;
+                                if(matched2.Groups["offsetX"].Success) int.TryParse(matched2.Groups["offsetX"].Value, out offsetX);
+                                var offsetY = 0;
+                                if(matched2.Groups["offsetY"].Success) int.TryParse(matched2.Groups["offsetY"].Value, out offsetY);
 
                                 addAnimationPattern(
                                     animations
@@ -359,8 +365,10 @@ namespace ExplorerLib
                             {
                                 var methodValue = matched2.Groups["method"].Value;
                                 var patternSurfaceId = int.Parse(matched2.Groups["surfaceID"].Value);
-                                var offsetX = (matched2.Groups["offsetX"].Success ? int.Parse(matched2.Groups["offsetX"].Value) : 0);
-                                var offsetY = (matched2.Groups["offsetY"].Success ? int.Parse(matched2.Groups["offsetY"].Value) : 0);
+                                var offsetX = 0;
+                                if (matched2.Groups["offsetX"].Success) int.TryParse(matched2.Groups["offsetX"].Value, out offsetX);
+                                var offsetY = 0;
+                                if (matched2.Groups["offsetY"].Success) int.TryParse(matched2.Groups["offsetY"].Value, out offsetY);
 
                                 addAnimationPattern(
                                     animations
