@@ -170,48 +170,57 @@ namespace ExplorerLib
             }
 
             // シェル更新日時の設定
-            // (フォルダ更新日付, descript.txt 更新日付, surfaces*.txt 更新日付, 画像ファイル更新日付, profile/shell.dat 更新日付のうち最も新しい日付)
+            UpdateLastModified();
+        }
+
+        /// <summary>
+        /// シェルの更新日時を設定する
+        /// (フォルダ更新日付, descript.txt 更新日付, surfaces*.txt 更新日付, 画像ファイル更新日付, profile/shell.dat 更新日付のうち最も新しい日付)
+        /// </summary>
+        public virtual void UpdateLastModified()
+        {
+            // フォルダ更新日付
+            LastModified = File.GetLastWriteTime(DirPath);
+
+            // descript.txt 更新日付
+            if (Descript.LastWriteTime > LastModified) LastModified = Descript.LastWriteTime; // 新しければセット
+
+            // explorer2/descript.txt 更新日付
+            if (Explorer2Descript != null
+                && Explorer2Descript.LastWriteTime > LastModified)
             {
-                // フォルダ更新日付
-                LastModified = File.GetLastWriteTime(DirPath);
+                LastModified = Explorer2Descript.LastWriteTime; // 新しければセット
+            }
 
-                // descript.txt 更新日付
-                if (Descript.LastWriteTime > LastModified) LastModified = Descript.LastWriteTime; // 新しければセット
+            // explorer2/character_descript.txt 更新日付
+            var charDescPath = CharacterDescriptPath;
+            if (File.Exists(charDescPath) && File.GetLastWriteTime(charDescPath) > LastModified) LastModified = File.GetLastWriteTime(charDescPath); // 新しければセット
 
-                // explorer2/descript.txt 更新日付
-                var exp2DescPath = Explorer2DescriptPath;
-                if (File.Exists(exp2DescPath) && File.GetLastWriteTime(exp2DescPath) > LastModified) LastModified = File.GetLastWriteTime(exp2DescPath); // 新しければセット
+            // surfaces*.txt 更新日付
+            foreach (var surfaceText in SurfacesTextList)
+            {
+                if (surfaceText.LastWriteTime > LastModified) LastModified = surfaceText.LastWriteTime; // 新しければセット
+            }
 
-                // explorer2/character_descript.txt 更新日付
-                var charDescPath = CharacterDescriptPath;
-                if (File.Exists(charDescPath) && File.GetLastWriteTime(charDescPath) > LastModified) LastModified = File.GetLastWriteTime(charDescPath); // 新しければセット
+            // profile/shell.dat 更新日付
+            var shellProfPath = ProfileDataPath;
+            if (File.Exists(shellProfPath) && File.GetLastWriteTime(shellProfPath) > LastModified) LastModified = File.GetLastWriteTime(shellProfPath); // 新しければセット
 
-                // surfaces*.txt 更新日付
-                foreach (var surfaceText in SurfacesTextList)
+            // 読み込む画像ファイルの更新日付
+            var imagePaths = new HashSet<string>();
+            var allLayers = new List<SurfaceModel.Layer>();
+            if (SakuraSurfaceModel != null) allLayers.AddRange(SakuraSurfaceModel.Layers);
+            if (KeroSurfaceModel != null) allLayers.AddRange(KeroSurfaceModel.Layers);
+            foreach (var layer in allLayers)
+            {
+                imagePaths.Add(layer.Path);
+                imagePaths.Add(Path.ChangeExtension(layer.Path, ".pna")); // pna画像パスも追加
+            }
+            foreach (var imgPath in imagePaths)
+            {
+                if (File.Exists(imgPath) && File.GetLastWriteTime(imgPath) > LastModified)
                 {
-                    if (surfaceText.LastWriteTime > LastModified) LastModified = surfaceText.LastWriteTime; // 新しければセット
-                }
-
-                // profile/shell.dat 更新日付
-                var shellProfPath = ProfileDataPath;
-                if (File.Exists(shellProfPath) && File.GetLastWriteTime(shellProfPath) > LastModified) LastModified = File.GetLastWriteTime(shellProfPath); // 新しければセット
-
-                // 読み込む画像ファイルの更新日付
-                var imagePaths = new HashSet<string>();
-                var allLayers = new List<SurfaceModel.Layer>();
-                if (SakuraSurfaceModel != null) allLayers.AddRange(SakuraSurfaceModel.Layers);
-                if (KeroSurfaceModel != null) allLayers.AddRange(KeroSurfaceModel.Layers);
-                foreach (var layer in allLayers)
-                {
-                    imagePaths.Add(layer.Path);
-                    imagePaths.Add(Path.ChangeExtension(layer.Path, ".pna")); // pna画像パスも追加
-                }
-                foreach (var imgPath in imagePaths)
-                {
-                    if (File.Exists(imgPath) && File.GetLastWriteTime(imgPath) > LastModified)
-                    {
-                        LastModified = File.GetLastWriteTime(imgPath);
-                    }
+                    LastModified = File.GetLastWriteTime(imgPath);
                 }
             }
         }
