@@ -944,7 +944,7 @@ namespace GhostExplorer2
 
         private void BtnOpenShellFolder_Click(object sender, EventArgs e)
         {
-            Process.Start(Path.Combine(Util.GetAppDirPath(), SelectedGhost.DirPath));
+            Process.Start(Path.Combine(Util.GetAppDirPath(), Shells[SelectedGhost.DirPath].DirPath));
         }
 
         /// <summary>
