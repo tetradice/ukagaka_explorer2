@@ -78,7 +78,7 @@ namespace ExplorerLib
         public virtual SurfaceModel KeroSurfaceModel { get; set; }
 
         /// <summary>
-        /// マスターシェルの最終更新日時
+        /// シェルの最終更新日時
         /// </summary>
         /// <remarks>
         /// キャッシュ管理に使用
