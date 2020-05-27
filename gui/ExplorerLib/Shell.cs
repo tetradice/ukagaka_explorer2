@@ -148,9 +148,6 @@ namespace ExplorerLib
             {
                 var surfaceText = SurfacesText.Load(surfaceTextPath);
                 SurfacesTextList.Add(surfaceText);
-
-                // 更新日付が新しければシェルの更新日時にセット
-                if (surfaceText.LastWriteTime > LastModified) LastModified = surfaceText.LastWriteTime;
             }
 
             // descript.txt, surface.txt の情報を元に、sakura側とkero側それぞれの
