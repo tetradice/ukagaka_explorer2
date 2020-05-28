@@ -29,6 +29,7 @@ namespace GhostExplorer2
 
         protected GhostManager GhostManager;
         protected Dictionary<string, Shell> Shells = new Dictionary<string, Shell>();
+        protected Dictionary<string, List<string>> ErrorMessagesOnShellLoading = new Dictionary<string, List<string>>();
         protected Dictionary<string, Bitmap> FaceImages = new Dictionary<string, Bitmap>();
         protected Bitmap CurrentSakuraSurface;
         protected Bitmap CurrentKeroSurface;
@@ -309,6 +310,10 @@ namespace GhostExplorer2
             // エラーメッセージリストを初期化
             SurfaceErrorMessages.Clear();
 
+            // 読み込んだサーフェスを一度解除
+            CurrentSakuraSurface = null;
+            CurrentKeroSurface = null;
+
             // シェルが読み込み状態かどうかで処理を分ける
             if (Shells.ContainsKey(this.SelectedGhost.DirPath))
             {
@@ -358,7 +363,13 @@ namespace GhostExplorer2
             } else
             {
                 // シェルが未読み込み状態ならエラー
-                SurfaceErrorMessages.Add("シェル情報の読み込みが完了していません。もう少し経ってから選択し直してみてください。");
+                if (ErrorMessagesOnShellLoading.ContainsKey(SelectedGhost.DirPath))
+                {
+                    SurfaceErrorMessages.AddRange(ErrorMessagesOnShellLoading[SelectedGhost.DirPath]);
+                } else
+                {
+                    SurfaceErrorMessages.Add("シェル情報の読み込みが完了していません。もう少し経ってから選択し直してみてください。");
+                }
             }
 
             // 表示状態切り替え
@@ -766,6 +777,9 @@ namespace GhostExplorer2
             var listGroups = new Dictionary<string, ListViewGroup>();
             lstGhost.Items.Clear();
 
+            // シェル読み込み時のエラー情報はクリア
+            ErrorMessagesOnShellLoading.Clear();
+
             // 1件以上存在する場合
             if (GhostManager.Ghosts.Any())
             {
@@ -788,24 +802,40 @@ namespace GhostExplorer2
                 var firstGhost = GhostManager.Ghosts[0];
                 if (!Shells.ContainsKey(firstGhost.DirPath))
                 {
-                    Shells[firstGhost.DirPath] = GhostManager.LoadShell(firstGhost);
-                    Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, firstGhost.Name));
-
-                    // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
-                    if (!FaceImages.ContainsKey(firstGhost.DirPath))
+                    try
                     {
-                        FaceImages[firstGhost.DirPath] = GhostManager.GetFaceImage(firstGhost, Shells[firstGhost.DirPath], imgListFace.ImageSize);
-                        Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, firstGhost.Name));
+                        Shells[firstGhost.DirPath] = GhostManager.LoadShell(firstGhost);
+                        Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, firstGhost.Name));
+                    }
+                    catch (UnhandlableShellException ex)
+                    {
+                        // 処理不可能なシェル
+                        if (!ErrorMessagesOnShellLoading.ContainsKey(firstGhost.DirPath))
+                        {
+                            ErrorMessagesOnShellLoading[firstGhost.DirPath] = new List<string>();
+                        }
+                        ErrorMessagesOnShellLoading[firstGhost.DirPath].Add(ex.Message);
                     }
 
-                    // 顔画像を正常に読み込めていれば、イメージリストに追加
-                    if (FaceImages[firstGhost.DirPath] != null)
+                    // シェルの読み込みに成功している場合のみ
+                    if (Shells.ContainsKey(firstGhost.DirPath))
                     {
-                        imgListFace.Images.Add(firstGhost.DirPath, FaceImages[firstGhost.DirPath]);
-                    }
+                        // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
+                        if (!FaceImages.ContainsKey(firstGhost.DirPath))
+                        {
+                            FaceImages[firstGhost.DirPath] = GhostManager.GetFaceImage(firstGhost, Shells[firstGhost.DirPath], imgListFace.ImageSize);
+                            Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, firstGhost.Name));
+                        }
 
-                    // 顔画像表示を更新
-                    UpdateFaceImageKey(firstGhost);
+                        // 顔画像を正常に読み込めていれば、イメージリストに追加
+                        if (FaceImages[firstGhost.DirPath] != null)
+                        {
+                            imgListFace.Images.Add(firstGhost.DirPath, FaceImages[firstGhost.DirPath]);
+                        }
+
+                        // 顔画像表示を更新
+                        UpdateFaceImageKey(firstGhost);
+                    }
                 }
 
                 // 先頭を選択
@@ -843,10 +873,22 @@ namespace GhostExplorer2
                 foreach (var ghost in GhostManager.Ghosts)
                 {
                     // まだ読み込んでいなければ、シェル情報を読み込む
-                    if (!Shells.ContainsKey(ghost.DirPath))
+                    if (!Shells.ContainsKey(ghost.DirPath) || Shells[ghost.DirPath] == null)
                     {
-                        Shells[ghost.DirPath] = GhostManager.LoadShell(ghost);
-                        Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                        try
+                        {
+                            Shells[ghost.DirPath] = GhostManager.LoadShell(ghost);
+                            Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                        }
+                        catch (UnhandlableShellException ex)
+                        {
+                            // 処理不可能なシェル
+                            if (!ErrorMessagesOnShellLoading.ContainsKey(ghost.DirPath))
+                            {
+                                ErrorMessagesOnShellLoading[ghost.DirPath] = new List<string>();
+                            }
+                            ErrorMessagesOnShellLoading[ghost.DirPath].Add(ex.Message);
+                        }
                     }
 
                     // プログレスバー進める
@@ -876,20 +918,26 @@ namespace GhostExplorer2
                 // 顔画像の取得
                 foreach (var ghost in GhostManager.Ghosts)
                 {
-                    // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
-                    if (!FaceImages.ContainsKey(ghost.DirPath))
+                    // シェルの読み込みに成功している場合のみ
+                    if (Shells.ContainsKey(ghost.DirPath))
                     {
-                        FaceImages[ghost.DirPath] = GhostManager.GetFaceImage(ghost, Shells[ghost.DirPath], imgListFace.ImageSize);
-                        Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                        // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
+                        if (!FaceImages.ContainsKey(ghost.DirPath))
+                        {
+                            FaceImages[ghost.DirPath] = GhostManager.GetFaceImage(ghost, Shells[ghost.DirPath], imgListFace.ImageSize);
+                            Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                        }
                     }
 
                     // UI反映
                     BeginInvoke((MethodInvoker)(() =>
                     {
                         // 顔画像を正常に読み込めていれば、イメージリストに追加
-                        if (FaceImages[ghost.DirPath] != null)
+                        Bitmap faceImage;
+                        if (FaceImages.TryGetValue(ghost.DirPath, out faceImage)
+                            && faceImage != null)
                         {
-                            imgListFace.Images.Add(ghost.DirPath, FaceImages[ghost.DirPath]);
+                            imgListFace.Images.Add(ghost.DirPath, faceImage);
                         }
 
                         // 顔画像表示を更新
@@ -944,7 +992,13 @@ namespace GhostExplorer2
 
         private void BtnOpenShellFolder_Click(object sender, EventArgs e)
         {
-            Process.Start(Path.Combine(Util.GetAppDirPath(), Shells[SelectedGhost.DirPath].DirPath));
+            if (Shells.ContainsKey(SelectedGhost.DirPath))
+            {
+                Process.Start(Shells[SelectedGhost.DirPath].DirPath);
+            } else
+            {
+                Process.Start(SelectedGhost.DirPath);
+            }
         }
 
         /// <summary>

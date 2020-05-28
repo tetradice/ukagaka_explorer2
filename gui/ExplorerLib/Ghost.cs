@@ -30,8 +30,26 @@ namespace ExplorerLib
 
         public virtual string MasterGhostDirParh { get { return Path.Combine(DirPath, @"ghost\master"); } }
         public virtual string MasterGhostDesciptParh { get { return Path.Combine(MasterGhostDirParh, "descript.txt"); } }
-        public virtual string MasterShellDirPath { get { return Path.Combine(DirPath, @"shell\master"); } }
-        public virtual string MasterShellDesciptPath { get { return Path.Combine(MasterShellDirPath, "descript.txt"); } }
+
+        /// <summary>
+        /// デフォルトシェルのフォルダ名 (通常はmaster)
+        /// </summary>
+        public virtual string DefaultShellDirName        {
+            get
+            {
+                // descript.txt に seriko.defaultsurfacedirectoryname の設定があればそれを優先
+                if (!string.IsNullOrEmpty(MasterGhostDescript.Get("seriko.defaultsurfacedirectoryname")))
+                {
+                    return MasterGhostDescript.Get("seriko.defaultsurfacedirectoryname");
+                } else
+                {
+                    return "master";
+                }
+            }
+        }
+
+        public virtual string DefaultShellDirPath { get { return Path.Combine(DirPath, "shell", DefaultShellDirName); } }
+        public virtual string DefaultShellDescriptPath { get { return Path.Combine(DefaultShellDirPath, "descript.txt"); } }
 
         /// <summary>
         /// explorer2\descript.txt の情報
@@ -147,10 +165,9 @@ namespace ExplorerLib
     
         public static bool IsGhostDir(string dirPath)
         {
-            // ghost/master/descript.txt と shell/master/descript.txt が存在するなら有効なゴーストフォルダとみなす
+            // ghost/master/descript.txt が存在するならゴーストフォルダとみなす
             var ghostDesc = Path.Combine(dirPath, "ghost/master/descript.txt");
-            var shellDesc = Path.Combine(dirPath, "shell/master/descript.txt");
-            return (File.Exists(ghostDesc) && File.Exists(shellDesc));
+            return (File.Exists(ghostDesc));
         }
 
         public virtual void Load()
@@ -189,8 +206,9 @@ namespace ExplorerLib
                             break;
                         }
                     }
-                } catch(Exception)
+                } catch(Exception ex)
                 {
+                    Debug.WriteLine(ex);
                 }
             }
 
@@ -201,7 +219,7 @@ namespace ExplorerLib
         /// <summary>
         /// descript.txt 更新日時を設定する
         /// </summary>
-        public virtual void UpdateDescriptLastModified()
+        protected virtual void UpdateDescriptLastModified()
         {
             // descript.txt 更新日付
             DescriptLastModified = MasterGhostDescript.LastWriteTime;

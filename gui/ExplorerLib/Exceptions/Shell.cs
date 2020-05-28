@@ -53,6 +53,28 @@ namespace ExplorerLib.Exceptions
         }
     }
 
+    /// <summary>
+    /// デフォルトシェル (通常はmaster) が存在しないゴーストを読み込んだ
+    /// </summary>
+    [Serializable()]
+    public class DefaultShellNotFoundException : UnhandlableShellException
+    {
+        public DefaultShellNotFoundException() : base()
+        {
+        }
+
+        public DefaultShellNotFoundException(string message) : base(message)
+        {
+        }
+
+        public DefaultShellNotFoundException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected DefaultShellNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
 
     /// <summary>
     /// 不正なフォーマットの画像ファイルを読み込んだ (例: png, pnaのサイズが一致しない)

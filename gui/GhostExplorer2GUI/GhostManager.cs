@@ -113,6 +113,12 @@ namespace GhostExplorer2
         /// </summary>
         public virtual Shell LoadShell(Ghost ghost)
         {
+            // デフォルトシェルが存在しない場合は、現在シェルが存在するかどうかにかかわらずエラーとする
+            if (!File.Exists(ghost.DefaultShellDescriptPath))
+            {
+                throw new DefaultShellNotFoundException(string.Format(@"初期シェル (shell\{0}) が見つかりません。", ghost.DefaultShellDirName));
+            }
+
             var shellDir = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
             return Shell.Load(shellDir, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
         }

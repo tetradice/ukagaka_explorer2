@@ -177,7 +177,7 @@ namespace ExplorerLib
         /// シェルの更新日時を設定する
         /// (フォルダ更新日付, descript.txt 更新日付, surfaces*.txt 更新日付, 画像ファイル更新日付, profile/shell.dat 更新日付のうち最も新しい日付)
         /// </summary>
-        public virtual void UpdateLastModified()
+        protected virtual void UpdateLastModified()
         {
             // フォルダ更新日付
             LastModified = File.GetLastWriteTime(DirPath);
