@@ -69,11 +69,13 @@ namespace ExplorerLib
 
         /// <summary>
         /// sakura側のサーフェス情報 (使用する画像ファイルパス、座標、合成メソッドなどの情報を含んでいる)
+        /// 読み込みに失敗した場合、非表示 (ID=-1) の場合はnull
         /// </summary>
         public virtual SurfaceModel SakuraSurfaceModel {get;set;}
 
         /// <summary>
         /// kero側のサーフェス情報 (使用する画像ファイルパス、座標、合成メソッドなどの情報を含んでいる)
+        /// 読み込みに失敗した場合、非表示 (ID=-1) の場合はnull
         /// </summary>
         public virtual SurfaceModel KeroSurfaceModel { get; set; }
 
@@ -155,7 +157,15 @@ namespace ExplorerLib
             try
             {
                 SakuraSurfaceModel = LoadSurfaceModel(SakuraSurfaceId, sakuraEnabledBindGroupIds);
-            } catch(Exception ex)
+            }
+            catch (UnhandlableShellException ex)
+            {
+                ex.Scope = 0; // sakura側のエラー
+
+                Debug.WriteLine(ex.ToString());
+                throw ex; // エラーメッセージを表示するため外に投げる
+            }
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
             }
@@ -163,6 +173,13 @@ namespace ExplorerLib
             try
             {
                 KeroSurfaceModel = LoadSurfaceModel(KeroSurfaceId, keroEnabledBindGroupIds);
+            }
+            catch (UnhandlableShellException ex)
+            {
+                ex.Scope = 1; // kero側のエラー
+
+                Debug.WriteLine(ex.ToString());
+                throw ex; // エラーメッセージを表示するため外に投げる
             }
             catch (Exception ex)
             {
@@ -231,7 +248,7 @@ namespace ExplorerLib
         /// <param name="enabledBindGroupIds">有効になっている着せ替えグループIDのコレクション</param>
         /// <param name="alreadyPassedSurfaceIds">読み込み済みのサーフェスIDコレクション (循環参照による無限ループを防ぐために使用)</param>
         /// <param name="parentPatternComposingMethod">animation定義で指定した合成メソッド (animation定義の中で指定されたサーフェスIDの情報を読み込む場合に使用)</param>
-        /// <returns>サーフェス情報。読み込みに失敗した場合はnull</returns>
+        /// <returns>サーフェス情報。非表示ID (ID=-1) が指定された場合や、読み込みに失敗した場合はnull</returns>
         public virtual SurfaceModel LoadSurfaceModel(
               int surfaceId
             , ISet<int> enabledBindGroupIds
@@ -239,6 +256,11 @@ namespace ExplorerLib
             , Seriko.ComposingMethodType? parentPatternComposingMethod = null
         )
         {
+            var isDefault = alreadyPassedSurfaceIds == null;
+
+            // 非表示の場合はnullを返す
+            if (surfaceId == -1) return null;
+
             // currentLoadedSurfaceIds が未指定の場合は生成
             alreadyPassedSurfaceIds = (alreadyPassedSurfaceIds ?? new HashSet<int>());
 
@@ -309,10 +331,6 @@ namespace ExplorerLib
                     {
                         var method = (parentPatternComposingMethod.HasValue ? parentPatternComposingMethod.Value : Seriko.ComposingMethodType.Base);
                         surfaceModel.Layers.Add(new SurfaceModel.Layer(surfacePath, method));
-                    //} else
-                    //{
-                    //    // 画像がない場合はその旨を表示
-                    //    throw new DefaultSurfaceNotFoundException(string.Format("標準のデフォルトサーフェス (ID={0}) が見つかりませんでした。", surfaceId));
                     }
                 }
 
@@ -391,10 +409,11 @@ namespace ExplorerLib
                     }
                 }
 
-                // レイヤが1枚もない（画像ファイルが見つからなかったなど）場合は描画失敗
-                if (!surfaceModel.Layers.Any())
+                // デフォルトサーフェスであるにもかかわらず、レイヤが1枚もない（画像ファイルが見つからなかったなど）場合は描画失敗
+                if (isDefault && !surfaceModel.Layers.Any())
                 {
-                    return null;
+                    // 画像がない場合はその旨を表示
+                    throw new DefaultSurfaceNotFoundException(null, string.Format("デフォルトサーフェス (ID={0}) が見つかりませんでした。", surfaceId));
                 }
             }
 
@@ -514,11 +533,11 @@ namespace ExplorerLib
             {
                 if (outputBmpData.Stride < 0)
                 {
-                    throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
+                    throw new IllegalImageFormatException(null, string.Format("ボトムアップ形式のイメージには対応していません。"));
                 }
                 if (newBmpData.Stride < 0)
                 {
-                    throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
+                    throw new IllegalImageFormatException(null, string.Format("ボトムアップ形式のイメージには対応していません。"));
                 }
 
                 // 新規レイヤのピクセルデータをバイト型配列で取得する
@@ -680,7 +699,7 @@ namespace ExplorerLib
                     // 元画像とマスク画像のサイズが異なる場合はエラーとする
                     if (maskOrig.Size != surface.Size)
                     {
-                        throw new IllegalImageFormatException("pngとpnaのサイズが異なります。");
+                        throw new IllegalImageFormatException(null, "pngとpnaのサイズが異なります。");
                     }
 
                     // 透過実行

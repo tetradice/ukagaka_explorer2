@@ -332,9 +332,11 @@ namespace GhostExplorer2
                 }
                 catch (UnhandlableShellException ex)
                 {
+                    ex.Scope = 0; // sakura側のエラー
+
                     CurrentSakuraSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add("(本体側)" + ex.Message);
+                    SurfaceErrorMessages.Add(ex.FriendlyMessage);
                 }
                 catch (Exception ex)
                 {
@@ -350,9 +352,11 @@ namespace GhostExplorer2
                 }
                 catch (UnhandlableShellException ex)
                 {
+                    ex.Scope = 1; // kero側のエラー
+
                     CurrentKeroSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add("(パートナー側)" + ex.Message);
+                    SurfaceErrorMessages.Add(ex.FriendlyMessage);
                 }
                 catch (Exception ex)
                 {
@@ -814,7 +818,7 @@ namespace GhostExplorer2
                         {
                             ErrorMessagesOnShellLoading[firstGhost.DirPath] = new List<string>();
                         }
-                        ErrorMessagesOnShellLoading[firstGhost.DirPath].Add(ex.Message);
+                        ErrorMessagesOnShellLoading[firstGhost.DirPath].Add(ex.FriendlyMessage);
                     }
 
                     // シェルの読み込みに成功している場合のみ
@@ -887,7 +891,7 @@ namespace GhostExplorer2
                             {
                                 ErrorMessagesOnShellLoading[ghost.DirPath] = new List<string>();
                             }
-                            ErrorMessagesOnShellLoading[ghost.DirPath].Add(ex.Message);
+                            ErrorMessagesOnShellLoading[ghost.DirPath].Add(ex.FriendlyMessage);
                         }
                     }
 

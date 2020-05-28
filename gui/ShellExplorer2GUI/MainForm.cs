@@ -231,9 +231,11 @@ namespace ShellExplorer2
             }
             catch (UnhandlableShellException ex)
             {
+                ex.Scope = 0; // sakura側のエラー
+
                 CurrentSakuraSurface = null;
                 Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add("(本体側)" + ex.Message);
+                SurfaceErrorMessages.Add(ex.FriendlyMessage);
             }
             catch (Exception ex)
             {
@@ -249,9 +251,11 @@ namespace ShellExplorer2
             }
             catch (UnhandlableShellException ex)
             {
+                ex.Scope = 1; // kero側のエラー
+
                 CurrentKeroSurface = null;
                 Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add("(パートナー側)" + ex.Message);
+                SurfaceErrorMessages.Add(ex.FriendlyMessage);
             }
             catch (Exception ex)
             {

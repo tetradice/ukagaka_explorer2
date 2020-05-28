@@ -13,16 +13,36 @@ namespace ExplorerLib.Exceptions
     [Serializable()]
     public class UnhandlableShellException : Exception
     {
-        public UnhandlableShellException() : base()
-        {
+        /// <summary>
+        /// エラーが発生したスコープ番号 (sakura側なら0, kero側なら1, シェル全体のエラーの場合やまだ特定できない場合はnull)
+        /// </summary>
+        public int? Scope { get; set; }
+
+        /// <summary>
+        /// 画面上に表示するためのエラーメッセージ
+        /// </summary>
+        public string FriendlyMessage {
+            get {
+                var prefix = "";
+                if (Scope == 0) prefix = "[本体側] ";
+                if (Scope == 1) prefix = "[パートナー側] ";
+                return prefix + Message;
+            }
         }
 
-        public UnhandlableShellException(string message) : base(message)
+        public UnhandlableShellException(int? scope) : base()
         {
+            Scope = scope;
         }
 
-        public UnhandlableShellException(string message, Exception innerException) : base(message, innerException)
+        public UnhandlableShellException(int? scope, string message) : base(message)
         {
+            Scope = scope;
+        }
+
+        public UnhandlableShellException(int? scope, string message, Exception innerException) : base(message, innerException)
+        {
+            Scope = scope;
         }
 
         protected UnhandlableShellException(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -36,16 +56,18 @@ namespace ExplorerLib.Exceptions
     [Serializable()]
     public class DefaultSurfaceNotFoundException : UnhandlableShellException
     {
-        public DefaultSurfaceNotFoundException() : base()
+        public DefaultSurfaceNotFoundException(int? scope) : base(scope)
         {
         }
 
-        public DefaultSurfaceNotFoundException(string message) : base(message)
+        public DefaultSurfaceNotFoundException(int? scope, string message) : base(scope, message)
         {
+            Scope = scope;
         }
 
-        public DefaultSurfaceNotFoundException(string message, Exception innerException) : base(message, innerException)
+        public DefaultSurfaceNotFoundException(int? scope, string message, Exception innerException) : base(scope, message, innerException)
         {
+            Scope = scope;
         }
 
         protected DefaultSurfaceNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -59,15 +81,15 @@ namespace ExplorerLib.Exceptions
     [Serializable()]
     public class DefaultShellNotFoundException : UnhandlableShellException
     {
-        public DefaultShellNotFoundException() : base()
+        public DefaultShellNotFoundException() : base(null)
         {
         }
 
-        public DefaultShellNotFoundException(string message) : base(message)
+        public DefaultShellNotFoundException(string message) : base(null, message)
         {
         }
 
-        public DefaultShellNotFoundException(string message, Exception innerException) : base(message, innerException)
+        public DefaultShellNotFoundException(string message, Exception innerException) : base(null, message, innerException)
         {
         }
 
@@ -82,15 +104,15 @@ namespace ExplorerLib.Exceptions
     [Serializable()]
     public class IllegalImageFormatException : UnhandlableShellException
     {
-        public IllegalImageFormatException() : base()
+        public IllegalImageFormatException(int? scope) : base(scope)
         {
         }
 
-        public IllegalImageFormatException(string message) : base(message)
+        public IllegalImageFormatException(int? scope, string message) : base(scope, message)
         {
         }
 
-        public IllegalImageFormatException(string message, Exception innerException) : base(message, innerException)
+        public IllegalImageFormatException(int? scope, string message, Exception innerException) : base(scope, message, innerException)
         {
         }
 

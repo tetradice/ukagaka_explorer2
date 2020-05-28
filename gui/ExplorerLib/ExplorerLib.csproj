@@ -47,7 +47,7 @@
   <ItemGroup>
     <Compile Include="Realize2Text.cs" />
     <Compile Include="DescriptText.cs" />
-    <Compile Include="Exceptions\Shell.cs" />
+    <Compile Include="Exceptions\ShellExceptions.cs" />
     <Compile Include="FMO\FMO.cs" />
     <Compile Include="FMO\SakuraFMO.cs" />
     <Compile Include="Ghost.cs" />
