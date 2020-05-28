@@ -1,4 +1,4 @@
-≪シェルエクスプローラ通（α版）≫ ver 0.3.2
+≪シェルエクスプローラ通（β版）≫ ver 0.4.0
 
 顔画像・立ち絵表示付きのシェルエクスプローラです。
 「ゴーストエクスプローラ通」のオマケです。
@@ -31,6 +31,22 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
     ※テキストファイルのエンコーディングは【UTF-8】である必要があります
       （シフトJISは不可であることに注意してください）
 
+・起動時に、ゴースト側で OnShellExplorer2Open イベントを発生させます。（Referenceなし）
+
+
+・特に指定がなければ、通常は0番, 10番のサーフェスを立ち絵として表示しようとします。
+  他の番号(ID)のサーフェスを表示させたい場合は、下記のどちらかでデフォルトサーフェスIDを指定してください。
+  
+    ・ghost\master\explorer2\descript.txt を作成し、その中で下記のように指定　　※ゴーストエクスプローラ通でのみ有効
+        
+        sakura.defaultsurface,100
+        kero.defaultsurface,200
+        
+    ・ghost\master\descript.txt の中で下記のように指定　　※SSP、ゴーストエクスプローラ通の両方で有効
+        
+        sakura.seriko.defaultsurface,100
+        kero.seriko.defaultsurface,200
+
 ・シェルのフォルダ内に explorer2\descript.txt を置き、下記のように記載すると、
   「立ち絵画像のうち、どこからどこまでの範囲を顔画像として表示するか」を指定することができます。
   
@@ -43,15 +59,13 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
   width, heightの比率は、できる限り「6:5」となるようにしてください。
   （実際に表示する顔画像のサイズは、幅120px × 高さ100pxです）
 
-・起動時に、ゴースト側で OnShellExplorer2Open イベントを発生させます。（Referenceなし）
-
 
 
 ■現時点での制限事項
 
 ・他シェルへの切り替えを実行した時に、切り替え時のトークが行われません。（OnShellChangingなどのイベントが発生しません）
 
-・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, add, bind) のみです。
+・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, add, bind) 、および reduce のみです。
   他の描画メソッドはすべてoverlay扱いで描画します。
 
 ・SERIKOの機能のうち、下記のものには対応できていません。

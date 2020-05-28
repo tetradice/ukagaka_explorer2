@@ -1,4 +1,4 @@
-≪ゴーストエクスプローラ通（α版）≫ ver 0.3.1
+≪ゴーストエクスプローラ通（β版）≫ ver 0.4.0
 
 顔画像・立ち絵表示付きのゴーストエクスプローラです。
 絵を見ながらゴーストの切り替えや呼び出しを行うことができます。
@@ -31,6 +31,22 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
     ※テキストファイルのエンコーディングは【UTF-8】である必要があります
       （シフトJISは不可であることに注意してください）
 
+・起動時に、ゴースト側で OnGhostExplorer2Open イベントを発生させます。（Referenceなし）
+
+
+・特に指定がなければ、通常は0番, 10番のサーフェスを立ち絵として表示しようとします。
+  他の番号(ID)のサーフェスを表示させたい場合は、下記のどちらかでデフォルトサーフェスIDを指定してください。
+  
+    ・ghost\master\explorer2\descript.txt を作成し、その中で下記のように指定　　※ゴーストエクスプローラ通でのみ有効
+        
+        sakura.defaultsurface,100
+        kero.defaultsurface,200
+        
+    ・ghost\master\descript.txt の中で下記のように指定　　※SSP、ゴーストエクスプローラ通の両方で有効
+        
+        sakura.seriko.defaultsurface,100
+        kero.seriko.defaultsurface,200
+
 ・シェルのフォルダ内に explorer2\descript.txt を置き、下記のように記載すると、
   「立ち絵画像のうち、どこからどこまでの範囲を顔画像として表示するか」を指定することができます。
   （マスターシェルの場合なら、shell\master\explorer2\descript.txt に置いてください）
@@ -44,15 +60,18 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
   width, heightの比率は、できる限り「6:5」となるようにしてください。
   （実際に表示する顔画像のサイズは、幅120px × 高さ100pxです）
 
-・起動時に、ゴースト側で OnGhostExplorer2Open イベントを発生させます。（Referenceなし）
+・shell\master 以外のシェルフォルダを、初期シェルとして使用している場合には
+  ghost\master\descript.txt の中で下記のように指定してください。　　※SSP、ゴーストエクスプローラ通の両方で有効
+  
+    seriko.defaultsurfacedirectoryname,shell2
 
 
 
-■現時点（α版）での制限事項
+■現時点での制限事項
 
 ・他ゴーストへの切り替えや呼び出しを実行した時に、切り替え時のトークが行われません。（OnGhostChangingなどのイベントが発生しません）
 
-・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, add, bind)  のみです。
+・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, add, bind) 、および reduce のみです。
   他の描画メソッドはすべてoverlay扱いで描画します。
 
 ・SERIKOの機能のうち、下記のものには対応できていません。
@@ -86,6 +105,14 @@ yaya.dllはYAYAのライセンスに基づき、
 ****************
 
 ■更新履歴
+
+2020/5/xx ver 0.4.0
+* [機能追加] SERIKOのreduceメソッドに対応
+* [修正] 一部ゴーストの立ち絵を正しく処理できない不具合を修正
+           - intervalにalwaysが指定されているアニメーションを処理できていなかった
+           - surfaces.txt 内で、offsetX, offsetYに数値でない値が設定されている場合にも正しく処理できるようにした
+             （仕様上は不正だが、SSPは正常に表示できる）
+
 
 2020/5/27 ver 0.3.1
 * [修正] 起動直後に不在表示が正しく行われていなかった不具合を修正
