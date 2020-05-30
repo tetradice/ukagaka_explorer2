@@ -63,21 +63,21 @@ namespace ShellExplorer2
         protected bool SelectedGhostSurfaceVisible;
 
         /// <summary>
-        /// リストで選択しているシェル
+        /// リストで選択している項目
         /// </summary>
-        protected Shell SelectedShell
+        protected ShellManager.ListItem SelectedShellListItem
         {
             get
             {
-                //項目が１つも選択されていない場合は、選択シェルなし
+                //項目が１つも選択されていない場合は、選択項目なし
                 if (lstShell.SelectedItems.Count == 0)
                 {
                     return null;
                 }
 
-                // 選択インデックスと対応するシェルを取得
+                // 選択インデックスと対応する項目を取得
                 var selectedIndex = lstShell.SelectedItems[0].Index;
-                return ShellManager.Shells[selectedIndex];
+                return ShellManager.ListItems[selectedIndex];
             }
         }
 
@@ -187,7 +187,7 @@ namespace ShellExplorer2
             this.DescriptionText = GetDescriptionText();
 
             // シェル切り替えボタン、および付随する設定チェックボックスは、シェル選択中のみ表示
-            BtnChange.Visible = ChkCloseAfterChange.Visible = (this.SelectedShell != null);
+            BtnChange.Visible = ChkCloseAfterChange.Visible = (this.SelectedShellListItem != null);
 
             // シェル切り替えボタンは、呼び出し元シェルが残っていないと押下できない
             BtnChange.Enabled = ChkCloseAfterChange.Enabled = !(CallerLost);
@@ -196,7 +196,7 @@ namespace ShellExplorer2
             BtnRandomSelect.Visible = true;
 
             // ゴーストの立ち絵は、シェルを選択している場合のみ表示
-            SelectedGhostSurfaceVisible = (this.SelectedShell != null);
+            SelectedGhostSurfaceVisible = (this.SelectedShellListItem != null);
 
             // 立ち絵Paint再発生
             picSurface.Invalidate();
@@ -212,56 +212,65 @@ namespace ShellExplorer2
         /// </summary>
         private void lstGhost_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // ゴースト未選択時はスキップ
-            if (this.SelectedShell == null) return;
+            // 未選択時は終了
+            if (this.SelectedShellListItem == null) return;
 
             // エラーメッセージリストを初期化
             SurfaceErrorMessages.Clear();
 
-            // sakura側のサーフェス画像を取得
-            try
+            // シェルが読み込めていない場合は、エラーメッセージをセット
+            if (this.SelectedShellListItem.Shell == null)
             {
-                CurrentSakuraSurface = ShellManager.DrawSakuraSurface(this.SelectedShell);
+                SurfaceErrorMessages.Add(this.SelectedShellListItem.ErrorMessage);
+            }
+            else
+            {
 
-                // サーフェスが何らかの原因で見つからなかった場合はエラー扱い
-                if (CurrentSakuraSurface == null)
+                // sakura側のサーフェス画像を取得
+                try
                 {
+                    CurrentSakuraSurface = ShellManager.DrawSakuraSurface(this.SelectedShellListItem.Shell);
+
+                    // 描画に失敗した場合はエラー扱い
+                    if (CurrentSakuraSurface == null)
+                    {
+                        SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
+                    }
+                }
+                catch (UnhandlableShellException ex)
+                {
+                    ex.Scope = 0; // sakura側のエラー
+
+                    CurrentSakuraSurface = null;
+                    Debug.WriteLine(ex.ToString());
+                    SurfaceErrorMessages.Add(ex.FriendlyMessage);
+                }
+                catch (Exception ex)
+                {
+                    CurrentSakuraSurface = null;
+                    Debug.WriteLine(ex.ToString());
                     SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
                 }
-            }
-            catch (UnhandlableShellException ex)
-            {
-                ex.Scope = 0; // sakura側のエラー
 
-                CurrentSakuraSurface = null;
-                Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add(ex.FriendlyMessage);
-            }
-            catch (Exception ex)
-            {
-                CurrentSakuraSurface = null;
-                Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
-            }
+                // kero側のサーフェス画像を取得
+                try
+                {
+                    CurrentKeroSurface = ShellManager.DrawKeroSurface(this.SelectedShellListItem.Shell);
+                }
+                catch (UnhandlableShellException ex)
+                {
+                    ex.Scope = 1; // kero側のエラー
 
-            // kero側のサーフェス画像を取得
-            try
-            {
-                CurrentKeroSurface = ShellManager.DrawKeroSurface(this.SelectedShell);
-            }
-            catch (UnhandlableShellException ex)
-            {
-                ex.Scope = 1; // kero側のエラー
-
-                CurrentKeroSurface = null;
-                Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add(ex.FriendlyMessage);
-            }
-            catch (Exception ex)
-            {
-                CurrentKeroSurface = null;
-                Debug.WriteLine(ex.ToString());
-                SurfaceErrorMessages.Add(@"パートナー側の立ち絵描画に失敗しました。");
+                    CurrentKeroSurface = null;
+                    Debug.WriteLine(ex.ToString());
+                    SurfaceErrorMessages.Add(ex.FriendlyMessage);
+                }
+                catch (Exception ex)
+                {
+                    CurrentKeroSurface = null;
+                    Debug.WriteLine(ex.ToString());
+                    SurfaceErrorMessages.Add(@"パートナー側の立ち絵描画に失敗しました。");
+                }
             }
 
             // 表示状態切り替え
@@ -332,15 +341,15 @@ namespace ShellExplorer2
         /// </summary>
         protected virtual string GetDescriptionText()
         {
-            if (SelectedShell != null)
+            if (SelectedShellListItem != null)
             {
                 if (this.SurfaceErrorMessages.Any())
                 {
                     return string.Join("\r\n", SurfaceErrorMessages.Select(m => "ERROR: " + m));
                 }
-                if (SelectedShell.CharacterDescript != null)
+                if (this.SelectedShellListItem.Shell != null && this.SelectedShellListItem.Shell.CharacterDescript != null)
                 {
-                    return SelectedShell.CharacterDescript;
+                    return this.SelectedShellListItem.Shell.CharacterDescript;
                 }
             }
 
@@ -352,7 +361,7 @@ namespace ShellExplorer2
         /// </summary>
         private void BtnChange_Click(object sender, EventArgs e)
         {
-            var success = SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(this.SelectedShell.Name) + @"]\e");
+            var success = SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(this.SelectedShellListItem.Name) + @"]\e");
 
             // 送信成功した場合、オプションに応じてアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)
@@ -524,17 +533,17 @@ namespace ShellExplorer2
             var faceImages = ShellManager.GetFaceImages(imgListFace.ImageSize);
 
             // リストビュー構築処理
-            foreach (var shell in ShellManager.Shells)
+            foreach (var shellItem in ShellManager.ListItems)
             {
                 // 顔画像を正常に読み込めていれば、イメージリストに追加
-                if (faceImages.ContainsKey(shell.DirPath))
+                if (faceImages.ContainsKey(shellItem.DirPath))
                 {
-                    imgListFace.Images.Add(shell.DirPath, faceImages[shell.DirPath]);
+                    imgListFace.Images.Add(shellItem.DirPath, faceImages[shellItem.DirPath]);
                 }
 
                 // リスト項目追加
-                var item = lstShell.Items.Add(key: shell.DirPath, text: shell.Name ?? "", imageKey: shell.DirPath);
-                item.Tag = shell.DirPath;
+                var item = lstShell.Items.Add(key: shellItem.DirPath, text: shellItem.Name ?? "", imageKey: shellItem.DirPath);
+                item.Tag = shellItem.DirPath;
             }
 
             // 読み込み中表示を消す
@@ -560,7 +569,7 @@ namespace ShellExplorer2
             }
 
             // 選択対象のシェルを判別できなかった場合は、1件目を選択
-            if (this.SelectedShell == null) {
+            if (this.SelectedShellListItem == null) {
                 lstShell.Items[0].Focused = true;
                 lstShell.Items[0].Selected = true;
             }
@@ -578,7 +587,7 @@ namespace ShellExplorer2
 
         private void BtnOpenShellFolder_Click(object sender, EventArgs e)
         {
-            Process.Start(this.SelectedShell.DirPath);
+            Process.Start(this.SelectedShellListItem.DirPath);
         }
 
         /// <summary>

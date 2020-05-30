@@ -14,8 +14,19 @@ namespace ShellExplorer2
 {
     public class ShellManager
     {
+        /// <summary>
+        /// 画面に表示する項目
+        /// </summary>
+        public class ListItem
+        {
+            public Shell Shell = null;
+            public string Name;
+            public string DirPath;
+            public string ErrorMessage = null;
+        }
+
         public virtual string GhostDirPath { get; set; }
-        public virtual IList<Shell> Shells { get; protected set; }
+        public virtual IList<ListItem> ListItems { get; protected set; }
 
         public static ShellManager Load(string ghostDirPath, int sakuraSurfaceId, int keroSurfaceId)
         {
@@ -31,7 +42,7 @@ namespace ShellExplorer2
 
         public ShellManager()
         {
-            Shells = new List<Shell>();
+            ListItems = new List<ListItem>();
         }
 
         /// <summary>
@@ -40,23 +51,40 @@ namespace ShellExplorer2
         public virtual void Load(int sakuraSurfaceId, int keroSurfaceId)
         {
             // 既存の値はクリア
-            Shells.Clear();
+            ListItems.Clear();
 
             // シェルフォルダを列挙
             foreach (var subDir in Directory.GetDirectories(Path.Combine(GhostDirPath, "shell")))
             {
+                var descriptPath = Path.Combine(subDir, "descript.txt");
                 // descript.txt が存在しないならスキップ
-                if (!File.Exists(Path.Combine(subDir, "descript.txt"))) continue;
+                if (!File.Exists(descriptPath)) continue;
 
-                // シェルを読み込み
-                var shell = Shell.Load(subDir, sakuraSurfaceId, keroSurfaceId);
+                var item = new ListItem() { DirPath = subDir };
+                try
+                {
+                    // シェルを読み込み
+                    item.Shell = Shell.Load(subDir, sakuraSurfaceId, keroSurfaceId);
+                    item.Name = item.Shell.Name;
+                }
+                catch (UnhandlableShellException ex)
+                {
+                    // 処理不可能なシェル
+                    item.ErrorMessage = ex.FriendlyMessage;
+                }
 
-                // リストに追加
-                Shells.Add(shell);
+                // シェルの読み込みに失敗した場合、Descript.txtのみ読み込み、名前の取得を試みる
+                if(item.Shell == null)
+                {
+                    var descript = DescriptText.Load(descriptPath);
+                    item.Name = descript.Get("name");
+                }
+
+                ListItems.Add(item);
             }
 
             // 最後に名前＋フォルダパス順でソート
-            Shells = Shells.OrderBy(s => Tuple.Create(s.Name, s.DirPath)).ToList();
+            ListItems = ListItems.OrderBy(s => Tuple.Create(s.Name, s.DirPath)).ToList();
         }
 
         /// <summary>
@@ -120,8 +148,13 @@ namespace ShellExplorer2
             // キャッシュフォルダが存在しなければ作成
             if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
 
-            foreach (var shell in Shells)
+            foreach (var item in ListItems)
             {
+                // シェルが読み込めなかった場合はスキップ
+                if (item.Shell == null) continue;
+
+                var shell = item.Shell;
+
                 try
                 {
                     Bitmap face = null;
