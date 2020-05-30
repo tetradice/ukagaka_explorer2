@@ -694,16 +694,48 @@ namespace ExplorerLib
                     // from <https://dobon.net/vb/dotnet/graphics/drawnegativeimage.html>
 
                     // pnaマスク画像の読み込み
-                    var maskOrig = new Bitmap(pnaPath);
+                    var mask = new Bitmap(pnaPath);
 
-                    // 元画像とマスク画像のサイズが異なる場合はエラーとする
-                    if (maskOrig.Size != surface.Size)
+                    // 元画像とマスク画像のサイズが異なる場合
+                    if (mask.Size != surface.Size)
                     {
-                        throw new IllegalImageFormatException(null, "pngとpnaのサイズが異なります。");
+                        // マスク画像の方が縦横ともに小さい場合、余白を追加して補正
+                        if (mask.Width <= surface.Width && mask.Height <= surface.Height)
+                        {
+                            using (var mImg = new ImageMagick.MagickImage(mask)) // Magick.NETを使用
+                            {
+                                // 余白追加
+                                mImg.Extent(surface.Width, surface.Height,
+                                            gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
+                                            backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
+
+                                // Bitmapへ書き戻す
+                                mask = mImg.ToBitmap();
+                            }
+                        }
+
+                        // マスク画像の方が縦横ともに大きい場合、余分な幅を切る
+                        if (mask.Width >= surface.Width && mask.Height >= surface.Height)
+                        {
+                            using (var mImg = new ImageMagick.MagickImage(mask)) // Magick.NETを使用
+                            {
+                                // 切り抜き
+                                mImg.Crop(surface.Width, surface.Height);
+
+                                // Bitmapへ書き戻す
+                                mask = mImg.ToBitmap();
+                            }
+                        }
+
+                        // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
+                        if (mask.Size != surface.Size)
+                        {
+                            throw new IllegalImageFormatException(null, "pngとpnaのサイズが異なり、かつ縦横のサイズが矛盾しています。") { Unsupported = true };
+                        }
                     }
 
                     // 透過実行
-                    var output = ComposeBitmaps(surface, maskOrig, (outputData, maskBmpData, pos) =>
+                    var output = ComposeBitmaps(surface, mask, (outputData, maskBmpData, pos) =>
                     {
                         // 色を取得
                         var color = Color.FromArgb(maskBmpData[pos + 2], maskBmpData[pos + 1], maskBmpData[pos]);

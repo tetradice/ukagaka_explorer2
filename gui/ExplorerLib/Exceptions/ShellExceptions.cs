@@ -104,7 +104,7 @@ namespace ExplorerLib.Exceptions
     }
 
     /// <summary>
-    /// 不正なフォーマットの画像ファイルを読み込んだ (例: png, pnaのサイズが一致しない)
+    /// 不正なフォーマットの画像ファイルを読み込んだ
     /// </summary>
     [Serializable()]
     public class IllegalImageFormatException : UnhandlableShellException
