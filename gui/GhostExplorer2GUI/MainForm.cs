@@ -282,7 +282,7 @@ namespace GhostExplorer2
             }
 
             // 呼び出し元ゴーストと選択ゴーストが同じであれば、切り替えは実行できない
-            if (SelectedGhost.SakuraName == CallerSakuraName && SelectedGhost.KeroName == CallerKeroName)
+            if (this.SelectedGhost != null && SelectedGhost.SakuraName == CallerSakuraName && SelectedGhost.KeroName == CallerKeroName)
             {
                 BtnCall.Enabled = false;
                 BtnChange.Enabled = ChkCloseAfterChange.Enabled = false;
