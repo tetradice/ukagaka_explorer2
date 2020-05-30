@@ -566,6 +566,30 @@ namespace ExplorerLib
                             outputData[pos + 3] = (byte)Math.Round(rate * 255);
                         });
                     }
+                    if (layer.ComposingMethod == Seriko.ComposingMethodType.Interpolate)
+                    {
+                        // interpolate
+                        // ベース画像と新規画像のサイズが異なる場合の補正
+                        if (layerBmp.Size != surface.Size)
+                        {
+                            // 画像サイズ補正処理
+                            SizeAdjustForComposingBitmap(surface, ref layerBmp);
+
+                            // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
+                            if (layerBmp.Size != surface.Size)
+                            {
+                                throw new IllegalImageFormatException("複数の画像を重ねる際に、2つの画像の間でサイズが異なり、かつ縦横のサイズが矛盾しているような画像が存在します。") { Unsupported = true };
+                            }
+                        }
+                        surface = ComposeBitmaps(surface, layerBmp, (outputData, newBmpData, pos) =>
+                        {
+                            // ベースレイヤの不透明度を取得
+                            var baseOpacity = outputData[pos + 3];
+
+                            // 新規レイヤの不透明度を、ベースレイヤの不透明度と同じ値にする
+                            outputData[pos + 3] = baseOpacity;
+                        });
+                    }
                     else
                     {
                         // 上記以外はoverlay扱いで、普通に重ねていく
@@ -804,33 +828,8 @@ namespace ExplorerLib
                     // 元画像とマスク画像のサイズが異なる場合
                     if (mask.Size != surface.Size)
                     {
-                        // マスク画像の方が縦横ともに小さい場合、余白を追加して補正
-                        if (mask.Width <= surface.Width && mask.Height <= surface.Height)
-                        {
-                            using (var mImg = new ImageMagick.MagickImage(mask)) // Magick.NETを使用
-                            {
-                                // 余白追加
-                                mImg.Extent(surface.Width, surface.Height,
-                                            gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
-                                            backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
-
-                                // Bitmapへ書き戻す
-                                mask = mImg.ToBitmap();
-                            }
-                        }
-
-                        // マスク画像の方が縦横ともに大きい場合、余分な幅を切る
-                        if (mask.Width >= surface.Width && mask.Height >= surface.Height)
-                        {
-                            using (var mImg = new ImageMagick.MagickImage(mask)) // Magick.NETを使用
-                            {
-                                // 切り抜き
-                                mImg.Crop(surface.Width, surface.Height);
-
-                                // Bitmapへ書き戻す
-                                mask = mImg.ToBitmap();
-                            }
-                        }
+                        // 画像サイズ補正処理
+                        SizeAdjustForComposingBitmap(surface, ref mask);
 
                         // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
                         if (mask.Size != surface.Size)
@@ -857,6 +856,42 @@ namespace ExplorerLib
                     // pnaなしの場合は、画像の左上の色を透過色として設定して返す
                     surface.MakeTransparent(surface.GetPixel(0, 0));
                     return surface;
+                }
+            }
+        }
+
+        /// <summary>
+        /// ベース画像に新規画像を重ねるときに必要な、サイズの補正を行う
+        /// </summary>
+        /// <param name="baseBmp">ベース画像</param>
+        /// <param name="newBmp">新規画像 (補正が必要であれば変更される)</param>
+        protected virtual void SizeAdjustForComposingBitmap(Bitmap baseBmp, ref Bitmap newBmp)
+        {
+            // 新規画像の方が縦横ともに小さい場合、余白を追加して補正
+            if (newBmp.Width <= baseBmp.Width && newBmp.Height <= baseBmp.Height)
+            {
+                using (var mImg = new ImageMagick.MagickImage(newBmp)) // Magick.NETを使用
+                {
+                    // 余白追加
+                    mImg.Extent(baseBmp.Width, baseBmp.Height,
+                                gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
+                                backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
+
+                    // Bitmapへ書き戻す
+                    newBmp = mImg.ToBitmap();
+                }
+            }
+
+            // マスク画像の方が縦横ともに大きい場合、余分な幅を切る
+            if (newBmp.Width >= baseBmp.Width && newBmp.Height >= baseBmp.Height)
+            {
+                using (var mImg = new ImageMagick.MagickImage(newBmp)) // Magick.NETを使用
+                {
+                    // 切り抜き
+                    mImg.Crop(baseBmp.Width, baseBmp.Height);
+
+                    // Bitmapへ書き戻す
+                    newBmp = mImg.ToBitmap();
                 }
             }
         }
