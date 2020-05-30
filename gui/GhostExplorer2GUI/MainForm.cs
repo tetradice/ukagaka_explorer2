@@ -281,13 +281,6 @@ namespace GhostExplorer2
                 BtnChange.Enabled = ChkCloseAfterChange.Enabled = false;
             }
 
-            // 呼び出し元ゴーストと選択ゴーストが同じであれば、切り替えは実行できない
-            if (this.SelectedGhost != null && SelectedGhost.SakuraName == CallerSakuraName && SelectedGhost.KeroName == CallerKeroName)
-            {
-                BtnCall.Enabled = false;
-                BtnChange.Enabled = ChkCloseAfterChange.Enabled = false;
-            }
-
             // ゴーストの立ち絵は、選択されているゴーストがいて、かつ不在でない場合のみ表示
             SelectedGhostSurfaceVisible = (this.SelectedGhost != null && !AbsenceInfo.ContainsKey(this.SelectedGhost.DirPath));
 
