@@ -798,42 +798,10 @@ namespace GhostExplorer2
 
                 // 最初に1件目のシェル情報、顔画像のみ同期的に読み込んでおく
                 var firstGhost = GhostManager.Ghosts[0];
-                if (!Shells.ContainsKey(firstGhost.DirPath))
+                // まだ読み込んでいない場合のみ
+                if (!Shells.ContainsKey(firstGhost.DirPath) || Shells[firstGhost.DirPath] == null)
                 {
-                    try
-                    {
-                        Shells[firstGhost.DirPath] = GhostManager.LoadShell(firstGhost);
-                        Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, firstGhost.Name));
-                    }
-                    catch (UnhandlableShellException ex)
-                    {
-                        // 処理不可能なシェル
-                        if (!ErrorMessagesOnShellLoading.ContainsKey(firstGhost.DirPath))
-                        {
-                            ErrorMessagesOnShellLoading[firstGhost.DirPath] = new List<string>();
-                        }
-                        ErrorMessagesOnShellLoading[firstGhost.DirPath].Add(ex.FriendlyMessage);
-                    }
-
-                    // シェルの読み込みに成功している場合のみ
-                    if (Shells.ContainsKey(firstGhost.DirPath))
-                    {
-                        // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
-                        if (!FaceImages.ContainsKey(firstGhost.DirPath))
-                        {
-                            FaceImages[firstGhost.DirPath] = GhostManager.GetFaceImage(firstGhost, Shells[firstGhost.DirPath], imgListFace.ImageSize);
-                            Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, firstGhost.Name));
-                        }
-
-                        // 顔画像を正常に読み込めていれば、イメージリストに追加
-                        if (FaceImages[firstGhost.DirPath] != null)
-                        {
-                            imgListFace.Images.Add(firstGhost.DirPath, FaceImages[firstGhost.DirPath]);
-                        }
-
-                        // 顔画像表示を更新
-                        UpdateFaceImageKey(firstGhost);
-                    }
+                    LoadShellAndFaceImage(firstGhost);
                 }
 
                 // 先頭を選択
@@ -847,7 +815,7 @@ namespace GhostExplorer2
             prgLoading.Value = 0;
             GhostImageCancellationTokenSource = new CancellationTokenSource();
             var token = GhostImageCancellationTokenSource.Token;
-            GhostImageLoadingTask = Task.Factory.StartNew(() => GhostImagesLoadAsync(token), token);
+            GhostImageLoadingTask = Task.Factory.StartNew(() => LoadGhostShellsAsync(token), token);
 
             // ゴースト情報リストの更新に伴う画面表示更新
             UpdateUIOnFMOChanged();
@@ -856,7 +824,7 @@ namespace GhostExplorer2
         /// <summary>
         /// シェル情報および顔画像を読み込む
         /// </summary>
-        public async virtual Task GhostImagesLoadAsync(CancellationToken cToken)
+        public async virtual Task LoadGhostShellsAsync(CancellationToken cToken)
         {
             try
             {
@@ -873,20 +841,7 @@ namespace GhostExplorer2
                     // まだ読み込んでいなければ、シェル情報を読み込む
                     if (!Shells.ContainsKey(ghost.DirPath) || Shells[ghost.DirPath] == null)
                     {
-                        try
-                        {
-                            Shells[ghost.DirPath] = GhostManager.LoadShell(ghost);
-                            Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
-                        }
-                        catch (UnhandlableShellException ex)
-                        {
-                            // 処理不可能なシェル
-                            if (!ErrorMessagesOnShellLoading.ContainsKey(ghost.DirPath))
-                            {
-                                ErrorMessagesOnShellLoading[ghost.DirPath] = new List<string>();
-                            }
-                            ErrorMessagesOnShellLoading[ghost.DirPath].Add(ex.FriendlyMessage);
-                        }
+                        LoadShell(ghost);
                     }
 
                     // プログレスバー進める
@@ -916,30 +871,14 @@ namespace GhostExplorer2
                 // 顔画像の取得
                 foreach (var ghost in GhostManager.Ghosts)
                 {
-                    // シェルの読み込みに成功している場合のみ
-                    if (Shells.ContainsKey(ghost.DirPath))
-                    {
-                        // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
-                        if (!FaceImages.ContainsKey(ghost.DirPath))
-                        {
-                            FaceImages[ghost.DirPath] = GhostManager.GetFaceImage(ghost, Shells[ghost.DirPath], imgListFace.ImageSize);
-                            Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
-                        }
-                    }
+                    // 顔画像の読み込み
+                    LoadFaceImageIfShellLoaded(ghost);
 
                     // UI反映
                     BeginInvoke((MethodInvoker)(() =>
                     {
-                        // 顔画像を正常に読み込めていれば、イメージリストに追加
-                        Bitmap faceImage;
-                        if (FaceImages.TryGetValue(ghost.DirPath, out faceImage)
-                            && faceImage != null)
-                        {
-                            imgListFace.Images.Add(ghost.DirPath, faceImage);
-                        }
-
-                        // 顔画像表示を更新
-                        UpdateFaceImageKey(ghost);
+                        // 顔画像をUI側に反映
+                        ReflectFaceImageToUIIfShellLoaded(ghost);
                     }));
 
                     // キャンセル処理
@@ -959,6 +898,80 @@ namespace GhostExplorer2
                               , "エラー"
                               , MessageBoxButtons.OK
                               , MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 指定ゴーストのシェルを同期的に読み込む
+        /// </summary>
+        protected void LoadShellAndFaceImage(Ghost ghost)
+        {
+            // シェル読み込み
+            LoadShell(ghost);
+
+            // 顔画像読み込み
+            LoadFaceImageIfShellLoaded(ghost);
+
+            // UI側へ反映
+            ReflectFaceImageToUIIfShellLoaded(ghost);
+        }
+
+        /// <summary>
+        /// 指定ゴーストのシェルを読み込む
+        /// </summary>
+        protected virtual void LoadShell(Ghost ghost)
+        {
+            try
+            {
+                Shells[ghost.DirPath] = GhostManager.LoadShell(ghost);
+                Debug.WriteLine(string.Format("<{0}> shell loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+            }
+            catch (UnhandlableShellException ex)
+            {
+                // 処理不可能なシェル
+                if (!ErrorMessagesOnShellLoading.ContainsKey(ghost.DirPath))
+                {
+                    ErrorMessagesOnShellLoading[ghost.DirPath] = new List<string>();
+                }
+                ErrorMessagesOnShellLoading[ghost.DirPath].Add(ex.FriendlyMessage);
+            }
+
+        }
+
+        /// <summary>
+        /// 指定ゴーストの顔画像を読み込む (シェルの読み込みに成功していれば)
+        /// </summary>
+        protected virtual void LoadFaceImageIfShellLoaded(Ghost ghost)
+        {
+            // シェルの読み込みに成功している場合のみ
+            if (Shells.ContainsKey(ghost.DirPath) && Shells[ghost.DirPath] != null)
+            {
+                // まだ読み込んでいなければ、ゴーストの顔画像を変換・取得
+                if (!FaceImages.ContainsKey(ghost.DirPath))
+                {
+                    FaceImages[ghost.DirPath] = GhostManager.GetFaceImage(ghost, Shells[ghost.DirPath], imgListFace.ImageSize);
+                    Debug.WriteLine(string.Format("<{0}> faceImage loaded: {1}", Thread.CurrentThread.ManagedThreadId, ghost.Name));
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// 指定ゴーストの顔画像をFormへ反映
+        /// </summary>
+        protected virtual void ReflectFaceImageToUIIfShellLoaded(Ghost ghost)
+        {
+            // シェルの読み込みに成功している場合のみ
+            if (Shells.ContainsKey(ghost.DirPath) && Shells[ghost.DirPath] != null)
+            {
+                // 顔画像を正常に読み込めていれば、イメージリストに追加
+                if (FaceImages[ghost.DirPath] != null)
+                {
+                    imgListFace.Images.Add(ghost.DirPath, FaceImages[ghost.DirPath]);
+                }
+
+                // 顔画像表示を更新
+                UpdateFaceImageKey(ghost);
             }
         }
 
