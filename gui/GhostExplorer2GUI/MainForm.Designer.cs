@@ -44,6 +44,7 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.cmbSort = new System.Windows.Forms.ComboBox();
             this.txtFilter = new System.Windows.Forms.TextBox();
+            this.BtnReloadShell = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -228,11 +229,26 @@
             this.txtFilter.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFilter_KeyPress);
             this.txtFilter.Leave += new System.EventHandler(this.txtFilter_Leave);
             // 
+            // BtnReloadShell
+            // 
+            this.BtnReloadShell.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.BtnReloadShell.AutoSize = true;
+            this.BtnReloadShell.Location = new System.Drawing.Point(613, 448);
+            this.BtnReloadShell.Name = "BtnReloadShell";
+            this.BtnReloadShell.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
+            this.BtnReloadShell.Size = new System.Drawing.Size(235, 34);
+            this.BtnReloadShell.TabIndex = 15;
+            this.BtnReloadShell.Text = "★選択中ゴーストのシェルを再読み込み";
+            this.BtnReloadShell.UseVisualStyleBackColor = true;
+            this.BtnReloadShell.Visible = false;
+            this.BtnReloadShell.Click += new System.EventHandler(this.BtnReloadShell_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.BtnReloadShell);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.cmbGhostDir);
             this.Controls.Add(this.prgLoading);
@@ -276,6 +292,7 @@
         private System.Windows.Forms.ComboBox cmbSort;
         private System.Windows.Forms.TextBox txtFilter;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button BtnReloadShell;
     }
 }
 
