@@ -33,7 +33,7 @@ namespace GhostExplorer2
         protected Dictionary<string, Bitmap> FaceImages = new Dictionary<string, Bitmap>();
         protected Bitmap CurrentSakuraSurface;
         protected Bitmap CurrentKeroSurface;
-        protected List<string> SurfaceErrorMessages;
+        protected List<string> SurfaceNotificationMessages;
         protected string DescriptionText;
         private Font DescriptionFont;
         private RectangleF DescriptionRect;
@@ -130,7 +130,7 @@ namespace GhostExplorer2
         {
             InitializeComponent();
 
-            this.SurfaceErrorMessages = new List<string>();
+            this.SurfaceNotificationMessages = new List<string>();
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace GhostExplorer2
             if (this.SelectedGhost == null) return;
 
             // エラーメッセージリストを初期化
-            SurfaceErrorMessages.Clear();
+            SurfaceNotificationMessages.Clear();
 
             // 読み込んだサーフェスを一度解除
             CurrentSakuraSurface = null;
@@ -327,7 +327,7 @@ namespace GhostExplorer2
                     // サーフェスが何らかの原因で見つからなかった場合はエラー扱い
                     if (CurrentSakuraSurface == null)
                     {
-                        SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
+                        SurfaceNotificationMessages.Add(@"ERROR: 本体側の立ち絵描画に失敗しました。");
                     }
                 }
                 catch (UnhandlableShellException ex)
@@ -336,13 +336,13 @@ namespace GhostExplorer2
 
                     CurrentSakuraSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add(ex.FriendlyMessage);
+                    SurfaceNotificationMessages.Add(ex.FriendlyMessage);
                 }
                 catch (Exception ex)
                 {
                     CurrentSakuraSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
+                    SurfaceNotificationMessages.Add(@"ERROR: 本体側の立ち絵描画に失敗しました。");
                 }
 
                 // kero側のサーフェス画像を取得
@@ -356,23 +356,23 @@ namespace GhostExplorer2
 
                     CurrentKeroSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add(ex.FriendlyMessage);
+                    SurfaceNotificationMessages.Add(ex.FriendlyMessage);
                 }
                 catch (Exception ex)
                 {
                     CurrentKeroSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add(@"パートナー側の立ち絵描画に失敗しました。");
+                    SurfaceNotificationMessages.Add(@"ERROR: パートナー側の立ち絵描画に失敗しました。");
                 }
             } else
             {
                 // シェルが未読み込み状態ならエラー
                 if (ErrorMessagesOnShellLoading.ContainsKey(SelectedGhost.DirPath))
                 {
-                    SurfaceErrorMessages.AddRange(ErrorMessagesOnShellLoading[SelectedGhost.DirPath]);
+                    SurfaceNotificationMessages.AddRange(ErrorMessagesOnShellLoading[SelectedGhost.DirPath]);
                 } else
                 {
-                    SurfaceErrorMessages.Add("シェル情報の読み込みが完了していません。もう少し経ってから選択し直してみてください。");
+                    SurfaceNotificationMessages.Add("シェル情報の読み込みが完了していません。もう少し経ってから選択し直してみてください。");
                 }
             }
 
@@ -446,9 +446,9 @@ namespace GhostExplorer2
         {
             if (SelectedGhost != null)
             {
-                if (this.SurfaceErrorMessages.Any())
+                if (this.SurfaceNotificationMessages.Any())
                 {
-                    return string.Join("\r\n", SurfaceErrorMessages.Select(m => "ERROR: " + m));
+                    return string.Join("\r\n", SurfaceNotificationMessages);
                 }
                 if (SelectedGhost.CharacterDescript != null)
                 {

@@ -22,7 +22,7 @@ namespace ShellExplorer2
         protected ShellManager ShellManager;
         protected Bitmap CurrentSakuraSurface;
         protected Bitmap CurrentKeroSurface;
-        protected List<string> SurfaceErrorMessages;
+        protected List<string> SurfaceNotificationMessages;
         protected string DescriptionText;
         private Font DescriptionFont;
         private RectangleF DescriptionRect;
@@ -93,7 +93,7 @@ namespace ShellExplorer2
         {
             InitializeComponent();
 
-            this.SurfaceErrorMessages = new List<string>();
+            this.SurfaceNotificationMessages = new List<string>();
         }
 
         /// <summary>
@@ -216,12 +216,12 @@ namespace ShellExplorer2
             if (this.SelectedShellListItem == null) return;
 
             // エラーメッセージリストを初期化
-            SurfaceErrorMessages.Clear();
+            SurfaceNotificationMessages.Clear();
 
             // シェルが読み込めていない場合は、エラーメッセージをセット
             if (this.SelectedShellListItem.Shell == null)
             {
-                SurfaceErrorMessages.Add(this.SelectedShellListItem.ErrorMessage);
+                SurfaceNotificationMessages.Add(this.SelectedShellListItem.ErrorMessage);
             }
             else
             {
@@ -234,7 +234,7 @@ namespace ShellExplorer2
                     // 描画に失敗した場合はエラー扱い
                     if (CurrentSakuraSurface == null)
                     {
-                        SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
+                        SurfaceNotificationMessages.Add(@"ERROR: 本体側の立ち絵描画に失敗しました。");
                     }
                 }
                 catch (UnhandlableShellException ex)
@@ -243,13 +243,13 @@ namespace ShellExplorer2
 
                     CurrentSakuraSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add(ex.FriendlyMessage);
+                    SurfaceNotificationMessages.Add(ex.FriendlyMessage);
                 }
                 catch (Exception ex)
                 {
                     CurrentSakuraSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add(@"本体側の立ち絵描画に失敗しました。");
+                    SurfaceNotificationMessages.Add(@"ERROR: 本体側の立ち絵描画に失敗しました。");
                 }
 
                 // kero側のサーフェス画像を取得
@@ -263,13 +263,13 @@ namespace ShellExplorer2
 
                     CurrentKeroSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add(ex.FriendlyMessage);
+                    SurfaceNotificationMessages.Add(ex.FriendlyMessage);
                 }
                 catch (Exception ex)
                 {
                     CurrentKeroSurface = null;
                     Debug.WriteLine(ex.ToString());
-                    SurfaceErrorMessages.Add(@"パートナー側の立ち絵描画に失敗しました。");
+                    SurfaceNotificationMessages.Add(@"ERROR: パートナー側の立ち絵描画に失敗しました。");
                 }
             }
 
@@ -343,9 +343,9 @@ namespace ShellExplorer2
         {
             if (SelectedShellListItem != null)
             {
-                if (this.SurfaceErrorMessages.Any())
+                if (this.SurfaceNotificationMessages.Any())
                 {
-                    return string.Join("\r\n", SurfaceErrorMessages.Select(m => "ERROR: " + m));
+                    return string.Join("\r\n", SurfaceNotificationMessages);
                 }
                 if (this.SelectedShellListItem.Shell != null && this.SelectedShellListItem.Shell.CharacterDescript != null)
                 {

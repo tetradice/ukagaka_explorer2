@@ -19,13 +19,18 @@ namespace ExplorerLib.Exceptions
         public int? Scope { get; set; }
 
         /// <summary>
+        /// Unsupported (サポート対象外) フラグ
+        /// </summary>
+        public bool Unsupported { get; set; }
+
+        /// <summary>
         /// 画面上に表示するためのエラーメッセージ
         /// </summary>
         public string FriendlyMessage {
             get {
-                var prefix = "";
-                if (Scope == 0) prefix = "[本体側] ";
-                if (Scope == 1) prefix = "[パートナー側] ";
+                var prefix = (Unsupported ? "UNSUPPORTED: " : "ERROR: ");
+                if (Scope == 0) prefix += "[本体側]";
+                if (Scope == 1) prefix += "[パートナー側]";
                 return prefix + Message;
             }
         }
