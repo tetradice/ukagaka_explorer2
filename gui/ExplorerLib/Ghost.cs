@@ -34,14 +34,16 @@ namespace ExplorerLib
         /// <summary>
         /// デフォルトシェルのフォルダ名 (通常はmaster)
         /// </summary>
-        public virtual string DefaultShellDirName        {
+        public virtual string DefaultShellDirName
+        {
             get
             {
                 // descript.txt に seriko.defaultsurfacedirectoryname の設定があればそれを優先
                 if (!string.IsNullOrEmpty(MasterGhostDescript.Get("seriko.defaultsurfacedirectoryname")))
                 {
                     return MasterGhostDescript.Get("seriko.defaultsurfacedirectoryname");
-                } else
+                }
+                else
                 {
                     return "master";
                 }
@@ -83,7 +85,8 @@ namespace ExplorerLib
         public virtual string KeroName { get { return this.MasterGhostDescript.Get("kero.name") ?? ""; } } // 未設定の場合は空文字
 
         /// <summary>
-        /// 最終使用シェルの、ゴーストルートフォルダ基準の相対パス (profile.datから読み込む) 。未起動の場合は shell\master となる
+        /// 最終使用シェルの、ゴーストルートフォルダ基準の相対パス (profile.datから読み込む) 。
+        /// 未起動の場合はデフォルトシェルとなる。またデフォルトシェルが存在しない場合、ゴーストが持つシェル1つを自動設定する（SSP準拠）
         /// </summary>
         public virtual string CurrentShellRelDirPath { get; set; }
 
@@ -189,26 +192,55 @@ namespace ExplorerLib
                 CharacterDescript = File.ReadAllText(CharacterDescriptPath, Encoding.UTF8);
             }
 
-            // profile\ghost.dat が存在すれば、その中から最終選択シェルを取得
-            CurrentShellRelDirPath = @"shell\master";
-            var ghostProfPath = Path.Combine(DirPath, "ghost/master/profile/ghost.dat");
-            if (File.Exists(ghostProfPath))
+            // 現在シェルの決定
             {
-                try
+                CurrentShellRelDirPath = null; // 一度初期化
+
+                // profile\ghost.dat が存在すれば、その中から最終選択シェルを取得
+                var ghostProfPath = Path.Combine(DirPath, @"ghost\master\profile\ghost.dat");
+                if (File.Exists(ghostProfPath))
                 {
-                    var lines = File.ReadAllLines(ghostProfPath);
-                    foreach(var line in lines)
+                    try
                     {
-                        if (line.StartsWith("shell,"))
+                        var lines = File.ReadAllLines(ghostProfPath);
+                        foreach (var line in lines)
                         {
-                            var tokens = line.TrimEnd().Split(',');
-                            CurrentShellRelDirPath = tokens[1].TrimEnd('\\'); // 最後の\は除去
-                            break;
+                            if (line.StartsWith("shell,"))
+                            {
+                                var tokens = line.TrimEnd().Split(',');
+                                CurrentShellRelDirPath = tokens[1].TrimEnd('\\'); // 最後の\は除去
+                                break;
+                            }
                         }
                     }
-                } catch(Exception ex)
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex);
+                    }
+                }
+
+                // 最終選択シェルの情報がない場合は、デフォルトシェル (通常は shell\master) を現在シェルとする
+                // デフォルトシェルが存在しない場合は、shellフォルダ内にあるシェル1つを現在シェルとする（SSP準拠）。この場合の優先順は不定
+                if (CurrentShellRelDirPath == null)
                 {
-                    Debug.WriteLine(ex);
+                    if (File.Exists(DefaultShellDescriptPath))
+                    {
+                        // デフォルトシェルが存在する場合は、デフォルトシェルを選択
+                        CurrentShellRelDirPath = @"shell\" + DefaultShellDirName;
+                    } else
+                    {
+                        // デフォルトシェルが存在しない場合は、shellフォルダの中を探して最初に見つかったシェルを使う
+                        var shellDir = Path.Combine(DirPath, "shell");
+                        foreach (var shellSubDir in Directory.GetDirectories(shellDir)){
+                            var descriptPath = Path.Combine(shellSubDir, "descript.txt");
+                            if (File.Exists(descriptPath))
+                            {
+                                CurrentShellRelDirPath = @"shell\" + Path.GetFileName(shellSubDir);
+                                break;
+                            }
+                        }
+
+                    }
                 }
             }
 

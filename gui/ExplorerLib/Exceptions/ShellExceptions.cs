@@ -81,29 +81,29 @@ namespace ExplorerLib.Exceptions
     }
 
     /// <summary>
-    /// デフォルトシェル (通常はmaster) が存在しないゴーストを読み込んだ
+    /// シェルが1つも存在しないゴーストを読み込んだ
     /// </summary>
     [Serializable()]
-    public class DefaultShellNotFoundException : UnhandlableShellException
+    public class ShellNotFoundException : UnhandlableShellException
     {
         /// <summary>
         /// Unsupported (サポート対象外) フラグ
         /// </summary>
         public override bool Unsupported { get { return true; } }
 
-        public DefaultShellNotFoundException() : base(null)
+        public ShellNotFoundException() : base(null)
         {
         }
 
-        public DefaultShellNotFoundException(string message) : base(null, message)
+        public ShellNotFoundException(string message) : base(null, message)
         {
         }
 
-        public DefaultShellNotFoundException(string message, Exception innerException) : base(null, message, innerException)
+        public ShellNotFoundException(string message, Exception innerException) : base(null, message, innerException)
         {
         }
 
-        protected DefaultShellNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected ShellNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

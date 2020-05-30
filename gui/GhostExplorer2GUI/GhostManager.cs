@@ -113,10 +113,10 @@ namespace GhostExplorer2
         /// </summary>
         public virtual Shell LoadShell(Ghost ghost)
         {
-            // デフォルトシェルが存在しない場合は、現在シェルが存在するかどうかにかかわらずエラーとする
-            if (!File.Exists(ghost.DefaultShellDescriptPath))
+            // シェルが1つも存在しない場合はエラーとする
+            if (ghost.CurrentShellRelDirPath == null)
             {
-                throw new DefaultShellNotFoundException(string.Format(@"初期シェル (shell\{0}) が見つかりません。", ghost.DefaultShellDirName));
+                throw new ShellNotFoundException(string.Format(@"有効なシェルが1つも存在しません。", ghost.DefaultShellDirName));
             }
 
             var shellDir = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
