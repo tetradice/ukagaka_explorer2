@@ -35,19 +35,16 @@ namespace ExplorerLib.Exceptions
             }
         }
 
-        public UnhandlableShellException(int? scope) : base()
+        public UnhandlableShellException() : base()
         {
-            Scope = scope;
         }
 
-        public UnhandlableShellException(int? scope, string message) : base(message)
+        public UnhandlableShellException(string message) : base(message)
         {
-            Scope = scope;
         }
 
-        public UnhandlableShellException(int? scope, string message, Exception innerException) : base(message, innerException)
+        public UnhandlableShellException(string message, Exception innerException) : base(message, innerException)
         {
-            Scope = scope;
         }
 
         protected UnhandlableShellException(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -61,18 +58,16 @@ namespace ExplorerLib.Exceptions
     [Serializable()]
     public class DefaultSurfaceNotFoundException : UnhandlableShellException
     {
-        public DefaultSurfaceNotFoundException(int? scope) : base(scope)
+        public DefaultSurfaceNotFoundException() : base()
         {
         }
 
-        public DefaultSurfaceNotFoundException(int? scope, string message) : base(scope, message)
+        public DefaultSurfaceNotFoundException(string message) : base(message)
         {
-            Scope = scope;
         }
 
-        public DefaultSurfaceNotFoundException(int? scope, string message, Exception innerException) : base(scope, message, innerException)
+        public DefaultSurfaceNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
-            Scope = scope;
         }
 
         protected DefaultSurfaceNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -95,11 +90,11 @@ namespace ExplorerLib.Exceptions
         {
         }
 
-        public ShellNotFoundException(string message) : base(null, message)
+        public ShellNotFoundException(string message) : base(message)
         {
         }
 
-        public ShellNotFoundException(string message, Exception innerException) : base(null, message, innerException)
+        public ShellNotFoundException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
@@ -114,15 +109,15 @@ namespace ExplorerLib.Exceptions
     [Serializable()]
     public class IllegalImageFormatException : UnhandlableShellException
     {
-        public IllegalImageFormatException(int? scope) : base(scope)
+        public IllegalImageFormatException() : base()
         {
         }
 
-        public IllegalImageFormatException(int? scope, string message) : base(scope, message)
+        public IllegalImageFormatException(string message) : base(message)
         {
         }
 
-        public IllegalImageFormatException(int? scope, string message, Exception innerException) : base(scope, message, innerException)
+        public IllegalImageFormatException(string message, Exception innerException) : base(message, innerException)
         {
         }
 

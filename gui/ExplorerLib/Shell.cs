@@ -415,11 +415,11 @@ namespace ExplorerLib
                     // element定義かanimation定義がある場合は、「定義されているが対応画像が見つからない」状態であるため表示メッセージを変える
                     if (elements.Count >= 1 || animations.Count >= 1)
                     {
-                        throw new DefaultSurfaceNotFoundException(null, string.Format("デフォルトサーフェス (ID={0}) の定義で指定された画像ファイルが見つかりませんでした。", surfaceId));
+                        throw new DefaultSurfaceNotFoundException(string.Format("デフォルトサーフェス (ID={0}) の定義で指定された画像ファイルが見つかりませんでした。", surfaceId));
                     }
                     else
                     {
-                        throw new DefaultSurfaceNotFoundException(null, string.Format("デフォルトサーフェス (ID={0}) が見つかりませんでした。", surfaceId)) { Unsupported = true };
+                        throw new DefaultSurfaceNotFoundException(string.Format("デフォルトサーフェス (ID={0}) が見つかりませんでした。", surfaceId)) { Unsupported = true };
 
                     }
                 }
@@ -541,11 +541,11 @@ namespace ExplorerLib
             {
                 if (outputBmpData.Stride < 0)
                 {
-                    throw new IllegalImageFormatException(null, string.Format("ボトムアップ形式のイメージには対応していません。"));
+                    throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
                 }
                 if (newBmpData.Stride < 0)
                 {
-                    throw new IllegalImageFormatException(null, string.Format("ボトムアップ形式のイメージには対応していません。"));
+                    throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
                 }
 
                 // 新規レイヤのピクセルデータをバイト型配列で取得する
@@ -738,7 +738,7 @@ namespace ExplorerLib
                         // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
                         if (mask.Size != surface.Size)
                         {
-                            throw new IllegalImageFormatException(null, "pngとpnaのサイズが異なり、かつ縦横のサイズが矛盾しています。") { Unsupported = true };
+                            throw new IllegalImageFormatException("pngとpnaのサイズが異なり、かつ縦横のサイズが矛盾しています。") { Unsupported = true };
                         }
                     }
 
@@ -783,7 +783,7 @@ namespace ExplorerLib
                     var ext = matched.Groups[1].Value.ToLower();
                     if (ext.StartsWith("d") && ext.EndsWith("p"))
                     {
-                        throw new UnhandlableShellException(null, string.Format("{0}形式 (暗号化PNG) の画像ファイルは表示できません。", ext)) { Unsupported = true };
+                        throw new UnhandlableShellException(string.Format("{0}形式 (暗号化PNG) の画像ファイルは表示できません。", ext)) { Unsupported = true };
                     }
 
                     return path;
