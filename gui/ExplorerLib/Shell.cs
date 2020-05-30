@@ -104,14 +104,24 @@ namespace ExplorerLib
         /// kero側の立ち絵、顔画像の描画に使用するサーフェスID
         /// </summary>
         public virtual int KeroSurfaceId { get; set; }
+
+        /// <summary>
+        /// レイヤ合成時の中間結果などを出力するフォルダ (デバッグ用)
+        /// </summary>
+        public virtual string InterimOutputDirPathForDebug { get; set; }
         #endregion
 
         /// <summary>
         /// シェルを読み込み、使用するサーフェスファイルのパスと更新日付を取得
         /// </summary>
-        public static Shell Load(string dirPath, int sakuraSurfaceId, int keroSurfaceId)
+        public static Shell Load(string dirPath, int sakuraSurfaceId, int keroSurfaceId, string interimOutputDirPathForDebug = null)
         {
-            var shell = new Shell() { DirPath = dirPath, SakuraSurfaceId = sakuraSurfaceId, KeroSurfaceId = keroSurfaceId };
+            var shell = new Shell() {
+                DirPath = dirPath,
+                SakuraSurfaceId = sakuraSurfaceId,
+                KeroSurfaceId = keroSurfaceId,
+                InterimOutputDirPathForDebug = interimOutputDirPathForDebug
+            };
             shell.Load();
             return shell;
         }
@@ -314,7 +324,7 @@ namespace ExplorerLib
             }
 
             // elementとMAYUNA定義を元に、サーフェスモデルを構築
-            var surfaceModel = new SurfaceModel();
+            var surfaceModel = new SurfaceModel(surfaceId);
             {
                 // まずはベースサーフィス分のレイヤを登録
                 // element指定が1件以上あれば、elementを合成してベースサーフィスとする
@@ -366,14 +376,25 @@ namespace ExplorerLib
                     // patternの処理
                     var cx = 0;
                     var cy = 0;
-                    foreach(var pattern in usingPatterns) // IDが小さい順に処理
+                    var relative = anim.OffsetInterpriting == Seriko.Animation.OffsetInterpritingType.RelativeFromPreviousFrame;
+                    foreach (var pattern in usingPatterns) // IDが小さい順に処理
                     {
                         // サーフェスIDが負数なら非表示指定のため無視 (-1, -2など)
                         if (pattern.SurfaceId < 0) continue;
 
-                        // patternでのoffset指定は、「前コマからの座標ずらし分」として扱う
-                        cx = (cx + pattern.OffsetX);
-                        cy = (cy + pattern.OffsetY);
+                        // 座標決定
+                        if (relative)
+                        {
+                            // 前コマからのずらし
+                            cx = (cx + pattern.OffsetX);
+                            cy = (cy + pattern.OffsetY);
+                        }
+                        else
+                        {
+                            // 絶対指定
+                            cx = pattern.OffsetX;
+                            cy = pattern.OffsetY;
+                        }
 
                         // 自分自身のサーフェスIDが指定されたかどうかによって処理を変える
                         // (例: surface0 のブレス内で、SurfaceID = 0を指定した場合)
@@ -449,6 +470,17 @@ namespace ExplorerLib
             // まずは1枚目のレイヤをベースレイヤとして読み込む
             var surface = LoadAndProcessSurfaceFile(model.Layers[0].Path);
 
+            string interimLogPath = null;
+            if (InterimOutputDirPathForDebug != null) {
+                Directory.CreateDirectory(InterimOutputDirPathForDebug);
+                interimLogPath = Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}.log", model.Id));
+                if (File.Exists(interimLogPath)) File.Delete(interimLogPath);
+
+                surface.Save(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}.png", model.Id, 0)));
+                var msg = string.Format("p{0:000} : {1} method={2} x={3} y={4}", 0, Path.GetFileName(model.Layers[0].Path), model.Layers[0].ComposingMethod.ToString(), model.Layers[0].X, model.Layers[0].Y);
+                File.AppendAllLines(interimLogPath, new[] { msg });
+            };
+
             // 2枚目以降のレイヤが存在するなら、上に重ねていく
             if (model.Layers.Count >= 2)
             {
@@ -496,6 +528,13 @@ namespace ExplorerLib
                             g.DrawImage(layerBmp, layer.X, layer.Y, layerBmp.Width, layerBmp.Height);
                         }
                     }
+
+                    if (InterimOutputDirPathForDebug != null)
+                    {
+                        surface.Save(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}.png", model.Id, i)));
+                        var msg = string.Format("p{0:000} : {1} method={2} x={3} y={4}", i, Path.GetFileName(layer.Path), layer.ComposingMethod.ToString(), layer.X, layer.Y);
+                        File.AppendAllLines(interimLogPath, new[] { msg });
+                    };
                 }
             }
 
@@ -1001,6 +1040,11 @@ namespace ExplorerLib
             }
 
             /// <summary>
+            /// サーフェスID
+            /// </summary>
+            public virtual int Id { get; set; }
+
+            /// <summary>
             /// レイヤリスト
             /// </summary>
             public virtual IList<Layer> Layers { get; protected set; }
@@ -1008,8 +1052,9 @@ namespace ExplorerLib
             /// <summary>
             /// コンストラクタ
             /// </summary>
-            public SurfaceModel()
+            public SurfaceModel(int id)
             {
+                Id = id;
                 Layers = new List<Layer>();
             }
         }

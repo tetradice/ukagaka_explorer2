@@ -23,12 +23,26 @@ namespace ExplorerLib.Seriko
             All
         }
 
+        public enum OffsetInterpritingType
+        {
+            /// <summary>絶対座標</summary>
+            Absolute,
+
+            /// <summary>前コマからの相対座標</summary>
+            RelativeFromPreviousFrame
+        }
+
         public virtual List<Pattern> Patterns { get; set; }
 
         /// <summary>
         /// 立ち絵表示時にどのパターン画像を使用するか
         /// </summary>
         public virtual PatternDisplayType PatternDisplayForStaticImage { get; set; }
+
+        /// <summary>
+        /// Offset座標指定をどう解釈するか
+        /// </summary>
+        public virtual OffsetInterpritingType OffsetInterpriting { get; set; }
 
         /// <summary>
         /// bindgroupを見るかどうか (trueであれば対象の着せ替えグループが初期表示状態になっていないと、表示しない)
@@ -42,6 +56,7 @@ namespace ExplorerLib.Seriko
         {
             Patterns = new List<Pattern>();
             PatternDisplayForStaticImage = PatternDisplayType.No;
+            OffsetInterpriting = OffsetInterpritingType.Absolute;
         }
 
         #region pattern定義

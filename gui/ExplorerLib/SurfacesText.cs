@@ -330,8 +330,9 @@ namespace ExplorerLib
                             // intervalの処理
                             if (valuePair.Item2 == "bind")
                             {
-                                // bind単体の場合は全パターン表示
+                                // bind単体の場合は全パターン表示、かつOffset指定を絶対座標とみなす
                                 defInfo.Animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.All;
+                                defInfo.Animations[id].OffsetInterpriting = Seriko.Animation.OffsetInterpritingType.Absolute;
                                 defInfo.Animations[id].UsingBindGroup = true;
                             }
                             else if (valuePair.Item2.Contains("sometimes")
@@ -341,8 +342,9 @@ namespace ExplorerLib
                                      || valuePair.Item2.Contains("runonce")
                                      || valuePair.Item2.Contains("always"))
                             {
-                                // 上記指定を含む場合は最終パターンのみ表示
+                                // bindでなく上記指定を含む場合は最終パターンのみ表示、かつOffset指定を相対座標とみなす
                                 defInfo.Animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.LastOnly;
+                                defInfo.Animations[id].OffsetInterpriting = Seriko.Animation.OffsetInterpritingType.RelativeFromPreviousFrame;
 
                                 // bindも含む場合はbindgroupも見る
                                 if (valuePair.Item2.Contains("bind"))
