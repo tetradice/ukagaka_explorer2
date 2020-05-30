@@ -16,12 +16,12 @@ namespace ExplorerLib.Exceptions
         /// <summary>
         /// エラーが発生したスコープ番号 (sakura側なら0, kero側なら1, シェル全体のエラーの場合やまだ特定できない場合はnull)
         /// </summary>
-        public int? Scope { get; set; }
+        public virtual int? Scope { get; set; }
 
         /// <summary>
         /// Unsupported (サポート対象外) フラグ
         /// </summary>
-        public bool Unsupported { get; set; }
+        public virtual bool Unsupported { get; set; }
 
         /// <summary>
         /// 画面上に表示するためのエラーメッセージ
@@ -86,6 +86,11 @@ namespace ExplorerLib.Exceptions
     [Serializable()]
     public class DefaultShellNotFoundException : UnhandlableShellException
     {
+        /// <summary>
+        /// Unsupported (サポート対象外) フラグ
+        /// </summary>
+        public override bool Unsupported { get { return true; } }
+
         public DefaultShellNotFoundException() : base(null)
         {
         }
