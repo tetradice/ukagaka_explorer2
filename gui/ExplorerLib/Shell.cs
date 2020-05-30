@@ -412,8 +412,16 @@ namespace ExplorerLib
                 // デフォルトサーフェスであるにもかかわらず、レイヤが1枚もない（画像ファイルが見つからなかったなど）場合は描画失敗
                 if (isDefault && !surfaceModel.Layers.Any())
                 {
-                    // 画像がない場合はその旨を表示
-                    throw new DefaultSurfaceNotFoundException(null, string.Format("デフォルトサーフェス (ID={0}) が見つかりませんでした。", surfaceId));
+                    // element定義かanimation定義がある場合は、「定義されているが対応画像が見つからない」状態であるため表示メッセージを変える
+                    if (elements.Count >= 1 || animations.Count >= 1)
+                    {
+                        throw new DefaultSurfaceNotFoundException(null, string.Format("デフォルトサーフェス (ID={0}) の定義で指定された画像ファイルが見つかりませんでした。", surfaceId));
+                    }
+                    else
+                    {
+                        throw new DefaultSurfaceNotFoundException(null, string.Format("デフォルトサーフェス (ID={0}) が見つかりませんでした。", surfaceId)) { Unsupported = true };
+
+                    }
                 }
             }
 
