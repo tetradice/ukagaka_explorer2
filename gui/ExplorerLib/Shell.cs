@@ -266,15 +266,25 @@ namespace ExplorerLib
             , ISet<int> enabledBindGroupIds
             , ISet<int> alreadyPassedSurfaceIds = null
             , Seriko.ComposingMethodType? parentPatternComposingMethod = null
+            , List<string> interimLogs = null
+            , int depth = 0
         )
         {
-            var isDefault = alreadyPassedSurfaceIds == null;
+            var isTopLevel = depth == 0;
+            var interimLogPrefix = string.Format("[{0}]", surfaceId);
+            for(var i = 0; i < depth; i++)
+            {
+                interimLogPrefix = "  " + interimLogPrefix;
+            }
 
             // 非表示の場合はnullを返す
             if (surfaceId == -1) return null;
 
             // currentLoadedSurfaceIds が未指定の場合は生成
             alreadyPassedSurfaceIds = (alreadyPassedSurfaceIds ?? new HashSet<int>());
+
+            // interimLogsが未指定の場合は生成
+            if (interimLogs == null && InterimOutputDirPathForDebug != null) interimLogs = new List<string>();
 
             // animation*.pattern* 内で指定されたサーフェスIDと対応するサーフェス情報
             var childSurfaceModels = new Dictionary<int, SurfaceModel>();
@@ -340,6 +350,10 @@ namespace ExplorerLib
                             layer.X = elem.OffsetX;
                             layer.Y = elem.OffsetY;
                             surfaceModel.Layers.Add(layer);
+                            if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("element{0} - use {1}", elem.Id, Path.GetFileName(filePath)));
+                        } else
+                        {
+                            if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("ERROR: element{0} image not found ({1})", elem.Id, Path.GetFileName(filePath)));
                         }
                     }
                 } else
@@ -350,8 +364,13 @@ namespace ExplorerLib
                     // 画像がある場合はレイヤとして追加
                     if (surfacePath != null)
                     {
+                        if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("use base image ({0})", Path.GetFileName(surfacePath)));
                         var method = (parentPatternComposingMethod.HasValue ? parentPatternComposingMethod.Value : Seriko.ComposingMethodType.Base);
                         surfaceModel.Layers.Add(new SurfaceModel.Layer(surfacePath, method));
+                    }
+                    else
+                    {
+                        if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("base image not found"));
                     }
                 }
 
@@ -363,6 +382,8 @@ namespace ExplorerLib
 
                     if (anim.PatternDisplayForStaticImage == Seriko.Animation.PatternDisplayType.No) continue; // 表示対象外の場合はスキップ
                     if (anim.UsingBindGroup && !enabledBindGroupIds.Contains(animId)) continue; // 着せ替え定義の場合、初期状態で有効でないbindGroupはスキップ
+
+                    if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("use animation{0} (display: {1})", animId, anim.PatternDisplayForStaticImage));
 
                     // interval指定によっては、全patternを重ね合わせるのではなく、最終patternのみ処理する (例: bind+runonce)
                     var usingPatterns = anim.Patterns.OrderBy(e => e.Id).ToList();
@@ -379,6 +400,8 @@ namespace ExplorerLib
                     var relative = anim.OffsetInterpriting == Seriko.Animation.OffsetInterpritingType.RelativeFromPreviousFrame;
                     foreach (var pattern in usingPatterns) // IDが小さい順に処理
                     {
+                        if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("  pattern{0} (surfaceId={1})", pattern.Id, pattern.SurfaceId));
+
                         // サーフェスIDが負数なら非表示指定のため無視 (-1, -2など)
                         if (pattern.SurfaceId < 0) continue;
 
@@ -407,9 +430,14 @@ namespace ExplorerLib
                             if (filePath != null)
                             {
                                 var layer = new SurfaceModel.Layer(filePath, pattern.Method);
-                                layer.X = cx; 
+                                layer.X = cx;
                                 layer.Y = cy;
                                 surfaceModel.Layers.Add(layer);
+
+                                if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("    use {0}", Path.GetFileName(filePath)));
+                            } else
+                            {
+                                if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("    ERROR: image not found"));
                             }
                         } else
                         {
@@ -421,7 +449,16 @@ namespace ExplorerLib
                             if (!childSurfaceModels.ContainsKey(pattern.SurfaceId))
                             {
                                 alreadyPassedSurfaceIds.Add(surfaceId);
-                                childSurfaceModels[pattern.SurfaceId] = LoadSurfaceModel(pattern.SurfaceId, targetCharacter, enabledBindGroupIds, alreadyPassedSurfaceIds, pattern.Method);
+                                if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("    load child surface model - s{0}", pattern.SurfaceId));
+                                childSurfaceModels[pattern.SurfaceId] = LoadSurfaceModel(
+                                    pattern.SurfaceId
+                                    , targetCharacter
+                                    , enabledBindGroupIds
+                                    , alreadyPassedSurfaceIds
+                                    , pattern.Method
+                                    , interimLogs: interimLogs
+                                    , depth: depth + 1
+                                );
                             }
                             var childSurfaceModel = childSurfaceModels[pattern.SurfaceId];
 
@@ -435,6 +472,8 @@ namespace ExplorerLib
                                     layer.X = cx + childLayer.X; // patternの処理によって決まった原点座標 + element側でのoffset
                                     layer.Y = cy + childLayer.Y; // 同上
                                     surfaceModel.Layers.Add(layer);
+
+                                    if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("    use {0}", Path.GetFileName(layer.Path)));
                                 }
                             }
                         }
@@ -442,7 +481,7 @@ namespace ExplorerLib
                 }
 
                 // デフォルトサーフェスであるにもかかわらず、レイヤが1枚もない（画像ファイルが見つからなかったなど）場合は描画失敗
-                if (isDefault && !surfaceModel.Layers.Any())
+                if (isTopLevel && !surfaceModel.Layers.Any())
                 {
                     // element定義かanimation定義がある場合は、「定義されているが対応画像が見つからない」状態であるため表示メッセージを変える
                     if (elements.Count >= 1 || animations.Count >= 1)
@@ -455,6 +494,14 @@ namespace ExplorerLib
 
                     }
                 }
+            }
+
+            // デフォルトサーフェスの構築が終わった場合、中間結果を出力
+            if(isTopLevel && interimLogs != null)
+            {
+                Directory.CreateDirectory(InterimOutputDirPathForDebug);
+                var path = Path.Combine(InterimOutputDirPathForDebug, string.Format("surfaceModel_{0:0000}.log", surfaceId));
+                File.WriteAllLines(path, interimLogs);
             }
 
             // 構築したサーフェスモデルを返す
@@ -867,31 +914,45 @@ namespace ExplorerLib
         /// <returns>有効になっている着せ替えグループIDのセット</returns>
         public virtual ISet<int> GetEnabledBindGroupIds(string targetCharacter)
         {
-            // まずはprofileからの取得を試みる。取得できたら終了
-            var ids = GetEnabledBindGroupIdsFromProfile(targetCharacter);
-            if (ids != null) return ids;
+            // descript.txt 内の着せ替え情報を取得
+            var groups = GetBindGroupsFromDescript(targetCharacter);
+
+            // まずはprofileからの取得を試みる
+            var usingIds = GetEnabledBindGroupIdsFromProfile(targetCharacter);
 
             // profileから取得できない場合、descript.txt の記述から、初期状態で有効なbindgroup IDのコレクションを作成
-            ids = new HashSet<int>();
-            var groups = GetBindGroupsFromDescript(targetCharacter);
+            if(usingIds == null)
+            {
+                usingIds = new HashSet<int>();
+                foreach (var pair in groups)
+                {
+                    var id = pair.Key;
+                    var group = pair.Value;
+
+                    if (group.Default)
+                    {
+                        usingIds.Add(id);
+                    }
+                }
+            }
+
+
+            // addid指定分も追加
             foreach (var pair in groups)
             {
                 var id = pair.Key;
                 var group = pair.Value;
 
-                if (group.Default)
+                if (usingIds.Contains(id))
                 {
-                    ids.Add(id);
-
-                    // addid指定分も追加
                     foreach (var addId in group.AddId)
                     {
-                        ids.Add(addId);
+                        usingIds.Add(addId);
                     }
                 }
             }
 
-            return ids;
+            return usingIds;
         }
 
         /// <summary>
@@ -948,8 +1009,8 @@ namespace ExplorerLib
         /// <param name="targetCharacter">着せ替え対象のキャラクタ (sakura, kero, char2, char3, ...)</param>
         public virtual IDictionary<int, BindGroup> GetBindGroupsFromDescript(string targetCharacter)
         {
-            var defaultRegex = new Regex(string.Format(@"\A{0}\.bindgroup(\d+).default\z", targetCharacter));
-            var addIdRegex = new Regex(string.Format(@"\A{0}\.bindgroup(\d+).addid\z", targetCharacter));
+            var defaultRegex = new Regex(string.Format(@"\A{0}\.bindgroup(\d+)\.default\z", targetCharacter));
+            var addIdRegex = new Regex(string.Format(@"\A{0}\.bindgroup(\d+)\.addid\z", targetCharacter));
 
             // descript.txt から着せ替え情報取得
             var bindGroups = new Dictionary<int, BindGroup>();
@@ -971,7 +1032,7 @@ namespace ExplorerLib
 
                 // addid指定
                 {
-                    var matched = addIdRegex.Match(pair.Value);
+                    var matched = addIdRegex.Match(pair.Key);
                     if (matched.Success)
                     {
                         var groupId = int.Parse(matched.Groups[1].Value);
