@@ -210,9 +210,9 @@
             this.cmbSort.DisplayMember = "Label";
             this.cmbSort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbSort.FormattingEnabled = true;
-            this.cmbSort.Location = new System.Drawing.Point(192, 4);
+            this.cmbSort.Location = new System.Drawing.Point(172, 4);
             this.cmbSort.Name = "cmbSort";
-            this.cmbSort.Size = new System.Drawing.Size(117, 20);
+            this.cmbSort.Size = new System.Drawing.Size(137, 20);
             this.cmbSort.TabIndex = 1;
             this.cmbSort.ValueMember = "Value";
             this.cmbSort.SelectionChangeCommitted += new System.EventHandler(this.cmbSort_SelectionChangeCommitted);
@@ -222,7 +222,7 @@
             this.txtFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.txtFilter.Location = new System.Drawing.Point(29, 4);
             this.txtFilter.Name = "txtFilter";
-            this.txtFilter.Size = new System.Drawing.Size(157, 19);
+            this.txtFilter.Size = new System.Drawing.Size(137, 19);
             this.txtFilter.TabIndex = 0;
             this.txtFilter.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtFilter_KeyDown);
             this.txtFilter.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtFilter_KeyPress);
