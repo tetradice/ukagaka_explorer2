@@ -149,7 +149,8 @@ namespace GhostExplorer2
 
             // ソートドロップダウン初期設定
             cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByName, Label = "名前順" });
-            cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByRecent, Label = "最近起動した順" });
+            cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByRecentBoot, Label = "最近起動した順" });
+            cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByRecentInstall, Label = "最近インストールした順" });
             cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByBootTime, Label = "累計起動した順" });
 
 

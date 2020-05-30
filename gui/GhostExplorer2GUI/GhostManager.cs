@@ -90,6 +90,39 @@ namespace GhostExplorer2
                 }
             }
 
+            // ゴースト別のインストール日付情報を取得 (インストール日時順でソートされた場合のみ)
+            var installSeconds = new Dictionary<string, long>();
+            if (SortType == Const.SortType.ByRecentInstall) {
+                foreach (var ghost in Ghosts)
+                {
+                    // 初期値は0
+                    installSeconds[ghost.DirPath] = 0;
+
+                    // profile\var.txt が存在すれば、その中からインストール時刻を取得
+                    var varPath = Path.Combine(ghost.DirPath, @"ghost\master\profile\var.txt");
+                    if (File.Exists(varPath))
+                    {
+                        try
+                        {
+                            var lines = File.ReadAllLines(varPath);
+                            foreach (var line in lines)
+                            {
+                                if (line.StartsWith("install,"))
+                                {
+                                    var tokens = line.TrimEnd().Split(',');
+                                    installSeconds[ghost.DirPath] = long.Parse(tokens[1]);
+                                    break;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex);
+                        }
+                    }
+                }
+            }
+
             // 最後にソート
             switch (SortType)
             {
@@ -97,8 +130,12 @@ namespace GhostExplorer2
                     Ghosts = Ghosts.OrderByDescending(g => totalBootTimes[g.Name]).ToList();
                     break;
 
-                case Const.SortType.ByRecent:
+                case Const.SortType.ByRecentBoot:
                     Ghosts = Ghosts.OrderByDescending(g => lastBootSeconds[g.Name]).ToList();
+                    break;
+
+                case Const.SortType.ByRecentInstall:
+                    Ghosts = Ghosts.OrderByDescending(g => installSeconds[g.DirPath]).ToList();
                     break;
 
                 default:
