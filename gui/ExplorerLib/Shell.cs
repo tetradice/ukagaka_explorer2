@@ -765,12 +765,19 @@ namespace ExplorerLib
         /// </remarks>
         public virtual string FindSurfaceFile(int surfaceNo)
         {
-            var regex = new Regex(string.Format(@"\Asurface0*{0}\.png\z", surfaceNo), RegexOptions.IgnoreCase);
-            foreach (var path in Directory.GetFiles(DirPath, string.Format("surface*{0}.png", surfaceNo)))
+            var regex = new Regex(string.Format(@"\Asurface0*{0}\.(png|dap|ddp|dfp|dgp|gif|jpg|jpeg|bmp)\z", surfaceNo), RegexOptions.IgnoreCase);
+            foreach (var path in Directory.GetFiles(DirPath, string.Format("surface*{0}.*", surfaceNo)))
             {
                 var fileName = Path.GetFileName(path);
-                if (regex.IsMatch(fileName))
+                var matched = regex.Match(fileName);
+                if (matched.Success)
                 {
+                    var ext = matched.Groups[1].Value.ToLower();
+                    if (ext.StartsWith("d") && ext.EndsWith("p"))
+                    {
+                        throw new UnhandlableShellException(null, string.Format("{0}形式 (暗号化PNG) の画像ファイルは表示できません。", ext)) { Unsupported = true };
+                    }
+
                     return path;
                 }
             }
