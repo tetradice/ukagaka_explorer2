@@ -156,7 +156,7 @@ namespace ExplorerLib
             // サーフェス情報 (使用する画像のファイルパス、ファイル更新日時など) を読み込む
             try
             {
-                SakuraSurfaceModel = LoadSurfaceModel(SakuraSurfaceId, sakuraEnabledBindGroupIds);
+                SakuraSurfaceModel = LoadSurfaceModel(SakuraSurfaceId, "sakura", sakuraEnabledBindGroupIds);
             }
             catch (UnhandlableShellException ex)
             {
@@ -172,7 +172,7 @@ namespace ExplorerLib
 
             try
             {
-                KeroSurfaceModel = LoadSurfaceModel(KeroSurfaceId, keroEnabledBindGroupIds);
+                KeroSurfaceModel = LoadSurfaceModel(KeroSurfaceId, "kero", keroEnabledBindGroupIds);
             }
             catch (UnhandlableShellException ex)
             {
@@ -246,11 +246,13 @@ namespace ExplorerLib
         /// 指定IDのサーフェス情報を読み込む (ファイルの検索は行うが、画像ファイルの中身は読み込まない)
         /// </summary>
         /// <param name="enabledBindGroupIds">有効になっている着せ替えグループIDのコレクション</param>
+        /// <param name="targetCharacter">対象のキャラクタ (sakura, kero, char2, char3, ...) 。alias定義を探すときに使う</param>
         /// <param name="alreadyPassedSurfaceIds">読み込み済みのサーフェスIDコレクション (循環参照による無限ループを防ぐために使用)</param>
         /// <param name="parentPatternComposingMethod">animation定義で指定した合成メソッド (animation定義の中で指定されたサーフェスIDの情報を読み込む場合に使用)</param>
         /// <returns>サーフェス情報。非表示ID (ID=-1) が指定された場合や、読み込みに失敗した場合はnull</returns>
         public virtual SurfaceModel LoadSurfaceModel(
               int surfaceId
+            , string targetCharacter
             , ISet<int> enabledBindGroupIds
             , ISet<int> alreadyPassedSurfaceIds = null
             , Seriko.ComposingMethodType? parentPatternComposingMethod = null
@@ -267,20 +269,29 @@ namespace ExplorerLib
             // animation*.pattern* 内で指定されたサーフェスIDと対応するサーフェス情報
             var childSurfaceModels = new Dictionary<int, SurfaceModel>();
 
-            // surface*.txt から、指定IDと対応するelementとMAYUNAの定義をすべて取得
+            // surface*.txt から、指定IDと対応するalias定義を探す
+            foreach (var surfacesText in SurfacesTextList)
+            {
+                var newId = surfacesText.FindActualSurfaceId(targetCharacter, surfaceId);
+                if(newId != surfaceId)
+                {
+                    surfaceId = newId;
+                    break; // 1件見つかったら終了
+                }
+            }
+
+            // surface*.txt から、指定IDと対応するelement, MAYUNA定義をすべて取得
             var elements = new List<Seriko.Element>();
             var animations = new Dictionary<int, Seriko.Animation>();
             foreach (var surfacesText in SurfacesTextList)
             {
-                var defs = surfacesText.GetElementsAndAnimations(surfaceId);
-                var defElems = defs.Item1;
-                var defAnims = defs.Item2;
+                var defInfo = surfacesText.GetSurfaceDefinitionInfo(surfaceId);
 
                 // 対象の surface*.txt 内に存在するelementを結合
-                elements = elements.Concat(defElems).ToList();
+                elements = elements.Concat(defInfo.Elements).ToList();
 
                 // 対象の surface*.txt 内に存在するanimationを結合
-                foreach(var pair in defAnims)
+                foreach(var pair in defInfo.Animations)
                 {
                     var animId = pair.Key;
                     var anim = pair.Value;
@@ -389,7 +400,7 @@ namespace ExplorerLib
                             if (!childSurfaceModels.ContainsKey(pattern.SurfaceId))
                             {
                                 alreadyPassedSurfaceIds.Add(surfaceId);
-                                childSurfaceModels[pattern.SurfaceId] = LoadSurfaceModel(pattern.SurfaceId, enabledBindGroupIds, alreadyPassedSurfaceIds, pattern.Method);
+                                childSurfaceModels[pattern.SurfaceId] = LoadSurfaceModel(pattern.SurfaceId, targetCharacter, enabledBindGroupIds, alreadyPassedSurfaceIds, pattern.Method);
                             }
                             var childSurfaceModel = childSurfaceModels[pattern.SurfaceId];
 

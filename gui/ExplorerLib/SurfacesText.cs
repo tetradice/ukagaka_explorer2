@@ -195,13 +195,50 @@ namespace ExplorerLib
         }
 
         /// <summary>
-        /// 指定したサーフェスIDと対応するelement, 着せ替え定義のリストを取得する
+        /// 指定したサーフェスIDについて、alias定義を辿り、実際のサーフェスIDを取得
+        /// </summary>
+        /// <param name="targetCharacter">対象のキャラクタ (sakura, kero, char2, char3, ...)</param>
+        public virtual int FindActualSurfaceId(string targetCharacter, int surfaceId)
+        {
+            // alias定義が存在し、その中に指定したIDと対応する定義があるかどうかチェック
+            var name = string.Format("{0}.surface.alias", targetCharacter);
+            if (Scopes.ContainsKey(name))
+            {
+                var entry = Scopes[name].Entries.FirstOrDefault(e => e.Item1 == surfaceId.ToString());
+                if (entry != null)
+                {
+                    // エイリアス先IDを取得
+                    var targetIds = entry.Item2.Trim(new[] { '[', ']' }).Split(',');
+
+                    // 1件以上存在し、かつ先頭が数値であれば、そのエイリアス先IDを返す
+                    int targetSurfaceId;
+                    if (targetIds.Any() && int.TryParse(targetIds[0], out targetSurfaceId))
+                    {
+                        return targetSurfaceId;
+                    }
+                }
+            }
+
+            // 上記で対応するalias定義が見つからなければ、指定したサーフェスIDをそのまま返す
+            return surfaceId;
+        }
+
+        /// <summary>
+        /// サーフェス定義情報。GetSurfaceDefinitionInfoでサーフェスIDを指定して取得する
+        /// </summary>
+        public class SurfaceDefinitionInfo
+        {
+            public IList<Seriko.Element> Elements = new List<Seriko.Element>();
+            public IDictionary<int, Seriko.Animation> Animations = new Dictionary<int, Seriko.Animation>();
+        }
+
+        /// <summary>
+        /// 指定したサーフェスIDと対応するelement, 着せ替え定義を取得する
         /// </summary>
         /// <returns></returns>
-        public virtual Tuple<IList<Seriko.Element>, IDictionary<int, Seriko.Animation>> GetElementsAndAnimations(int surfaceId)
+        public virtual SurfaceDefinitionInfo GetSurfaceDefinitionInfo(int surfaceId)
         {
-            var elements = new List<Seriko.Element>();
-            var animations = new Dictionary<int, Seriko.Animation> ();
+            var defInfo = new SurfaceDefinitionInfo();
 
             // パターンの生成
             var elemKeyRegex = new Regex(@"\Aelement(\d+)\z");
@@ -258,7 +295,7 @@ namespace ExplorerLib
                                 if (matched2.Groups["offsety"].Success) int.TryParse(matched2.Groups["offsety"].Value, out offsetY);
                                 elem.OffsetY = offsetY;
 
-                                elements.Add(elem);
+                                defInfo.Elements.Add(elem);
                             }
 
                             continue;
@@ -285,17 +322,17 @@ namespace ExplorerLib
                         if (id >= 0)
                         {
                             // animation定義が未登録であれば追加
-                            if (!animations.ContainsKey(id))
+                            if (!defInfo.Animations.ContainsKey(id))
                             {
-                                animations.Add(id, new Seriko.Animation());
+                                defInfo.Animations.Add(id, new Seriko.Animation());
                             }
 
                             // intervalの処理
                             if (valuePair.Item2 == "bind")
                             {
                                 // bind単体の場合は全パターン表示
-                                animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.All;
-                                animations[id].UsingBindGroup = true;
+                                defInfo.Animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.All;
+                                defInfo.Animations[id].UsingBindGroup = true;
                             }
                             else if (valuePair.Item2.Contains("sometimes")
                                      || valuePair.Item2.Contains("rarely")
@@ -305,12 +342,12 @@ namespace ExplorerLib
                                      || valuePair.Item2.Contains("always"))
                             {
                                 // 上記指定を含む場合は最終パターンのみ表示
-                                animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.LastOnly;
+                                defInfo.Animations[id].PatternDisplayForStaticImage = Seriko.Animation.PatternDisplayType.LastOnly;
 
                                 // bindも含む場合はbindgroupも見る
                                 if (valuePair.Item2.Contains("bind"))
                                 {
-                                    animations[id].UsingBindGroup = true;
+                                    defInfo.Animations[id].UsingBindGroup = true;
                                 }
                             }
                             continue;
@@ -338,7 +375,7 @@ namespace ExplorerLib
                                 if(matched2.Groups["offsetY"].Success) int.TryParse(matched2.Groups["offsetY"].Value, out offsetY);
 
                                 addAnimationPattern(
-                                    animations
+                                    defInfo.Animations
                                     , animId
                                     , patId
                                     , methodValue
@@ -372,7 +409,7 @@ namespace ExplorerLib
                                 if (matched2.Groups["offsetY"].Success) int.TryParse(matched2.Groups["offsetY"].Value, out offsetY);
 
                                 addAnimationPattern(
-                                    animations
+                                    defInfo.Animations
                                     , animId
                                     , patId
                                     , methodValue
@@ -390,7 +427,7 @@ namespace ExplorerLib
             }
 
             // 結果を返す
-            return Tuple.Create<IList<Seriko.Element>, IDictionary<int, Seriko.Animation>>(elements, animations);
+            return defInfo;
         }
 
         /// <summary>
