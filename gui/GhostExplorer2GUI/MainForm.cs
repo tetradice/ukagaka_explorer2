@@ -466,11 +466,27 @@ namespace GhostExplorer2
         /// <summary>
         /// ゴースト切り替えボタン押下
         /// </summary>
-        private void BtnChange_Click(object sender, EventArgs e)
+        async private void BtnChange_Click(object sender, EventArgs e)
         {
-            var success = SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
+            // まずはOnGhostChangingイベントを発生させる
+            var success = SendSSTPScript(string.Format(@"\![raise,OnGhostChanging,{0},manual,{1},{2}]\e"
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.SakuraName)
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.Name)
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.DirPath)));
 
-            // 送信成功した場合、オプションに応じてアプリケーション終了
+            // 送信成功した場合、オプションに応じてアプリケーションを隠す
+            if (success && ChkCloseAfterChange.Checked)
+            {
+                this.Hide();
+            }
+
+            // トーク終了を待つ
+            await WaitCurrentGhostTalkEnd();
+
+            // ゴースト変更
+            SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
+
+            // ゴースト変更後にアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)
             {
                 Application.Exit();
@@ -482,20 +498,78 @@ namespace GhostExplorer2
         /// <summary>
         /// 呼び出しボタン押下
         /// </summary>
-        private void BtnCall_Click(object sender, EventArgs e)
+        async private void BtnCall_Click(object sender, EventArgs e)
         {
             // ゴースト呼び出しの前にFMO情報の更新を試みる
             UpdateFMOInfo();
 
-            // 立っているゴーストが一人もおらず、かつSSP.exeのパスが特定できるなら、SSP.exeの起動を試みる
+            // 立っているゴーストが一人もおらず、かつSSP.exeのパスが特定できるなら、代わりにSSP.exeの起動を試みる
             if (!FMOGhostList.Any() && LastSSPExePath != null)
             {
                 Process.Start(LastSSPExePath, string.Format(@"/g ""{0}""", this.SelectedGhost.Name));
                 return;
             }
 
+            // まずはOnGhostCallingイベントを発生させる
+            SendSSTPScript(string.Format(@"\![raise,OnGhostCalling,{0},manual,{1},{2}]\e"
+                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.SakuraName)
+                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.Name)
+                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.DirPath)));
+
+            // 1秒だけ待つ
+            await Task.Delay(1000);
+
+            // ゴーストを呼ぶ
             SendSSTPScript(@"\![call,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
         }
+
+        /// <summary>
+        /// 現在ゴーストのトーク終了を待つ
+        /// </summary>
+        /// <returns></returns>
+        protected async Task WaitCurrentGhostTalkEnd()
+        {
+            // ステータスを1秒おきに取得しながらtalkingの終了を待つ
+            await Task.Run(() =>
+            {
+                // 最大で60回リトライ
+                for (var i = 0; i < 60; i++)
+                {
+                    // SSTPでstatus取得
+                    var status = SendSSTPGetProperty("currentghost.status");
+
+                    // statusが返らない、もしくはtalkingが含まれていない場合はトーク終了とみなす
+                    if (string.IsNullOrEmpty(status) || !status.Split(',').Contains("talking"))
+                    {
+                        break;
+                    }
+
+                    // 1秒ごとにstatus取得
+                    Thread.Sleep(1000);
+                }
+            });
+        }
+
+        /// <summary>
+        /// SSTP EXECUTEでGetPropertyを送信
+        /// </summary>
+        protected string SendSSTPGetProperty(string key)
+        {
+            var sstpClient = new SSTPClient();
+            var req = new SSTPClient.Execute13Request();
+            req.Sender = Const.SSTPSender;
+            req.Command = "GetProperty[" + key + "]";
+
+            SSTPClient.Response res;
+            if (SendSSTPScript(req, out res))
+            {
+                return res.AdditionalValue;
+            } else
+            {
+                return null;
+            }
+        }
+
 
         /// <summary>
         /// SSTP送信
@@ -506,6 +580,7 @@ namespace GhostExplorer2
             var req = new SSTPClient.Send14Request();
             req.Id = CallerId;
             req.Sender = Const.SSTPSender;
+
             if (CallerLost)
             {
                 // 呼び出し元ゴーストがいなくなっている場合、適当なゴースト1体に対して送信
@@ -532,9 +607,28 @@ namespace GhostExplorer2
             }
             req.Script = script;
 
+            return SendSSTPScript(req);
+        }
+
+        /// <summary>
+        /// SSTP送信
+        /// </summary>
+        protected bool SendSSTPScript(SSTPClient.Request req)
+        {
+            SSTPClient.Response res;
+            return SendSSTPScript(req, out res);
+        }
+
+        /// <summary>
+        /// SSTP送信
+        /// </summary>
+        protected bool SendSSTPScript(SSTPClient.Request req, out SSTPClient.Response res)
+        {
+            res = null;
+            var sstpClient = new SSTPClient();
             try
             {
-                var res = sstpClient.SendRequest(req);
+                res = sstpClient.SendRequest(req);
 
                 // エラーレスポンス時
                 if (!res.Success)
