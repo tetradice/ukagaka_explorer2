@@ -71,7 +71,7 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
 
 ・他ゴーストへの切り替えや呼び出しを実行した時に、切り替え時のトークが行われません。（OnGhostChangingなどのイベントが発生しません）
 
-・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, add, bind) 、および reduce のみです。
+・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, overlayfast, add, bind) 、および reduce, interpolate のみです。
   他の描画メソッドはすべてoverlay扱いで描画します。
 
 ・SERIKOの機能のうち、下記のものには対応できていません。
@@ -108,8 +108,8 @@ yaya.dllはYAYAのライセンスに基づき、
 
 2020/5/xx ver 0.4.0
 * [機能追加] 並び順に「最近インストールした順」を追加
-* [機能追加] SERIKOのreduceメソッドに対応
 * [機能追加] ゴースト側の explorer2\descript.txt でもデフォルトサーフェスIDを指定できるようにした
+* [機能追加] SERIKOのreduce, interpolateメソッドに対応
 * [変更] 立ち絵を表示できない場合のエラーメッセージを、以前より具体的に表示するようにした
 * [変更] ゴーストエクスプローラ通がサポート対象外とするゴーストの場合、「ERROR: ～」ではなく「UNSUPPORTED: ～」形式でメッセージを表示するように変更
          現時点では下記のものが該当
