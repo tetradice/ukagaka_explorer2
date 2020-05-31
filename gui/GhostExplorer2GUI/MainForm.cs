@@ -102,11 +102,44 @@ namespace GhostExplorer2
                     return null;
                 }
 
-                // 選択インデックスと対応するゴーストを取得
                 var selectedIndex = lstGhost.SelectedItems[0].Index;
+
+                // オプションの場合はスキップ
+                if (OptionSelected) return null;
+
+                // 選択インデックスと対応するゴーストを取得
                 return GhostManager.Ghosts[selectedIndex];
             }
         }
+
+        /// <summary>
+        /// オプションを選択しているかどうか
+        /// </summary>
+        protected bool OptionSelected
+        {
+            get
+            {
+                if (lstGhost.SelectedItems.Count == 0) return false;
+                var selectedIndex = lstGhost.SelectedItems[0].Index;
+                return (selectedIndex > GhostManager.Ghosts.Count - 1);
+            }
+        }
+
+        /// <summary>
+        /// Windowsスタートメニューに登録する際のショートカットパス
+        /// </summary>
+        protected string StartMenuShortcutPath
+        {
+            get
+            {
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), @"ゴーストエクスプローラ通\ゴーストエクスプローラ通を単体起動.lnk");
+            }
+        }
+
+        /// <summary>
+        /// Windowsスタートメニュー登録済みフラグ (読み込み時、オプションダイアログ表示時などに更新)
+        /// </summary>
+        protected bool StartMenuShortcutAdded = false;
 
         /// <summary>
         /// シェル・顔画像読み込みのために実行している非同期タスク
@@ -284,6 +317,13 @@ namespace GhostExplorer2
             // ランダム選択ボタンは、1件以上のゴーストがいる場合のみ押下可能
             BtnRandomSelect.Enabled = (GhostManager.Ghosts.Any());
 
+            // オプション選択時のみ
+            BtnAddStartMenu.Visible = OptionSelected;
+            BtnRemoveStartMenu.Visible = OptionSelected;
+
+            // スタートメニューショートカット削除ボタンは、存在する場合のみ押下可能
+            BtnRemoveStartMenu.Enabled = File.Exists(StartMenuShortcutPath);
+
             // 選択ゴーストがすでに不在の場合は、上記に優先してボタンを無効化
             if (this.SelectedGhost != null && AbsenceInfo.ContainsKey(this.SelectedGhost.DirPath))
             {
@@ -310,7 +350,11 @@ namespace GhostExplorer2
         private void lstGhost_SelectedIndexChanged(object sender, EventArgs e)
         {
             // ゴースト未選択時はスキップ
-            if (this.SelectedGhost == null) return;
+            if (this.SelectedGhost == null)
+            {
+                UpdateUIState();
+                return;
+            };
 
             // エラーメッセージリストを初期化
             SurfaceNotificationMessages.Clear();
@@ -981,6 +1025,9 @@ namespace GhostExplorer2
                 lstGhost.EnsureVisible(0);
             }
 
+            // 最後にメニュー項目追加
+            lstGhost.Items.Add(key: "option", text: "オプション", imageKey: null);
+
             // ゴーストごとのシェル・画像読み込み処理
             prgLoading.Maximum = GhostManager.Ghosts.Count;
             prgLoading.Value = 0;
@@ -1303,6 +1350,58 @@ namespace GhostExplorer2
         private void BtnReloadShell_Click(object sender, EventArgs e)
         {
             LoadShellAndFaceImage(this.SelectedGhost, reload: true);
+        }
+
+        private void BtnAddStartMenu_Click(object sender, EventArgs e)
+        {
+            //作成するショートカットのパス
+            var shortcutPath = StartMenuShortcutPath;
+            // フォルダを作成
+            Directory.CreateDirectory(Path.GetDirectoryName(shortcutPath));
+
+            //WshShellを作成
+            var shell = new IWshRuntimeLibrary.WshShell();
+            //ショートカットのパスを指定して、WshShortcutを作成
+            var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutPath);
+            //リンク先
+            shortcut.TargetPath = Application.ExecutablePath;
+            //コマンドパラメータ 「リンク先」の後ろに付く
+            shortcut.Arguments = @"unspecified """ + SSPDirPath +  @"""";
+            //作業フォルダ
+            shortcut.WorkingDirectory = Application.StartupPath;
+            //コメント
+            shortcut.Description = "テストのアプリケーション";
+            //アイコンのパス 自分のEXEファイルのインデックス0のアイコン
+            shortcut.IconLocation = Application.ExecutablePath + ",1";
+
+            //ショートカットを作成
+            shortcut.Save();
+
+            //後始末
+            System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shortcut);
+            System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shell);
+
+            UpdateUIState();
+
+            MessageBox.Show("スタートメニューに登録しました。", "情報", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnRemoveStartMenu_Click(object sender, EventArgs e)
+        {
+            // 削除するショートカットフォルダのパス
+            var shortcutDirPath = Path.GetDirectoryName(StartMenuShortcutPath);
+
+            // 削除
+            if (Directory.Exists(shortcutDirPath))
+            {
+                Directory.Delete(shortcutDirPath, recursive: true);
+                UpdateUIState();
+                MessageBox.Show("スタートメニューから削除しました。", "情報", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("すでに削除されています。", "情報", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
     }
 }
