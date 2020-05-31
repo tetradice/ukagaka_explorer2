@@ -73,6 +73,48 @@ namespace ExplorerLib
             }
         }
 
+        public class Notify11Request : Request
+        {
+            public const string COMMAND_STRING = "NOTIFY SSTP/1.1";
+            public virtual string Sender { get; set; }
+            public virtual string Event { get; set; }
+            public virtual string Id { get; set; }
+            public virtual string Script { get; set; }
+            public virtual Tuple<string, string> IfGhost { get; set; }
+            public virtual List<string> References { get; set; }
+
+            public Notify11Request()
+            {
+                References = new List<string>();
+            }
+
+            public override string ToString()
+            {
+                var headers = new Dictionary<string, string>();
+                headers["Charset"] = "UTF-8";
+                headers["Sender"] = Sender;
+                headers["Event"] = Event;
+                if (Id != null) headers["ID"] = Id;
+                headers["Sender"] = Sender;
+                if (IfGhost != null)
+                {
+                    headers["IfGhost"] = string.Format("{0},{1}", IfGhost.Item1, IfGhost.Item2);
+                }
+                if (Script != null)
+                {
+                    headers["Script"] = Script;
+                }
+
+                for(var i = 0; i < References.Count; i++)
+                {
+                    headers["Reference" + i.ToString()] = References[i];
+                }
+
+                return Request.BuildMessage(COMMAND_STRING, headers);
+            }
+        }
+
+
         public class Response
         {
             /// <summary>
