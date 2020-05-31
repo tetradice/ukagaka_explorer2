@@ -71,7 +71,7 @@ namespace ExplorerLib
         /// sakura側のサーフェス情報 (使用する画像ファイルパス、座標、合成メソッドなどの情報を含んでいる)
         /// 読み込みに失敗した場合、非表示 (ID=-1) の場合はnull
         /// </summary>
-        public virtual SurfaceModel SakuraSurfaceModel {get;set;}
+        public virtual SurfaceModel SakuraSurfaceModel { get; set; }
 
         /// <summary>
         /// kero側のサーフェス情報 (使用する画像ファイルパス、座標、合成メソッドなどの情報を含んでいる)
@@ -93,7 +93,7 @@ namespace ExplorerLib
         /// </remarks>
         public virtual DateTime LastModified { get; set; }
 
-        public virtual bool SerikoUseSelfAlpha { get { return Descript.Get("seriko.use_self_alpha") == "1"; }}
+        public virtual bool SerikoUseSelfAlpha { get { return Descript.Get("seriko.use_self_alpha") == "1"; } }
 
         /// <summary>
         /// sakura側の立ち絵、顔画像の描画に使用するサーフェスID (標準では0)
@@ -116,7 +116,8 @@ namespace ExplorerLib
         /// </summary>
         public static Shell Load(string dirPath, int sakuraSurfaceId, int keroSurfaceId, string interimOutputDirPathForDebug = null)
         {
-            var shell = new Shell() {
+            var shell = new Shell()
+            {
                 DirPath = dirPath,
                 SakuraSurfaceId = sakuraSurfaceId,
                 KeroSurfaceId = keroSurfaceId,
@@ -153,7 +154,7 @@ namespace ExplorerLib
             var sakuraEnabledBindGroupIds = GetEnabledBindGroupIds("sakura");
             var keroEnabledBindGroupIds = GetEnabledBindGroupIds("kero");
 
-           // 存在する surfaces*.txt を全て読み込み
+            // 存在する surfaces*.txt を全て読み込み
             SurfacesTextList = new List<SurfacesText>();
             var surfaceTxtPathList = Directory.GetFiles(DirPath, "surface*.txt").OrderBy(path => path); // ファイル名順ソート
             foreach (var surfaceTextPath in surfaceTxtPathList)
@@ -272,7 +273,7 @@ namespace ExplorerLib
         {
             var isTopLevel = depth == 0;
             var interimLogPrefix = string.Format("[{0}]", surfaceId);
-            for(var i = 0; i < depth; i++)
+            for (var i = 0; i < depth; i++)
             {
                 interimLogPrefix = "  " + interimLogPrefix;
             }
@@ -293,7 +294,7 @@ namespace ExplorerLib
             foreach (var surfacesText in SurfacesTextList)
             {
                 var newId = surfacesText.FindActualSurfaceId(targetCharacter, surfaceId);
-                if(newId != surfaceId)
+                if (newId != surfaceId)
                 {
                     surfaceId = newId;
                     break; // 1件見つかったら終了
@@ -311,7 +312,7 @@ namespace ExplorerLib
                 elements = elements.Concat(defInfo.Elements).ToList();
 
                 // 対象の surface*.txt 内に存在するanimationを結合
-                foreach(var pair in defInfo.Animations)
+                foreach (var pair in defInfo.Animations)
                 {
                     var animId = pair.Key;
                     var anim = pair.Value;
@@ -325,7 +326,8 @@ namespace ExplorerLib
                         }
                         anim.Patterns.AddRange(anim.Patterns);
 
-                    } else
+                    }
+                    else
                     {
                         // 以前の surface*.txt に同じIDのanimationが含まれていなければ、取得したAnimation定義をそのまま格納
                         animations[animId] = anim;
@@ -341,7 +343,7 @@ namespace ExplorerLib
                 // 1件もなければ、IDと対応する画像ファイルを取得してベースサーフィスとする
                 if (elements.Count >= 1)
                 {
-                    foreach(var elem in elements) // elementはsurfaces.txtで書いた順に処理 (ID順ではない)
+                    foreach (var elem in elements) // elementはsurfaces.txtで書いた順に処理 (ID順ではない)
                     {
                         var filePath = Path.Combine(DirPath, elem.FileName);
                         if (File.Exists(filePath))
@@ -351,12 +353,14 @@ namespace ExplorerLib
                             layer.Y = elem.OffsetY;
                             surfaceModel.Layers.Add(layer);
                             if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("element{0} - use {1}", elem.Id, Path.GetFileName(filePath)));
-                        } else
+                        }
+                        else
                         {
                             if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("ERROR: element{0} image not found ({1})", elem.Id, Path.GetFileName(filePath)));
                         }
                     }
-                } else
+                }
+                else
                 {
                     // 指定IDのサーフェスファイルを検索
                     var surfacePath = FindSurfaceFile(surfaceId);
@@ -435,11 +439,13 @@ namespace ExplorerLib
                                 surfaceModel.Layers.Add(layer);
 
                                 if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("    use {0}", Path.GetFileName(filePath)));
-                            } else
+                            }
+                            else
                             {
                                 if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("    ERROR: image not found"));
                             }
-                        } else
+                        }
+                        else
                         {
                             // 循環定義の場合は無視
                             if (alreadyPassedSurfaceIds.Contains(pattern.SurfaceId)) continue;
@@ -497,7 +503,7 @@ namespace ExplorerLib
             }
 
             // デフォルトサーフェスの構築が終わった場合、中間結果を出力
-            if(isTopLevel && interimLogs != null)
+            if (isTopLevel && interimLogs != null)
             {
                 Directory.CreateDirectory(InterimOutputDirPathForDebug);
                 var path = Path.Combine(InterimOutputDirPathForDebug, string.Format("surfaceModel_{0:0000}.log", surfaceId));
@@ -515,16 +521,18 @@ namespace ExplorerLib
         public virtual Bitmap DrawSurface(SurfaceModel model, bool trim = true)
         {
             // まずは1枚目のレイヤをベースレイヤとして読み込む
+            var sw1st = Stopwatch.StartNew();
             var surface = LoadAndProcessSurfaceFile(model.Layers[0].Path);
 
             string interimLogPath = null;
-            if (InterimOutputDirPathForDebug != null) {
+            if (InterimOutputDirPathForDebug != null)
+            {
                 Directory.CreateDirectory(InterimOutputDirPathForDebug);
                 interimLogPath = Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}.log", model.Id));
                 if (File.Exists(interimLogPath)) File.Delete(interimLogPath);
 
                 surface.Save(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}.png", model.Id, 0)));
-                var msg = string.Format("p{0:000} : {1} method={2} x={3} y={4}", 0, Path.GetFileName(model.Layers[0].Path), model.Layers[0].ComposingMethod.ToString(), model.Layers[0].X, model.Layers[0].Y);
+                var msg = string.Format("p{0:000} : {1} method={2} x={3} y={4} (rendering time: {5} ms)", 0, Path.GetFileName(model.Layers[0].Path), model.Layers[0].ComposingMethod.ToString(), model.Layers[0].X, model.Layers[0].Y, sw1st.ElapsedMilliseconds);
                 File.AppendAllLines(interimLogPath, new[] { msg });
             };
 
@@ -533,6 +541,7 @@ namespace ExplorerLib
             {
                 for (var i = 1; i < model.Layers.Count; i++)
                 {
+                    var sw = Stopwatch.StartNew();
                     var layer = model.Layers[i];
                     var layerBmp = LoadAndProcessSurfaceFile(layer.Path);
 
@@ -555,25 +564,29 @@ namespace ExplorerLib
                     if (layer.ComposingMethod == Seriko.ComposingMethodType.Reduce)
                     {
                         // reduce
-                        surface = ComposeBitmaps(surface, layerBmp, (outputData, newBmpData, pos) =>
+                        ComposeBitmaps(
+                              baseBmp: ref surface
+                            , writingToBase: true
+                            , newBmp: ref layerBmp
+                            , writingToNew: false
+                            , pixelProcess: (baseBmpData, newBmpData, pos) =>
                         {
                             // ベースレイヤ、新規レイヤ両方の不透明度を取得
-                            var baseOpacity = outputData[pos + 3];
+                            var baseOpacity = baseBmpData[pos + 3];
                             var newOpacity = newBmpData[pos + 3];
 
                             // 不透明度を乗算
                             var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
-                            outputData[pos + 3] = (byte)Math.Round(rate * 255);
+                            baseBmpData[pos + 3] = (byte)Math.Round(rate * 255);
                         });
                     }
-                    if (layer.ComposingMethod == Seriko.ComposingMethodType.Interpolate)
+                    else if (layer.ComposingMethod == Seriko.ComposingMethodType.Interpolate)
                     {
-                        // interpolate
-                        // ベース画像と新規画像のサイズが異なる場合の補正
+                        // 新規画像のサイズがベース画像より小さい場合の補正
                         if (layerBmp.Size != surface.Size)
                         {
                             // 画像サイズ補正処理
-                            SizeAdjustForComposingBitmap(surface, ref layerBmp);
+                            SizeAdjustForComposingBitmap(surface, ref layerBmp, layer.X, layer.Y);
 
                             // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
                             if (layerBmp.Size != surface.Size)
@@ -581,14 +594,31 @@ namespace ExplorerLib
                                 throw new IllegalImageFormatException("複数の画像を重ねる際に、2つの画像の間でサイズが異なり、かつ縦横のサイズが矛盾しているような画像が存在します。") { Unsupported = true };
                             }
                         }
-                        surface = ComposeBitmaps(surface, layerBmp, (outputData, newBmpData, pos) =>
-                        {
-                            // ベースレイヤの不透明度を取得
-                            var baseOpacity = outputData[pos + 3];
 
-                            // 新規レイヤの不透明度を、ベースレイヤの不透明度と同じ値にする
-                            outputData[pos + 3] = baseOpacity;
+                        // overlayfast / interpolate
+                        ComposeBitmaps(
+                              baseBmp: ref surface
+                            , writingToBase: false
+                            , newBmp: ref layerBmp
+                            , writingToNew: true
+                            , pixelProcess: (baseBmpData, newBmpData, pos) =>
+                        {
+                            // 新規レイヤ側が完全透過 (アルファ0) であれば処理しない
+                            if (newBmpData[pos + 3] == 0) return;
+
+                            // ベースレイヤの不透明度を取得
+                            var baseOpacity = baseBmpData[pos + 3];
+
+                            // 新規レイヤの不透明度を、ベースレイヤの不透明度の逆と同じ値にする
+                            newBmpData[pos + 3] = (byte)(255 - baseOpacity);
                         });
+
+                        // 描画
+                        using (var g = Graphics.FromImage(surface))
+                        {
+                            // すでに画像サイズの調整を行っているため、0原点とする
+                            g.DrawImage(layerBmp, 0, 0, layerBmp.Width, layerBmp.Height);
+                        }
                     }
                     else
                     {
@@ -603,7 +633,7 @@ namespace ExplorerLib
                     if (InterimOutputDirPathForDebug != null)
                     {
                         surface.Save(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}.png", model.Id, i)));
-                        var msg = string.Format("p{0:000} : {1} method={2} x={3} y={4}", i, Path.GetFileName(layer.Path), layer.ComposingMethod.ToString(), layer.X, layer.Y);
+                        var msg = string.Format("p{0:000} : {1} method={2} x={3} y={4} (rendering time: {5} ms)", i, Path.GetFileName(layer.Path), layer.ComposingMethod.ToString(), layer.X, layer.Y, sw.ElapsedMilliseconds);
                         File.AppendAllLines(interimLogPath, new[] { msg });
                     };
                 }
@@ -628,12 +658,10 @@ namespace ExplorerLib
         }
 
         /// <summary>
-        /// ピクセル単位で画像（レイヤ）の合成処理を行い、結果を返す汎用メソッド
+        /// ピクセル単位で画像（レイヤ）の合成処理を行う汎用メソッド
         /// </summary>
-        public virtual Bitmap ComposeBitmaps(Bitmap baseBmp, Bitmap newBmp, Action<byte[], byte[], int> pixelProcess)
+        public virtual void ComposeBitmaps(ref Bitmap baseBmp, bool writingToBase, ref Bitmap newBmp, bool writingToNew, Action<byte[], byte[], int> pixelProcess)
         {
-            Bitmap output;
-
             // 元画像とマスク画像のサイズが異なる場合はエラーとする
             if (baseBmp.Size != newBmp.Size)
             {
@@ -641,7 +669,7 @@ namespace ExplorerLib
             }
 
             // まずは出力用に、元レイヤをコピーして、アルファチャンネルありの32ビットbmpを生成
-            output = baseBmp.Clone(new Rectangle(0, 0, baseBmp.Width, baseBmp.Height), PixelFormat.Format32bppArgb);
+            baseBmp = baseBmp.Clone(new Rectangle(0, 0, baseBmp.Width, baseBmp.Height), PixelFormat.Format32bppArgb);
 
             // 新規レイヤをコピーして、アルファチャンネルありの32ビットbmpに変換
             // (インデックスカラーや8ビットカラーなどにも対応できるようにするため)
@@ -650,17 +678,17 @@ namespace ExplorerLib
             // 出力画像の1ピクセルあたりのバイト数を取得する (両方とも32ビットのため4固定)
             var pixelByteSize = 4;
 
-            // 出力bmpとマスクbmpをロック
-            BitmapData outputBmpData = output.LockBits(
-                new Rectangle(0, 0, output.Width, output.Height),
-                ImageLockMode.ReadWrite, output.PixelFormat);
+            // 出力bmpと新規bmpをロック
+            BitmapData baseBmpData = baseBmp.LockBits(
+                new Rectangle(0, 0, baseBmp.Width, baseBmp.Height),
+                (writingToBase ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), baseBmp.PixelFormat);
             BitmapData newBmpData = newBmp.LockBits(
-                new Rectangle(0, 0, (int)newBmp.Width, (int)newBmp.Height),
-                ImageLockMode.ReadOnly, (PixelFormat)newBmp.PixelFormat);
+                new Rectangle(0, 0, newBmp.Width, newBmp.Height),
+                (writingToNew ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), newBmp.PixelFormat);
 
             try
             {
-                if (outputBmpData.Stride < 0)
+                if (baseBmpData.Stride < 0)
                 {
                     throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
                 }
@@ -675,9 +703,9 @@ namespace ExplorerLib
                 System.Runtime.InteropServices.Marshal.Copy(newBmpPtr, newBmpPixels, 0, newBmpPixels.Length);
 
                 // 出力画像のピクセルデータをバイト型配列で取得する
-                IntPtr outputPtr = outputBmpData.Scan0;
-                var outputPixels = new byte[outputBmpData.Stride * output.Height];
-                System.Runtime.InteropServices.Marshal.Copy(outputPtr, outputPixels, 0, outputPixels.Length);
+                IntPtr basePtr = baseBmpData.Scan0;
+                var basePixels = new byte[baseBmpData.Stride * baseBmp.Height];
+                System.Runtime.InteropServices.Marshal.Copy(basePtr, basePixels, 0, basePixels.Length);
 
                 // 出力画像の全ピクセルに対して処理
                 for (var y = 0; y < newBmp.Height; y++)
@@ -688,22 +716,27 @@ namespace ExplorerLib
                         var pos = y * newBmpData.Stride + x * pixelByteSize;
 
                         //ピクセル単位処理を実行
-                        pixelProcess.Invoke(outputPixels, newBmpPixels, pos);
+                        pixelProcess.Invoke(basePixels, newBmpPixels, pos);
                     }
                 }
 
                 //ピクセルデータを元に戻す
-                System.Runtime.InteropServices.Marshal.Copy(outputPixels, 0, outputPtr, outputPixels.Length);
+                if (writingToBase)
+                {
+                    System.Runtime.InteropServices.Marshal.Copy(basePixels, 0, basePtr, basePixels.Length);
+                }
+                if (writingToNew)
+                {
+                    System.Runtime.InteropServices.Marshal.Copy(newBmpPixels, 0, newBmpPtr, newBmpPixels.Length);
+                }
             }
             finally
             {
 
                 // 画像のロックを解除
-                output.UnlockBits(outputBmpData);
+                baseBmp.UnlockBits(baseBmpData);
                 newBmp.UnlockBits(newBmpData);
             }
-
-            return output;
         }
 
         /// <summary>
@@ -746,7 +779,7 @@ namespace ExplorerLib
 
                         int left;
                         if (!int.TryParse(desc.Values["face.left"], out left)) throw new InvalidDescriptException(@"face.left の指定が不正です。");
-                        if(left < 0) throw new InvalidDescriptException(@"face.left が負数です。");
+                        if (left < 0) throw new InvalidDescriptException(@"face.left が負数です。");
                         int top;
                         if (!int.TryParse(desc.Values["face.top"], out top)) throw new InvalidDescriptException(@"face.top の指定が不正です。");
                         if (top < 0) throw new InvalidDescriptException(@"face.top が負数です。");
@@ -770,7 +803,8 @@ namespace ExplorerLib
                         // 指定範囲を切り抜く
                         mImg.Crop(new ImageMagick.MagickGeometry(left, top, dWidth, dHeight));
                         mImg.RePage(); // ページ範囲を更新
-                    } else
+                    }
+                    else
                     {
                         // 顔画像範囲指定がなければ、余白の削除のみ行う
                         mImg.Trim();
@@ -839,17 +873,22 @@ namespace ExplorerLib
                     }
 
                     // 透過実行
-                    var output = ComposeBitmaps(surface, mask, (outputData, maskBmpData, pos) =>
+                    ComposeBitmaps(
+                          baseBmp: ref surface
+                        , writingToBase: true
+                        , newBmp: ref mask
+                        , writingToNew: false
+                        , pixelProcess: (baseBmpData, maskBmpData, pos) =>
                     {
                         // 色を取得
                         var color = Color.FromArgb(maskBmpData[pos + 2], maskBmpData[pos + 1], maskBmpData[pos]);
 
                         // 輝度を取得し、それをそのまま不透明度として設定する
                         var brightness = (byte)Math.Round(color.GetBrightness() * 255); // 0 - 1.0で表される輝度値を、0 - 255の範囲に変換
-                        outputData[pos + 3] = brightness;
+                        baseBmpData[pos + 3] = brightness;
                     });
 
-                    return output;
+                    return surface;
                 }
                 else
                 {
@@ -865,24 +904,46 @@ namespace ExplorerLib
         /// </summary>
         /// <param name="baseBmp">ベース画像</param>
         /// <param name="newBmp">新規画像 (補正が必要であれば変更される)</param>
-        protected virtual void SizeAdjustForComposingBitmap(Bitmap baseBmp, ref Bitmap newBmp)
+        protected virtual void SizeAdjustForComposingBitmap(Bitmap baseBmp, ref Bitmap newBmp, int? newLayerOffsetX = null, int? newLayerOffsetY = null)
         {
+            // オフセットが指定されているかどうか
+            var newLayerOffsetSpecified = (newLayerOffsetX.HasValue && newLayerOffsetY.HasValue);
+
             // 新規画像の方が縦横ともに小さい場合、余白を追加して補正
             if (newBmp.Width <= baseBmp.Width && newBmp.Height <= baseBmp.Height)
             {
                 using (var mImg = new ImageMagick.MagickImage(newBmp)) // Magick.NETを使用
                 {
-                    // 余白追加
-                    mImg.Extent(baseBmp.Width, baseBmp.Height,
-                                gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
-                                backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
+                    var backgroundColor = ImageMagick.MagickColor.FromRgba(255, 255, 255, 0);
+                    if (newLayerOffsetSpecified)
+                    {
+                        var offsetX = newLayerOffsetX.Value;
+                        var offsetY = newLayerOffsetY.Value;
+
+                        // オフセット指定がある場合、オフセット分の余白を左上に追加し、その後に右下に余白追加
+                        mImg.Extent(offsetX + newBmp.Width, offsetY + newBmp.Height,
+                                    gravity: ImageMagick.Gravity.Southeast, // 右下寄せ
+                                    backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+                        mImg.RePage(); // ページ情報更新
+                        mImg.Extent(baseBmp.Width, baseBmp.Height,
+                                    gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
+                                    backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+                    }
+                    else
+                    {
+                        // オフセット指定がなければ、右下に余白追加
+                        mImg.Extent(baseBmp.Width, baseBmp.Height,
+                                    gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
+                                    backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+
+                    }
 
                     // Bitmapへ書き戻す
                     newBmp = mImg.ToBitmap();
                 }
             }
 
-            // マスク画像の方が縦横ともに大きい場合、余分な幅を切る
+            // 新規画像の方が縦横ともに大きい場合、余分な幅を切る
             if (newBmp.Width >= baseBmp.Width && newBmp.Height >= baseBmp.Height)
             {
                 using (var mImg = new ImageMagick.MagickImage(newBmp)) // Magick.NETを使用
@@ -956,7 +1017,7 @@ namespace ExplorerLib
             var usingIds = GetEnabledBindGroupIdsFromProfile(targetCharacter);
 
             // profileから取得できない場合、descript.txt の記述から、初期状態で有効なbindgroup IDのコレクションを作成
-            if(usingIds == null)
+            if (usingIds == null)
             {
                 usingIds = new HashSet<int>();
                 foreach (var pair in groups)
@@ -1099,7 +1160,8 @@ namespace ExplorerLib
         /// <summary>
         /// ID1つあたりのサーフェス情報を表すクラス (ファイルパス, element, MAYUNA着せ替え情報を含む)
         /// </summary>
-        public class SurfaceModel {
+        public class SurfaceModel
+        {
             /// <summary>
             /// レイヤ。surface*.png 1つ / element定義1つ / animation定義1つと対応する
             /// </summary>
