@@ -45,6 +45,8 @@
             this.cmbSort = new System.Windows.Forms.ComboBox();
             this.txtFilter = new System.Windows.Forms.TextBox();
             this.BtnReloadShell = new System.Windows.Forms.Button();
+            this.BtnAddStartMenu = new System.Windows.Forms.Button();
+            this.BtnRemoveStartMenu = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -243,11 +245,39 @@
             this.BtnReloadShell.Visible = false;
             this.BtnReloadShell.Click += new System.EventHandler(this.BtnReloadShell_Click);
             // 
+            // BtnAddStartMenu
+            // 
+            this.BtnAddStartMenu.AutoSize = true;
+            this.BtnAddStartMenu.Location = new System.Drawing.Point(336, 20);
+            this.BtnAddStartMenu.Name = "BtnAddStartMenu";
+            this.BtnAddStartMenu.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
+            this.BtnAddStartMenu.Size = new System.Drawing.Size(317, 34);
+            this.BtnAddStartMenu.TabIndex = 17;
+            this.BtnAddStartMenu.Text = "Windows スタートメニューにゴーストエクスプローラ通を登録";
+            this.BtnAddStartMenu.UseVisualStyleBackColor = true;
+            this.BtnAddStartMenu.Visible = false;
+            this.BtnAddStartMenu.Click += new System.EventHandler(this.BtnAddStartMenu_Click);
+            // 
+            // BtnRemoveStartMenu
+            // 
+            this.BtnRemoveStartMenu.AutoSize = true;
+            this.BtnRemoveStartMenu.Location = new System.Drawing.Point(659, 20);
+            this.BtnRemoveStartMenu.Name = "BtnRemoveStartMenu";
+            this.BtnRemoveStartMenu.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
+            this.BtnRemoveStartMenu.Size = new System.Drawing.Size(71, 34);
+            this.BtnRemoveStartMenu.TabIndex = 18;
+            this.BtnRemoveStartMenu.Text = "削除";
+            this.BtnRemoveStartMenu.UseVisualStyleBackColor = true;
+            this.BtnRemoveStartMenu.Visible = false;
+            this.BtnRemoveStartMenu.Click += new System.EventHandler(this.BtnRemoveStartMenu_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.BtnRemoveStartMenu);
+            this.Controls.Add(this.BtnAddStartMenu);
             this.Controls.Add(this.BtnReloadShell);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.cmbGhostDir);
@@ -293,6 +323,8 @@
         private System.Windows.Forms.TextBox txtFilter;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button BtnReloadShell;
+        private System.Windows.Forms.Button BtnAddStartMenu;
+        private System.Windows.Forms.Button BtnRemoveStartMenu;
     }
 }
 
