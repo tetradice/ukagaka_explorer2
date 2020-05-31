@@ -47,9 +47,9 @@ namespace GhostExplorer2
         protected bool CallerLost;
 
         /// <summary>
-        /// 最後に確認できたSSP.exeのパス
+        /// SSPのフォルダパス (FMO情報から取得する)
         /// </summary>
-        protected string LastSSPExePath;
+        protected string SSPDirPath;
 
         /// <summary>
         /// realize2.txt の情報
@@ -187,14 +187,14 @@ namespace GhostExplorer2
             // ゴーストが1体以上いるなら、合わせてSSPのパスを取得
             if (FMOGhostList.Any())
             {
-                LastSSPExePath = null;
+                SSPDirPath = null;
                 try
                 {
                     // HWndからプロセスIDを取得
                     int procId;
                     Win32API.GetWindowThreadProcessId((IntPtr)FMOGhostList.First().HWnd, out procId);
                     var sspProc = Process.GetProcessById(procId);
-                    LastSSPExePath = sspProc.MainModule.FileName;
+                    SSPDirPath = Path.GetDirectoryName(sspProc.MainModule.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -269,8 +269,11 @@ namespace GhostExplorer2
             // 説明文設定
             this.DescriptionText = GetDescriptionText();
 
-            // ゴースト切り替え/呼び出しボタン、および付随する設定チェックボックスは、ゴースト選択中のみ表示
-            BtnCall.Visible = BtnChange.Visible = ChkCloseAfterChange.Visible = (this.SelectedGhost != null);
+            // ゴースト切り替えボタン、および付随する設定チェックボックスは、SSP起動時かつゴースト選択中のみ表示
+            BtnChange.Visible = ChkCloseAfterChange.Visible = (CallerId != null && this.SelectedGhost != null);
+
+            // ゴースト呼び出しボタンは、ゴースト選択中のみ表示
+            BtnCall.Visible = (this.SelectedGhost != null);
 
             // ゴースト呼び出しボタンは、通常は常に押下可能
             BtnCall.Enabled = true;
@@ -504,9 +507,9 @@ namespace GhostExplorer2
             UpdateFMOInfo();
 
             // 立っているゴーストが一人もおらず、かつSSP.exeのパスが特定できるなら、代わりにSSP.exeの起動を試みる
-            if (!FMOGhostList.Any() && LastSSPExePath != null)
+            if (!FMOGhostList.Any() && SSPDirPath != null)
             {
-                Process.Start(LastSSPExePath, string.Format(@"/g ""{0}""", this.SelectedGhost.Name));
+                Process.Start(Path.Combine(SSPDirPath, "SSP.exe"), string.Format(@"/g ""{0}""", this.SelectedGhost.Name));
                 return;
             }
 
@@ -697,40 +700,105 @@ namespace GhostExplorer2
             // FMO情報更新
             UpdateFMOInfo();
 
-            // Realize2Textを読み込む
-            var realize2Path = Path.Combine(Path.GetDirectoryName(LastSSPExePath), @"data\profile\realize2.txt");
-            if (File.Exists(realize2Path))
-            {
-                Realize2Text = Realize2Text.Load(realize2Path);
-            }
+            // この時点でSSPのパスが特定できない場合は、SSPが起動していないためエラー
 
             // コマンドライン引数を解釈
             var args = Environment.GetCommandLineArgs().ToList();
             args.RemoveAt(0); // 先頭はexe名のため削除
 
-            var caller = args.First(); // 呼び出し元ゴースト (id or "unspecified")
-            args.RemoveAt(0); // 先頭削除
-            var ghostDirPaths = args; // 残りの引数はすべてゴーストフォルダのパス
+            var caller = args.FirstOrDefault(); // 呼び出し元ゴースト (id or "unspecified") 省略された場合はunspecified扱い
+            if(args.Any()) args.RemoveAt(0); // 先頭削除
+
+            var specifiedSSPDirPath = args.FirstOrDefault(); // SSPが存在するフォルダパス
+            if (!string.IsNullOrWhiteSpace(specifiedSSPDirPath))
+            {
+                if (!Directory.Exists(specifiedSSPDirPath))
+                {
+                    MessageBox.Show("起動パラメータで指定されたSSPフォルダが見つかりませんでした。\n" + specifiedSSPDirPath
+                                  , "エラー"
+                                  , MessageBoxButtons.OK
+                                  , MessageBoxIcon.Error);
+                    Application.Exit();
+                    return;
+                }
+
+                SSPDirPath = specifiedSSPDirPath;
+            }
+            if (args.Any()) args.RemoveAt(0); // 先頭削除
+
+            // この時点でSSPパスが特定できていない場合はエラー
+            if (SSPDirPath == null)
+            {
+                MessageBox.Show("SSPが見つかりませんでした。\nゴーストエクスプローラ通は、SSPが起動している状態で実行するか、もしくはWindowsのスタートメニューから実行する必要があります。"
+                              , "エラー"
+                              , MessageBoxButtons.OK
+                              , MessageBoxIcon.Error);
+                Application.Exit();
+                return;
+            }
+
+            // Realize2Textを読み込む
+            var realize2Path = Path.Combine(SSPDirPath, @"data\profile\realize2.txt");
+            if (File.Exists(realize2Path))
+            {
+                Realize2Text = Realize2Text.Load(realize2Path);
+            }
 
             SakuraFMOData target = null;
-            var matched = Regex.Match(caller, @"^id:(.+?)\z");
-            if (matched.Success)
+            if (!string.IsNullOrWhiteSpace(caller))
             {
-                // idが指定された場合、そのidと一致するゴースト情報を探す
-                var id = matched.Groups[1].Value.Trim();
-                target = FMOGhostList.FirstOrDefault(g => g.Id == id);
+                var matched = Regex.Match(caller, @"^id:(.+?)\z");
+                if (matched.Success)
+                {
+                    // idが指定された場合、そのidと一致するゴースト情報を探す
+                    var id = matched.Groups[1].Value.Trim();
+                    target = FMOGhostList.FirstOrDefault(g => g.Id == id);
+                }
             }
 
-            if (caller == "unspecified")
+            if (caller == "unspecified" || string.IsNullOrWhiteSpace(caller))
             {
-                // "unspecified" が指定された場合、現在起動しているゴーストのうち、ランダムに1体を呼び出し元とする (デバッグ用)
-                var rand = new Random();
-                target = FMOGhostList[rand.Next(0, FMOGhostList.Count - 1)];
+                // "unspecified" が指定された場合、現在起動しているゴーストのうち、ランダムに1体を呼び出し元とする
+                if (FMOGhostList.Any())
+                {
+                    var rand = new Random();
+                    target = FMOGhostList[rand.Next(0, FMOGhostList.Count - 1)];
+                }
             }
 
-            if (target == null)
+            // SSPのapp.datからゴーストフォルダの設定を取得
+            var ghostDirPaths = new List<string>();
+            var appDataPath = Path.Combine(SSPDirPath, @"data\profile\app.dat");
+            if (File.Exists(appDataPath))
             {
-                throw new Exception(string.Format("指定されたゴーストが見つかりませんでした。 ({0})", caller));
+                // descript.txtと同じフォーマット
+                var appData = DescriptText.Load(appDataPath);
+
+                // path.ghost.Num を取得
+                var ghostNumStr = appData.Get("path.ghost.Num");
+                int ghostNum;
+                if (ghostNumStr != null && int.TryParse(ghostNumStr, out ghostNum))
+                {
+                    // ゴーストパスを1つずつ取得して追加
+                    for (var i = 0; i < ghostNum; i++)
+                    {
+                        var dirPath = appData.Get(string.Format("path.ghost.{0}", i));
+                        if (dirPath != null)
+                        {
+                            // 最初が "." から始まっている場合は相対パスとみなして、絶対パスに変換
+                            if (dirPath.StartsWith("."))
+                            {
+                                dirPath = Path.GetFullPath(Path.Combine(SSPDirPath, dirPath));
+                            }
+
+                            // 存在するなら追加
+                            if (Directory.Exists(dirPath))
+                            {
+                                ghostDirPaths.Add(dirPath);
+                            }
+                        }
+                    }
+                }
             }
 
             // ゴーストフォルダ選択パスの設定
@@ -750,10 +818,13 @@ namespace GhostExplorer2
             }
 
             // 呼び出し元の情報をプロパティにセット
-            CallerId = target.Id;
-            CallerSakuraName = target.Name;
-            CallerKeroName = target.KeroName;
-            CallerHWnd = (IntPtr)target.HWnd;
+            if (target != null)
+            {
+                CallerId = target.Id;
+                CallerSakuraName = target.Name;
+                CallerKeroName = target.KeroName;
+                CallerHWnd = (IntPtr)target.HWnd;
+            }
 
             // ボタンラベル変更
             BtnChange.Text = string.Format("{0}から切り替え", CallerSakuraName);
@@ -1153,11 +1224,11 @@ namespace GhostExplorer2
                 if((int)m.WParam == SAKURA_API_BROADCAST_GHOSTCHANGE)
                 {
                     // プロセスIDからSSPのパスを取得
-                    LastSSPExePath = null;
+                    SSPDirPath = null;
                     try
                     {
                         var sspProc = Process.GetProcessById((int)m.LParam);
-                        LastSSPExePath = sspProc.MainModule.FileName;
+                        SSPDirPath = Path.GetDirectoryName(sspProc.MainModule.FileName);
                     }
                     catch (Exception ex)
                     {

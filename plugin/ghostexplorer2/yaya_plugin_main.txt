@@ -37,29 +37,11 @@ OnMenuExec
   _id = reference[3]
   _cmd = "%(_dir_path)gui\GhostExplorer2GUI.exe"
   _options = "id:%(_id)"
-  
-  // ゴーストフォルダパス追加
-  for _i = 0 ; _i < ARRAYSIZE(stored_ghost_path_list) ; _i++ {
-    _options += ' "'
-    _options += RE_REPLACE(stored_ghost_path_list[_i], '\\$', "") // 末尾の \ は捨てる (ダブルクォートをエスケープしてしまうため)
-    _options += '"'
-  }
 
   // コマンドを実行
   _ret = EXECUTE(_cmd, _options)
 	
   '' // No Contentを返す
-}
-
-ghostpathlist
-{
-  _n = ARRAYSIZE(reference)
-  stored_ghost_path_list = IARRAY
-
-  for _i = 0 ; _i < _n ; _i++ {
-    stored_ghost_path_list ,= reference[_i]
-  }
-  stored_ghost_path_list_size = ARRAYSIZE(stored_ghost_path_list)
 }
 
 version
