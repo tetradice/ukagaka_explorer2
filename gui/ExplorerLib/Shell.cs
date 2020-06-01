@@ -551,12 +551,19 @@ namespace ExplorerLib
                     {
                         using (var mImg = new ImageMagick.MagickImage(surface)) // Magick.NETを使用
                         {
+                            mImg.Alpha(ImageMagick.AlphaOption.Transparent);
+
                             // 余白追加
                             mImg.Extent(Math.Max(layer.X + layerBmp.Width, surface.Width), Math.Max(layer.Y + layerBmp.Height, surface.Height),
                                         backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
                             // Bitmapへ書き戻す
                             surface = mImg.ToBitmap();
                         }
+
+                        if (InterimOutputDirPathForDebug != null)
+                        {
+                            surface.Save(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}_extented.png", model.Id, i)));
+                        };
                     }
 
                     // レイヤ描画
