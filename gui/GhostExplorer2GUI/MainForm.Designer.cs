@@ -249,9 +249,6 @@
             // 
             // BtnAddStartMenu
             // 
-            this.BtnAddStartMenu.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnAddStartMenu.AutoSize = true;
             this.BtnAddStartMenu.Location = new System.Drawing.Point(336, 19);
             this.BtnAddStartMenu.Name = "BtnAddStartMenu";
