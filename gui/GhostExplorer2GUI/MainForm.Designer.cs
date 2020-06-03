@@ -47,6 +47,7 @@
             this.BtnReloadShell = new System.Windows.Forms.Button();
             this.BtnAddStartMenu = new System.Windows.Forms.Button();
             this.BtnRemoveStartMenu = new System.Windows.Forms.Button();
+            this.lblVersion = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -271,11 +272,24 @@
             this.BtnRemoveStartMenu.Visible = false;
             this.BtnRemoveStartMenu.Click += new System.EventHandler(this.BtnRemoveStartMenu_Click);
             // 
+            // lblVersion
+            // 
+            this.lblVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblVersion.AutoSize = true;
+            this.lblVersion.BackColor = System.Drawing.Color.White;
+            this.lblVersion.Location = new System.Drawing.Point(859, 459);
+            this.lblVersion.Name = "lblVersion";
+            this.lblVersion.Size = new System.Drawing.Size(70, 12);
+            this.lblVersion.TabIndex = 19;
+            this.lblVersion.Text = "version: x.x.x";
+            this.lblVersion.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.BtnRemoveStartMenu);
             this.Controls.Add(this.BtnAddStartMenu);
             this.Controls.Add(this.BtnReloadShell);
@@ -292,7 +306,7 @@
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(800, 400);
             this.Name = "MainForm";
-            this.Text = "ゴーストエクスプローラ通（α版）";
+            this.Text = "ゴーストエクスプローラ通（β版）";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);
@@ -325,6 +339,7 @@
         private System.Windows.Forms.Button BtnReloadShell;
         private System.Windows.Forms.Button BtnAddStartMenu;
         private System.Windows.Forms.Button BtnRemoveStartMenu;
+        private System.Windows.Forms.Label lblVersion;
     }
 }
 

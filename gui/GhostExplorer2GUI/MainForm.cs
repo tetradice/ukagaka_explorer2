@@ -10,6 +10,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -186,6 +187,10 @@ namespace GhostExplorer2
             cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByRecentInstall, Label = "最近インストールした順" });
             cmbSort.Items.Add(new DropDownItem() { Value = Const.SortType.ByBootTime, Label = "累計起動した順" });
 
+            // バージョン表記設定
+            var asm = Assembly.GetExecutingAssembly();
+            var ver = asm.GetName().Version;
+            lblVersion.Text = $"version: {ver.Major}.{ver.Minor}.{ver.Revision}";
 
             // Profile読み込み
             CurrentProfile = Util.LoadProfile();
@@ -320,6 +325,7 @@ namespace GhostExplorer2
             // オプション選択時のみ
             BtnAddStartMenu.Visible = OptionSelected;
             BtnRemoveStartMenu.Visible = OptionSelected;
+            lblVersion.Visible = OptionSelected;
 
             // スタートメニューショートカット削除ボタンは、存在する場合のみ押下可能
             BtnRemoveStartMenu.Enabled = File.Exists(StartMenuShortcutPath);
