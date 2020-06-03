@@ -248,8 +248,11 @@
             // 
             // BtnAddStartMenu
             // 
+            this.BtnAddStartMenu.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.BtnAddStartMenu.AutoSize = true;
-            this.BtnAddStartMenu.Location = new System.Drawing.Point(336, 20);
+            this.BtnAddStartMenu.Location = new System.Drawing.Point(336, 19);
             this.BtnAddStartMenu.Name = "BtnAddStartMenu";
             this.BtnAddStartMenu.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
             this.BtnAddStartMenu.Size = new System.Drawing.Size(317, 34);
@@ -262,12 +265,12 @@
             // BtnRemoveStartMenu
             // 
             this.BtnRemoveStartMenu.AutoSize = true;
-            this.BtnRemoveStartMenu.Location = new System.Drawing.Point(659, 20);
+            this.BtnRemoveStartMenu.Location = new System.Drawing.Point(659, 19);
             this.BtnRemoveStartMenu.Name = "BtnRemoveStartMenu";
             this.BtnRemoveStartMenu.Padding = new System.Windows.Forms.Padding(16, 0, 16, 0);
-            this.BtnRemoveStartMenu.Size = new System.Drawing.Size(71, 34);
+            this.BtnRemoveStartMenu.Size = new System.Drawing.Size(95, 34);
             this.BtnRemoveStartMenu.TabIndex = 18;
-            this.BtnRemoveStartMenu.Text = "削除";
+            this.BtnRemoveStartMenu.Text = "登録解除";
             this.BtnRemoveStartMenu.UseVisualStyleBackColor = true;
             this.BtnRemoveStartMenu.Visible = false;
             this.BtnRemoveStartMenu.Click += new System.EventHandler(this.BtnRemoveStartMenu_Click);
