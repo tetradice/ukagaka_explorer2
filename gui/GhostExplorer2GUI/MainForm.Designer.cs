@@ -48,6 +48,7 @@
             this.BtnAddStartMenu = new System.Windows.Forms.Button();
             this.BtnRemoveStartMenu = new System.Windows.Forms.Button();
             this.lblVersion = new System.Windows.Forms.Label();
+            this.lblPoweredBy = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -280,18 +281,31 @@
             this.lblVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lblVersion.AutoSize = true;
             this.lblVersion.BackColor = System.Drawing.Color.White;
-            this.lblVersion.Location = new System.Drawing.Point(859, 459);
+            this.lblVersion.Location = new System.Drawing.Point(859, 435);
             this.lblVersion.Name = "lblVersion";
             this.lblVersion.Size = new System.Drawing.Size(70, 12);
             this.lblVersion.TabIndex = 19;
             this.lblVersion.Text = "version: x.x.x";
             this.lblVersion.Visible = false;
             // 
+            // lblPoweredBy
+            // 
+            this.lblPoweredBy.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblPoweredBy.AutoSize = true;
+            this.lblPoweredBy.BackColor = System.Drawing.Color.White;
+            this.lblPoweredBy.Location = new System.Drawing.Point(723, 454);
+            this.lblPoweredBy.Name = "lblPoweredBy";
+            this.lblPoweredBy.Size = new System.Drawing.Size(206, 12);
+            this.lblPoweredBy.TabIndex = 20;
+            this.lblPoweredBy.Text = "powered by 偽SERIKO and MagicK.NET";
+            this.lblPoweredBy.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.lblPoweredBy);
             this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.BtnRemoveStartMenu);
             this.Controls.Add(this.BtnAddStartMenu);
@@ -343,6 +357,7 @@
         private System.Windows.Forms.Button BtnAddStartMenu;
         private System.Windows.Forms.Button BtnRemoveStartMenu;
         private System.Windows.Forms.Label lblVersion;
+        private System.Windows.Forms.Label lblPoweredBy;
     }
 }
 

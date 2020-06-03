@@ -326,6 +326,7 @@ namespace GhostExplorer2
             BtnAddStartMenu.Visible = OptionSelected;
             BtnRemoveStartMenu.Visible = OptionSelected;
             lblVersion.Visible = OptionSelected;
+            lblPoweredBy.Visible = OptionSelected;
 
             // スタートメニューショートカット削除ボタンは、存在する場合のみ押下可能
             BtnRemoveStartMenu.Enabled = File.Exists(StartMenuShortcutPath);
