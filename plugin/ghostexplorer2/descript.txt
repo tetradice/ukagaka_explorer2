@@ -10,7 +10,7 @@ craftman,pon
 craftmanw,ポン
 
 //PLUGIN DLL
-filename,yaya.dll
+filename,bridge.dll
 
 //オプション指定-OnSecondChangeの通知頻度
 //0で無効、標準1
