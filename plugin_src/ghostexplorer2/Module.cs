@@ -12,14 +12,6 @@ namespace GhostExplorer2
     public class Module : PluginModule
     {
         /// <summary>
-        /// プラグインのバージョン (versionリクエストに対して返す値)
-        /// </summary>
-        public override string Version
-        {
-            get { return "GhostExplorer-0.4.0"; }
-        }
-
-        /// <summary>
         /// メニューからの実行
         /// </summary>
         public override PluginResponse OnMenuExec(PluginRequest req)
