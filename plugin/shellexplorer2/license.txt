@@ -1,0 +1,35 @@
+≪シェルエクスプローラ通　ライセンス（利用条件）について≫
+
+シェルエクスプローラ通を再配布する場合、変更なしでの再配布は個人/商用を問わず、自由に行っていただくことが可能です。
+
+一部流用や改変などを行う場合の条件は、シェルエクスプローラ通の中に含んでいるライブラリの条件に従います。
+詳細は下記を参照してください。
+
+
+
+■シェルエクスプローラ通　本体（ソースコード含）
+
+NYSLに従います。
+完全に自由に利用していただくことが可能であり、著作権表示等も必要としません。
+http://www.kmonos.net/nysl/
+
+ソースコードはGithubから取得可能です。
+https://github.com/tetradice/ukagaka_explorer2
+
+なお、シェルエクスプローラ通では、浮子屋さん制作の「SSTPLib」からFMO関連のコードを流用させていただいております。
+この流用部分についても、浮子屋さんのWebサイトで
+「本サイトのコンテンツのうち、浮子屋が作成したもので再配布等のライセンスが同梱されていないものについては、無制限の改変、再配布を認めます。」
+と記載されているため、同様に自由に利用を行うことができます。
+http://ukiya.sakura.ne.jp/
+
+
+
+■Magick.NET
+
+このプラグインは、Magick.NET (ImageMagickの.NET版) を使用しております。
+Magick.NET は Dirk Lemstra 氏による著作物であり、Apache License 2.0の元で再配布・修正等が可能です。
+
+ライセンス原文:
+https://github.com/dlemstra/Magick.NET/blob/master/License.txt
+日本語訳:
+https://ja.osdn.net/projects/opensource/wiki/licenses%2FApache_License_2.0
