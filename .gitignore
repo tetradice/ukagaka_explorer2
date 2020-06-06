@@ -22,3 +22,6 @@
 /plugin_src/lib_debug/
 /plugin_src/shellexplorer2/obj/
 /plugin/ghostexplorer2/module_debug/
+/plugin/shellexplorer2/module_debug/
+/plugin_src/shellexplorer2/bin/
+/plugin/shellexplorer2/module/
