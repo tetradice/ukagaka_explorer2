@@ -193,7 +193,6 @@ namespace ExplorerLib
             Debug.WriteLine(req.ToString());
 
             var data = Encoding.UTF8.GetBytes(req.ToString());
-            var bytesReceived = new Byte[256];
 
             using (var client = new TcpClient(HOST, PORT))
             {

@@ -215,7 +215,6 @@ namespace GhostExplorer2
         /// <returns>ゴーストフォルダパスをキー、顔画像 (Bitmap) を値とするDictionary</returns>
         public virtual Bitmap GetFaceImage(Ghost ghost, Shell shell, Size faceSize)
         {
-            var images = new Dictionary<string, Bitmap>();
             var cacheDir = Util.GetCacheDirPath();
 
             // キャッシュフォルダが存在しなければ作成

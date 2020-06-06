@@ -395,7 +395,6 @@ namespace ShellExplorer2
         /// </summary>
         protected string SendSSTPGetProperty(string key)
         {
-            var sstpClient = new SSTPClient();
             var req = new SSTPClient.Execute13Request();
             req.Sender = Const.SSTPSender;
             req.Command = "GetProperty[" + key + "]";
@@ -443,7 +442,6 @@ namespace ShellExplorer2
         /// </summary>
         protected bool SendSSTPScript(string script)
         {
-            var sstpClient = new SSTPClient();
             var req = new SSTPClient.Send14Request();
             req.Id = CallerId;
             req.Sender = Const.SSTPSender;

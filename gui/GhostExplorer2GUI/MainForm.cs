@@ -520,7 +520,7 @@ namespace GhostExplorer2
         /// <summary>
         /// ゴースト切り替えボタン押下
         /// </summary>
-        async private void BtnChange_Click(object sender, EventArgs e)
+        private void BtnChange_Click(object sender, EventArgs e)
         {
             //// まずはOnGhostChangingイベントを発生させる
             //var success = SendSSTPScript(string.Format(@"\![raise,OnGhostChanging,{0},manual,{1},{2}]\e"
@@ -552,7 +552,7 @@ namespace GhostExplorer2
         /// <summary>
         /// 呼び出しボタン押下
         /// </summary>
-        async private void BtnCall_Click(object sender, EventArgs e)
+        private void BtnCall_Click(object sender, EventArgs e)
         {
             // ゴースト呼び出しの前にFMO情報の更新を試みる
             UpdateFMOInfo();
@@ -609,7 +609,6 @@ namespace GhostExplorer2
         /// </summary>
         protected string SendSSTPGetProperty(string key)
         {
-            var sstpClient = new SSTPClient();
             var req = new SSTPClient.Execute13Request();
             req.Sender = Const.SSTPSender;
             req.Command = "GetProperty[" + key + "]";
@@ -630,7 +629,6 @@ namespace GhostExplorer2
         /// </summary>
         protected bool SendSSTPScript(string script)
         {
-            var sstpClient = new SSTPClient();
             var req = new SSTPClient.Send14Request();
             req.Id = CallerId;
             req.Sender = Const.SSTPSender;
