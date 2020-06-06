@@ -72,10 +72,7 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
 
 ■現時点での制限事項
 
-・ゴーストの切り替え時や呼び出し時には、イベントトーク (OnGhostChanging, OnGhostCalling) が発生しますが、
-  これはSSP本体の動作を、仕様書などを元に模倣したものなので、SSP側で切り替えた時の動作と微妙に差があります。
-  （たとえば、SHIORIがOnGhostChangingに反応しなかった場合、SSPであれば代わりにOnCloseイベントを発生させますが
-  　ゴーストエクスプローラ通では技術的な制約で、この処理を行えません）
+・技術的な制約のため、他ゴーストへの切り替えや呼び出しを実行した時に、切り替え前のトークが行われません。（OnGhostChangingなどのイベントが発生しません）
 
 ・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, overlayfast, add, bind) 、および reduce, interpolate のみです。
   他の描画メソッドはすべてoverlay扱いで描画します。
@@ -112,7 +109,6 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
 * [機能追加] 並び順に「最近インストールした順」を追加
 * [機能追加] SERIKOのreduce, interpolateメソッドに対応
 * [機能追加] ゴースト側の explorer2\descript.txt でもデフォルトサーフェスIDを指定できるようにした
-* [変更] ゴースト切り替え時や呼び出し時のトークが発生するようにした
 * [変更] 立ち絵を表示できない場合のエラーメッセージを、以前より具体的に表示するようにした
 * [変更] ゴーストエクスプローラ通がサポート対象外とするゴーストの場合、「ERROR: ～」ではなく「UNSUPPORTED: ～」形式でメッセージを表示するように変更
          現時点では下記のものが該当

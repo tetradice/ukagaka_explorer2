@@ -522,26 +522,26 @@ namespace GhostExplorer2
         /// </summary>
         async private void BtnChange_Click(object sender, EventArgs e)
         {
-            // まずはOnGhostChangingイベントを発生させる
-            var success = SendSSTPScript(string.Format(@"\![raise,OnGhostChanging,{0},manual,{1},{2}]\e"
-                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.SakuraName)
-                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.Name)
-                                                     , Util.QuoteForSakuraScriptParameter(SelectedGhost.DirPath)));
+            //// まずはOnGhostChangingイベントを発生させる
+            //var success = SendSSTPScript(string.Format(@"\![raise,OnGhostChanging,{0},manual,{1},{2}]\e"
+            //                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.SakuraName)
+            //                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.Name)
+            //                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.DirPath)));
 
-            // 送信成功した場合、オプションに応じてアプリケーションを隠す
-            if (success && ChkCloseAfterChange.Checked)
-            {
-                this.Hide();
-            }
+            //// 送信成功した場合、オプションに応じてアプリケーションを隠す
+            //if (success && ChkCloseAfterChange.Checked)
+            //{
+            //    this.Hide();
+            //}
 
-            // トーク終了を待つ
-            await WaitCurrentGhostTalkEnd();
+            //// トーク終了を待つ
+            //await WaitCurrentGhostTalkEnd();
 
             // ゴースト変更
             SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
 
             // ゴースト変更後にアプリケーション終了
-            if (success && ChkCloseAfterChange.Checked)
+            if (ChkCloseAfterChange.Checked)
             {
                 Application.Exit();
             }
@@ -564,14 +564,14 @@ namespace GhostExplorer2
                 return;
             }
 
-            // まずはOnGhostCallingイベントを発生させる
-            SendSSTPScript(string.Format(@"\![raise,OnGhostCalling,{0},manual,{1},{2}]\e"
-                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.SakuraName)
-                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.Name)
-                                         , Util.QuoteForSakuraScriptParameter(SelectedGhost.DirPath)));
+            //// まずはOnGhostCallingイベントを発生させる
+            //SendSSTPScript(string.Format(@"\![raise,OnGhostCalling,{0},manual,{1},{2}]\e"
+            //                             , Util.QuoteForSakuraScriptParameter(SelectedGhost.SakuraName)
+            //                             , Util.QuoteForSakuraScriptParameter(SelectedGhost.Name)
+            //                             , Util.QuoteForSakuraScriptParameter(SelectedGhost.DirPath)));
 
-            // 1秒だけ待つ
-            await Task.Delay(1000);
+            //// 1秒だけ待つ
+            //await Task.Delay(1000);
 
             // ゴーストを呼ぶ
             SendSSTPScript(@"\![call,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
