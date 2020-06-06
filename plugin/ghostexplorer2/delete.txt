@@ -1,0 +1,9 @@
+system_config.txt
+yaya.dll
+yaya.txt
+yaya_plugin_main.txt
+yaya_variable.cfg
+yaya-readme.txt
+yaya-readme-original.txt
+system\yaya_optional.dic
+system\yaya_plugin2.dic
