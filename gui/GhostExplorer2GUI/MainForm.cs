@@ -788,13 +788,6 @@ namespace GhostExplorer2
                 return;
             }
 
-            // Realize2Textを読み込む
-            var realize2Path = Path.Combine(SSPDirPath, @"data\profile\realize2.txt");
-            if (File.Exists(realize2Path))
-            {
-                Realize2Text = Realize2Text.Load(realize2Path);
-            }
-
             SakuraFMOData target = null;
             if (!string.IsNullOrWhiteSpace(caller))
             {
@@ -993,6 +986,13 @@ namespace GhostExplorer2
             var selectedGhostDirPath = ((DropDownItem)cmbGhostDir.SelectedItem).Value;
             var filterWord = txtFilter.Text.Trim();
             var sortType = ((DropDownItem)cmbSort.SelectedItem).Value;
+
+            // Realize2Textを読み込む
+            var realize2Path = Path.Combine(SSPDirPath, @"data\profile\realize2.txt");
+            if (File.Exists(realize2Path))
+            {
+                Realize2Text = Realize2Text.Load(realize2Path);
+            }
 
             // ゴースト情報読み込み
             GhostManager = GhostManager.Load(Realize2Text, selectedGhostDirPath, filterWord, sortType);
