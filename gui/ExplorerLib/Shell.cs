@@ -1,5 +1,4 @@
-﻿using ExplorerLib.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ExplorerLib.Exceptions;
 
 namespace ExplorerLib
 {
@@ -133,15 +133,15 @@ namespace ExplorerLib
         public virtual void Load()
         {
             // descript.txt 読み込み
-            this.Descript = DescriptText.Load(DescriptPath);
+            Descript = DescriptText.Load(DescriptPath);
 
             // explorer2\descript.txt 読み込み (存在すれば)
-            this.Explorer2Descript = null;
+            Explorer2Descript = null;
             if (File.Exists(Explorer2DescriptPath))
             {
-                this.Explorer2Descript = DescriptText.Load(Explorer2DescriptPath);
+                Explorer2Descript = DescriptText.Load(Explorer2DescriptPath);
             }
-            this.Descript = DescriptText.Load(DescriptPath);
+            Descript = DescriptText.Load(DescriptPath);
 
             // character_descript.txt があれば読み込み
             CharacterDescript = null;
@@ -680,16 +680,16 @@ namespace ExplorerLib
 
             // 新規レイヤをコピーして、アルファチャンネルありの32ビットbmpに変換
             // (インデックスカラーや8ビットカラーなどにも対応できるようにするため)
-            newBmp = newBmp.Clone(new Rectangle(0, 0, (int)newBmp.Width, (int)newBmp.Height), PixelFormat.Format32bppArgb);
+            newBmp = newBmp.Clone(new Rectangle(0, 0, newBmp.Width, newBmp.Height), PixelFormat.Format32bppArgb);
 
             // 出力画像の1ピクセルあたりのバイト数を取得する (両方とも32ビットのため4固定)
             var pixelByteSize = 4;
 
             // 出力bmpと新規bmpをロック
-            BitmapData baseBmpData = baseBmp.LockBits(
+            var baseBmpData = baseBmp.LockBits(
                 new Rectangle(0, 0, baseBmp.Width, baseBmp.Height),
                 (writingToBase ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), baseBmp.PixelFormat);
-            BitmapData newBmpData = newBmp.LockBits(
+            var newBmpData = newBmp.LockBits(
                 new Rectangle(0, 0, newBmp.Width, newBmp.Height),
                 (writingToNew ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), newBmp.PixelFormat);
 
@@ -705,12 +705,12 @@ namespace ExplorerLib
                 }
 
                 // 新規レイヤのピクセルデータをバイト型配列で取得する
-                IntPtr newBmpPtr = newBmpData.Scan0;
+                var newBmpPtr = newBmpData.Scan0;
                 var newBmpPixels = new byte[newBmpData.Stride * newBmp.Height];
                 System.Runtime.InteropServices.Marshal.Copy(newBmpPtr, newBmpPixels, 0, newBmpPixels.Length);
 
                 // 出力画像のピクセルデータをバイト型配列で取得する
-                IntPtr basePtr = baseBmpData.Scan0;
+                var basePtr = baseBmpData.Scan0;
                 var basePixels = new byte[baseBmpData.Stride * baseBmp.Height];
                 System.Runtime.InteropServices.Marshal.Copy(basePtr, basePixels, 0, basePixels.Length);
 
@@ -819,7 +819,7 @@ namespace ExplorerLib
                     }
 
                     // 縮小率を決定 (幅が収まるように縮小する)
-                    var scaleRate = (double)width / (double)mImg.Width;
+                    var scaleRate = width / (double)mImg.Width;
                     if (scaleRate > 1.0) scaleRate = 1.0; // 拡大はしない
 
                     // リサイズ処理
@@ -1117,7 +1117,7 @@ namespace ExplorerLib
 
             // descript.txt から着せ替え情報取得
             var bindGroups = new Dictionary<int, BindGroup>();
-            foreach (var pair in this.Descript.Values)
+            foreach (var pair in Descript.Values)
             {
                 // default指定
                 {

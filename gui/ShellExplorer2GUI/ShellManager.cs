@@ -1,6 +1,4 @@
-﻿using ExplorerLib;
-using ExplorerLib.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -9,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ExplorerLib;
+using ExplorerLib.Exceptions;
 
 namespace ShellExplorer2
 {
@@ -74,7 +74,7 @@ namespace ShellExplorer2
                 }
 
                 // シェルの読み込みに失敗した場合、Descript.txtのみ読み込み、名前の取得を試みる
-                if(item.Shell == null)
+                if (item.Shell == null)
                 {
                     var descript = DescriptText.Load(descriptPath);
                     item.Name = descript.Get("name");
@@ -168,7 +168,8 @@ namespace ShellExplorer2
                     else
                     {
                         // キャッシュがない場合、サーフェス0から顔画像を生成 (サーフェスを読み込めている場合のみ)
-                        if (shell.SakuraSurfaceModel != null) {
+                        if (shell.SakuraSurfaceModel != null)
+                        {
                             face = shell.DrawFaceImage(shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height);
                             if (face != null)
                             {

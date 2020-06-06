@@ -31,14 +31,15 @@ namespace ExplorerLib
 
             public Scope()
             {
-                this.Entries = new List<Tuple<string, string>>();
+                Entries = new List<Tuple<string, string>>();
             }
         }
 
         /// <summary>
         /// SERIKOのバージョン
         /// </summary>
-        public virtual Seriko.VersionType SerikoVersion {
+        public virtual Seriko.VersionType SerikoVersion
+        {
             get
             {
                 if (Scopes.ContainsKey("descript"))
@@ -104,13 +105,13 @@ namespace ExplorerLib
             // 既存の値はクリア
             Scopes.Clear();
             // ファイル更新日時セット
-            this.LastWriteTime = File.GetLastWriteTime(Path);
+            LastWriteTime = File.GetLastWriteTime(Path);
 
             // まずはエンコーディングの判定を行うために、対象ファイルの内容を1行ずつ読み込む
             var sjis = Encoding.GetEncoding(932);
             var encoding = sjis;
             var preLines = File.ReadLines(Path, encoding: sjis);
-            foreach (string line in preLines)
+            foreach (var line in preLines)
             {
                 // charset行が見つかった場合は、文字コードを設定してループ終了
                 var matched = charsetPattern.Match(line);
@@ -134,7 +135,7 @@ namespace ExplorerLib
             string currentScope = null; // 現在のスコープ 
             var valueSeparators = new[] { ',' };
 
-            foreach (string line in lines)
+            foreach (var line in lines)
             {
                 var trimmedLine = line.Trim();
 
@@ -252,7 +253,7 @@ namespace ExplorerLib
             var patValueRegexV1 = new Regex(@"\A(?<surfaceID>[\d-]+),[\d-]+,(?<method>[a-z]+)(?:,(?<offsetX>[^,]+),(?<offsetY>[^,]+))\z");
 
             // スコープ1つごとに処理
-            foreach (var pair in this.Scopes)
+            foreach (var pair in Scopes)
             {
                 var scopeName = pair.Key;
                 var scopeValues = pair.Value.Entries;
@@ -304,12 +305,13 @@ namespace ExplorerLib
                     // animation.interval処理
                     {
                         // V1, V2両方の形式を読み込み対象とする
-                        int id = -1;
+                        var id = -1;
                         var matched = intervalKeyRegexV2.Match(valuePair.Item1);
                         if (matched.Success)
                         {
                             id = int.Parse(matched.Groups[1].Value);
-                        } else
+                        }
+                        else
                         {
                             var matchedV1 = intervalKeyRegexV1.Match(valuePair.Item1);
                             if (matchedV1.Success)
@@ -371,9 +373,9 @@ namespace ExplorerLib
                                 var methodValue = matched2.Groups["method"].Value;
                                 var patternSurfaceId = int.Parse(matched2.Groups["surfaceID"].Value);
                                 var offsetX = 0;
-                                if(matched2.Groups["offsetX"].Success) int.TryParse(matched2.Groups["offsetX"].Value, out offsetX);
+                                if (matched2.Groups["offsetX"].Success) int.TryParse(matched2.Groups["offsetX"].Value, out offsetX);
                                 var offsetY = 0;
-                                if(matched2.Groups["offsetY"].Success) int.TryParse(matched2.Groups["offsetY"].Value, out offsetY);
+                                if (matched2.Groups["offsetY"].Success) int.TryParse(matched2.Groups["offsetY"].Value, out offsetY);
 
                                 addAnimationPattern(
                                     defInfo.Animations
@@ -442,7 +444,8 @@ namespace ExplorerLib
             , int patternSurfaceId
             , int offsetX
             , int offsetY
-        ) {
+        )
+        {
             // animation定義が未登録であれば追加
             if (!animations.ContainsKey(animId))
             {
@@ -479,12 +482,8 @@ namespace ExplorerLib
         {
             // スコープ名が "surface" から始まっていなければマッチしない
             if (!scopeName.StartsWith("surface")) return false;
-
-            // "surface.append" 形式の定義であればフラグを立てる
-            var appending = false;
             if (scopeName.Contains(".append"))
             {
-                appending = true;
             }
 
             // スコープ名から "surface" および "surface.append" を除去し、半角カンマで分割
@@ -500,7 +499,7 @@ namespace ExplorerLib
                     var negative = !string.IsNullOrEmpty(matched.Groups[1].Value);
                     var left = int.Parse(matched.Groups[2].Value);
                     int? right = null;
-                    if(!string.IsNullOrEmpty(matched.Groups[3].Value)) right = int.Parse(matched.Groups[3].Value);
+                    if (!string.IsNullOrEmpty(matched.Groups[3].Value)) right = int.Parse(matched.Groups[3].Value);
 
                     // 範囲指定かどうかで処理を分ける
                     if (right != null)

@@ -1,6 +1,4 @@
-﻿using ExplorerLib;
-using ExplorerLib.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -10,6 +8,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ExplorerLib;
+using ExplorerLib.Exceptions;
 
 namespace GhostExplorer2
 {
@@ -76,7 +76,7 @@ namespace GhostExplorer2
             foreach (var ghost in Ghosts)
             {
                 Realize2Text.Record rec = null;
-                if(Realize2Text != null) rec = Realize2Text.GhostRecords.FirstOrDefault(r => r.Name == ghost.Name);
+                if (Realize2Text != null) rec = Realize2Text.GhostRecords.FirstOrDefault(r => r.Name == ghost.Name);
                 if (rec != null)
                 {
                     totalBootTimes[ghost.Name] = rec.TotalBootByMinute;
@@ -92,7 +92,8 @@ namespace GhostExplorer2
 
             // ゴースト別のインストール日付情報を取得 (インストール日時順でソートされた場合のみ)
             var installSeconds = new Dictionary<string, long>();
-            if (SortType == Const.SortType.ByRecentInstall) {
+            if (SortType == Const.SortType.ByRecentInstall)
+            {
                 foreach (var ghost in Ghosts)
                 {
                     // 初期値は0
@@ -233,7 +234,8 @@ namespace GhostExplorer2
                 else
                 {
                     // キャッシュがない場合、サーフェス0から顔画像を生成 (サーフェスを読み込めている場合のみ)
-                    if (shell.SakuraSurfaceModel != null) {
+                    if (shell.SakuraSurfaceModel != null)
+                    {
                         face = shell.DrawFaceImage(shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height);
                         if (face != null)
                         {

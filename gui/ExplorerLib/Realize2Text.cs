@@ -72,7 +72,7 @@ namespace ExplorerLib
 
             // 読み込みメイン処理 (エンコーディングはUTF-8で決め打ち)
             var lines = File.ReadLines(Path, encoding: Encoding.UTF8);
-            foreach (string line in lines)
+            foreach (var line in lines)
             {
                 var matched = entryPattern.Match(line);
                 if (matched.Success)
@@ -95,7 +95,8 @@ namespace ExplorerLib
                     if (type == "ghost")
                     {
                         GhostRecords.Add(record);
-                    } else if (type == "balloon")
+                    }
+                    else if (type == "balloon")
                     {
                         BalloonRecords.Add(record);
                     }

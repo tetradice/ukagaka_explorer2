@@ -1,6 +1,4 @@
-﻿using ExplorerLib;
-using ExplorerLib.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,6 +13,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ExplorerLib;
+using ExplorerLib.Exceptions;
 
 namespace ShellExplorer2
 {
@@ -94,7 +94,7 @@ namespace ShellExplorer2
         {
             InitializeComponent();
 
-            this.SurfaceNotificationMessages = new List<string>();
+            SurfaceNotificationMessages = new List<string>();
         }
 
         /// <summary>
@@ -118,13 +118,13 @@ namespace ShellExplorer2
             // ウインドウサイズが保存されていれば反映
             if (CurrentProfile.MainWindowWidth >= 1 && CurrentProfile.MainWindowHeight >= 1)
             {
-                this.Width = CurrentProfile.MainWindowWidth;
-                this.Height = CurrentProfile.MainWindowHeight;
+                Width = CurrentProfile.MainWindowWidth;
+                Height = CurrentProfile.MainWindowHeight;
             }
 
             // ローディング表示を中央に配置
-            lblLoading.Left = (this.ClientSize.Width - lblLoading.Width) / 2;
-            lblLoading.Top = (this.ClientSize.Height - lblLoading.Height) / 2;
+            lblLoading.Left = (ClientSize.Width - lblLoading.Width) / 2;
+            lblLoading.Top = (ClientSize.Height - lblLoading.Height) / 2;
         }
 
         /// <summary>
@@ -185,10 +185,10 @@ namespace ShellExplorer2
         protected void UpdateUIState()
         {
             // 説明文設定
-            this.DescriptionText = GetDescriptionText();
+            DescriptionText = GetDescriptionText();
 
             // シェル切り替えボタン、および付随する設定チェックボックスは、シェル選択中のみ表示
-            BtnChange.Visible = ChkCloseAfterChange.Visible = (this.SelectedShellListItem != null);
+            BtnChange.Visible = ChkCloseAfterChange.Visible = (SelectedShellListItem != null);
 
             // シェル切り替えボタンは、呼び出し元シェルが残っていないと押下できない
             BtnChange.Enabled = ChkCloseAfterChange.Enabled = !(CallerLost);
@@ -197,7 +197,7 @@ namespace ShellExplorer2
             BtnRandomSelect.Visible = true;
 
             // ゴーストの立ち絵は、シェルを選択している場合のみ表示
-            SelectedGhostSurfaceVisible = (this.SelectedShellListItem != null);
+            SelectedGhostSurfaceVisible = (SelectedShellListItem != null);
 
             // 立ち絵Paint再発生
             picSurface.Invalidate();
@@ -214,62 +214,62 @@ namespace ShellExplorer2
         private void lstGhost_SelectedIndexChanged(object sender, EventArgs e)
         {
             // 未選択時は終了
-            if (this.SelectedShellListItem == null) return;
+            if (SelectedShellListItem == null) return;
 
             // エラーメッセージリストを初期化
             SurfaceNotificationMessages.Clear();
 
             // シェルが読み込めていない場合は、エラーメッセージをセット
-            if (this.SelectedShellListItem.Shell == null)
+            if (SelectedShellListItem.Shell == null)
             {
-                SurfaceNotificationMessages.Add(this.SelectedShellListItem.ErrorMessage);
+                SurfaceNotificationMessages.Add(SelectedShellListItem.ErrorMessage);
             }
             else
             {
 
-            // sakura側のサーフェス画像を取得
-            try
-            {
-                    CurrentSakuraSurface = ShellManager.DrawSakuraSurface(this.SelectedShellListItem.Shell);
+                // sakura側のサーフェス画像を取得
+                try
+                {
+                    CurrentSakuraSurface = ShellManager.DrawSakuraSurface(SelectedShellListItem.Shell);
 
                     // 描画に失敗した場合はエラー扱い
-                if (CurrentSakuraSurface == null)
-                {
+                    if (CurrentSakuraSurface == null)
+                    {
                         SurfaceNotificationMessages.Add(@"ERROR: 本体側の立ち絵描画に失敗しました。");
+                    }
                 }
-            }
                 catch (UnhandlableShellException ex)
-            {
+                {
                     ex.Scope = 0; // sakura側のエラー
 
-                CurrentSakuraSurface = null;
-                Debug.WriteLine(ex.ToString());
+                    CurrentSakuraSurface = null;
+                    Debug.WriteLine(ex.ToString());
                     SurfaceNotificationMessages.Add(ex.FriendlyMessage);
-            }
-            catch (Exception ex)
-            {
-                CurrentSakuraSurface = null;
-                Debug.WriteLine(ex.ToString());
+                }
+                catch (Exception ex)
+                {
+                    CurrentSakuraSurface = null;
+                    Debug.WriteLine(ex.ToString());
                     SurfaceNotificationMessages.Add(@"ERROR: 本体側の立ち絵描画に失敗しました。");
-            }
+                }
 
-            // kero側のサーフェス画像を取得
-            try
-            {
-                    CurrentKeroSurface = ShellManager.DrawKeroSurface(this.SelectedShellListItem.Shell);
-            }
+                // kero側のサーフェス画像を取得
+                try
+                {
+                    CurrentKeroSurface = ShellManager.DrawKeroSurface(SelectedShellListItem.Shell);
+                }
                 catch (UnhandlableShellException ex)
-            {
+                {
                     ex.Scope = 1; // kero側のエラー
 
-                CurrentKeroSurface = null;
-                Debug.WriteLine(ex.ToString());
+                    CurrentKeroSurface = null;
+                    Debug.WriteLine(ex.ToString());
                     SurfaceNotificationMessages.Add(ex.FriendlyMessage);
-            }
-            catch (Exception ex)
-            {
-                CurrentKeroSurface = null;
-                Debug.WriteLine(ex.ToString());
+                }
+                catch (Exception ex)
+                {
+                    CurrentKeroSurface = null;
+                    Debug.WriteLine(ex.ToString());
                     SurfaceNotificationMessages.Add(@"ERROR: パートナー側の立ち絵描画に失敗しました。");
                 }
             }
@@ -306,8 +306,8 @@ namespace ShellExplorer2
                 // sakura側とkero側が両方とも収まるように縮小率を決める
                 var requiredWidth = (CurrentKeroSurface != null ? CurrentKeroSurface.Width + keroRightPadding : 0) + CurrentSakuraSurface.Width + sakuraRightPadding;
                 var requiredHeight = Math.Max((CurrentKeroSurface != null ? CurrentKeroSurface.Height : 0), CurrentSakuraSurface.Height) + topPadding;
-                var scaleRateByWidth = (double)e.ClipRectangle.Width / (double)requiredWidth;
-                var scaleRateByHeight = (double)e.ClipRectangle.Height / (double)requiredHeight;
+                var scaleRateByWidth = e.ClipRectangle.Width / (double)requiredWidth;
+                var scaleRateByHeight = e.ClipRectangle.Height / (double)requiredHeight;
                 var scaleRate = Math.Min(Math.Min(1.0, scaleRateByWidth), scaleRateByHeight); // 1.0より大きくならないようにする (拡大しない) 
 
                 // 描画サイズの決定
@@ -344,13 +344,13 @@ namespace ShellExplorer2
         {
             if (SelectedShellListItem != null)
             {
-                if (this.SurfaceNotificationMessages.Any())
+                if (SurfaceNotificationMessages.Any())
                 {
                     return string.Join("\r\n", SurfaceNotificationMessages);
                 }
-                if (this.SelectedShellListItem.Shell != null && this.SelectedShellListItem.Shell.CharacterDescript != null)
+                if (SelectedShellListItem.Shell != null && SelectedShellListItem.Shell.CharacterDescript != null)
                 {
-                    return this.SelectedShellListItem.Shell.CharacterDescript;
+                    return SelectedShellListItem.Shell.CharacterDescript;
                 }
             }
 
@@ -360,25 +360,25 @@ namespace ShellExplorer2
         /// <summary>
         /// シェル切り替えボタン押下
         /// </summary>
-        async private void BtnChange_Click(object sender, EventArgs e)
+        private async void BtnChange_Click(object sender, EventArgs e)
         {
             // まずはOnShellChangingイベントを発生させる
             var success = SendSSTPScript(string.Format(@"\![raise,OnShellChanging,{0},{1},{2}]\e"
-                                                     , Util.QuoteForSakuraScriptParameter(this.SelectedShellListItem.Shell.Name)
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.Name)
                                                      , "" // reference1 (現在のシェル名) を正しく取得する手段がないと思われる
-                                                     , Util.QuoteForSakuraScriptParameter(this.SelectedShellListItem.Shell.DirPath)));
+                                                     , Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.DirPath)));
 
             // 送信成功した場合、オプションに応じてアプリケーションを隠す
             if (success && ChkCloseAfterChange.Checked)
             {
-                this.Hide();
+                Hide();
             }
 
             // トーク終了を待つ
             await WaitCurrentGhostTalkEnd();
 
             // ゴースト変更
-            SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(this.SelectedShellListItem.Shell.Name) + @"]\e");
+            SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.Name) + @"]\e");
 
             // ゴースト変更後にアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)
@@ -646,7 +646,7 @@ namespace ShellExplorer2
 
             // 現在の使用シェルを選択
             var currentShellFolderName = Path.GetFileName(ghost.CurrentShellRelDirPath);
-            foreach(ListViewItem item in lstShell.Items)
+            foreach (ListViewItem item in lstShell.Items)
             {
                 var shellFolderName = Path.GetFileName((string)item.Tag);
                 if (shellFolderName == currentShellFolderName)
@@ -658,7 +658,8 @@ namespace ShellExplorer2
             }
 
             // 選択対象のシェルを判別できなかった場合は、1件目を選択
-            if (this.SelectedShellListItem == null) {
+            if (SelectedShellListItem == null)
+            {
                 lstShell.Items[0].Focused = true;
                 lstShell.Items[0].Selected = true;
             }
@@ -676,7 +677,7 @@ namespace ShellExplorer2
 
         private void BtnOpenShellFolder_Click(object sender, EventArgs e)
         {
-            Process.Start(this.SelectedShellListItem.DirPath);
+            Process.Start(SelectedShellListItem.DirPath);
         }
 
         /// <summary>
@@ -684,10 +685,10 @@ namespace ShellExplorer2
         /// </summary>
         protected override void WndProc(ref Message m)
         {
-            if(m.Msg == WMSakuraAPI)
+            if (m.Msg == WMSakuraAPI)
             {
                 // ゴースト変更通知なら処理
-                if((int)m.WParam == SAKURA_API_BROADCAST_GHOSTCHANGE)
+                if ((int)m.WParam == SAKURA_API_BROADCAST_GHOSTCHANGE)
                 {
                     // プロセスIDからSSPのパスを取得
                     LastSSPExePath = null;
@@ -725,8 +726,8 @@ namespace ShellExplorer2
         private void MainForm_ResizeEnd(object sender, EventArgs e)
         {
             // リサイズ完了時には、ウインドウサイズを保存
-            CurrentProfile.MainWindowWidth = this.Width;
-            CurrentProfile.MainWindowHeight = this.Height;
+            CurrentProfile.MainWindowWidth = Width;
+            CurrentProfile.MainWindowHeight = Height;
             Util.SaveProfile(CurrentProfile);
         }
     }

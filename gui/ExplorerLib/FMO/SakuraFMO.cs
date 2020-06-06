@@ -1,17 +1,18 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace ExplorerLib
 {
     /// <summary>
-    /// "Sakura" FMO‚Ì‚Pƒf[ƒ^i‚PƒS[ƒXƒgj‚ğ•\‚·ƒNƒ‰ƒX‚Å‚·
+    /// "Sakura" FMOã®ï¼‘ãƒ‡ãƒ¼ã‚¿ï¼ˆï¼‘ã‚´ãƒ¼ã‚¹ãƒˆï¼‰ã‚’è¡¨ã™ã‚¯ãƒ©ã‚¹ã§ã™
     /// </summary>
     /// <remarks>
-    /// –{ƒNƒ‰ƒX‚ÍA•‚q‰®‚³‚ñ‚ª”z•z‚³‚ê‚Ä‚¢‚éuSSTPLibv‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚éƒ\[ƒX‚ğA‰ü•Ï‚µ‚Äg—p‚³‚¹‚Ä‚¢‚½‚¾‚¢‚Ä‚¨‚è‚Ü‚·B
-    /// http://ukiya.sakura.ne.jp/index.php?f‚©ŠÖ˜Aƒc[ƒ‹%2FSSTPLib
+    /// æœ¬ã‚¯ãƒ©ã‚¹ã¯ã€æµ®å­å±‹ã•ã‚“ãŒé…å¸ƒã•ã‚Œã¦ã„ã‚‹ã€ŒSSTPLibã€ã«å«ã¾ã‚Œã¦ã„ã‚‹ã‚½ãƒ¼ã‚¹ã‚’ã€æ”¹å¤‰ã—ã¦ä½¿ç”¨ã•ã›ã¦ã„ãŸã ã„ã¦ãŠã‚Šã¾ã™ã€‚
+    /// http://ukiya.sakura.ne.jp/index.php?ä¼ºã‹é–¢é€£ãƒ„ãƒ¼ãƒ«%2FSSTPLib
     /// </remarks>
-    public class SakuraFMOData {
+    public class SakuraFMOData
+    {
         public string Id;
         public uint HWnd;
         public uint KeroHWnd;
@@ -22,50 +23,57 @@ namespace ExplorerLib
     }
 
     /// <summary>
-    /// "Sakura" FMO‚ğ•\‚·ƒNƒ‰ƒX‚Å‚·
+    /// "Sakura" FMOã‚’è¡¨ã™ã‚¯ãƒ©ã‚¹ã§ã™
     /// </summary>
-    public class SakuraFMO : IFMOReader {
+    public class SakuraFMO : IFMOReader
+    {
         private Dictionary<string, SakuraFMOData> m_FMOData_id;
         private Dictionary<string, SakuraFMOData> m_FMOData_name;
-        private FMO m_FMO;
+        private readonly FMO m_FMO;
 
-        #region ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+        #region ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
         /// <summary>
-        /// ƒRƒ“ƒXƒgƒ‰ƒNƒ^FFMO–¼Ì"Sakura"
+        /// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼šFMOåç§°"Sakura"
         /// </summary>
         public SakuraFMO() : this("Sakura") { }
 
         /// <summary>
-        /// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+        /// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
         /// </summary>
-        /// <param name="fmoname">FMO–¼Ì</param>
-        public SakuraFMO(string fmoname) {
+        /// <param name="fmoname">FMOåç§°</param>
+        public SakuraFMO(string fmoname)
+        {
             m_FMO = new FMO(fmoname);
             m_FMOData_id = new Dictionary<string, SakuraFMOData>();
             m_FMOData_name = new Dictionary<string, SakuraFMOData>();
         }
         #endregion
 
-        #region ƒpƒuƒŠƒbƒNƒƒ“ƒo
+        #region ãƒ‘ãƒ–ãƒªãƒƒã‚¯ãƒ¡ãƒ³ãƒ
         /// <summary>
-        /// FMO‚Ì“à—e‚ğ“Ç‚İ‚İ‚Ü‚·
+        /// FMOã®å†…å®¹ã‚’èª­ã¿è¾¼ã¿ã¾ã™
         /// </summary>
-        /// <param name="isUseMutex">“Ç‚İ‚İ‚ÉMutex‚ğg‚¤ê‡TRUE</param>
-        /// <returns>“Ç‚İ‚İ¬Œ÷^¸”s</returns>
-        public bool Update(bool isUseMutex) {
-            if (m_FMO.UpdateData(isUseMutex) == true) {
+        /// <param name="isUseMutex">èª­ã¿è¾¼ã¿ã«Mutexã‚’ä½¿ã†å ´åˆTRUE</param>
+        /// <returns>èª­ã¿è¾¼ã¿æˆåŠŸï¼å¤±æ•—</returns>
+        public bool Update(bool isUseMutex)
+        {
+            if (m_FMO.UpdateData(isUseMutex) == true)
+            {
                 return ParseFMO(m_FMO.FMOString);
-            } else {
+            }
+            else
+            {
                 return false;
             }
         }
 
         /// <summary>
-        /// ƒS[ƒXƒg‚Ì–¼‘O (sakuraname) ‚©‚çAƒS[ƒXƒg‚ğ•\‚· SakuraFMODataƒNƒ‰ƒX‚ğæ“¾‚µ‚Ü‚·
+        /// ã‚´ãƒ¼ã‚¹ãƒˆã®åå‰ (sakuraname) ã‹ã‚‰ã€ã‚´ãƒ¼ã‚¹ãƒˆã‚’è¡¨ã™ SakuraFMODataã‚¯ãƒ©ã‚¹ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <param name="sakuraname">æ“¾‚·‚éƒS[ƒXƒg‚Ìsakuraname</param>
-        /// <returns>æ“¾‚µ‚½ƒS[ƒXƒg‚ÌSakuraFMODataA¸”s‚µ‚½ê‡‚Ínull</returns>
-        public SakuraFMOData GetGhostBySakuraName(string sakuraname) {
+        /// <param name="sakuraname">å–å¾—ã™ã‚‹ã‚´ãƒ¼ã‚¹ãƒˆã®sakuraname</param>
+        /// <returns>å–å¾—ã—ãŸã‚´ãƒ¼ã‚¹ãƒˆã®SakuraFMODataã€å¤±æ•—ã—ãŸå ´åˆã¯null</returns>
+        public SakuraFMOData GetGhostBySakuraName(string sakuraname)
+        {
             if (m_FMOData_name.ContainsKey(sakuraname))
             {
                 return m_FMOData_name[sakuraname];
@@ -77,10 +85,10 @@ namespace ExplorerLib
         }
 
         /// <summary>
-        /// ƒS[ƒXƒg‚ÌID‚©‚çAƒS[ƒXƒg‚ğ•\‚· SakuraFMODataƒNƒ‰ƒX‚ğæ“¾‚µ‚Ü‚·
+        /// ã‚´ãƒ¼ã‚¹ãƒˆã®IDã‹ã‚‰ã€ã‚´ãƒ¼ã‚¹ãƒˆã‚’è¡¨ã™ SakuraFMODataã‚¯ãƒ©ã‚¹ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <param name="sakuraname">æ“¾‚·‚éƒS[ƒXƒg‚Ìsakuraname</param>
-        /// <returns>æ“¾‚µ‚½ƒS[ƒXƒg‚ÌSakuraFMODataA¸”s‚µ‚½ê‡‚Ínull</returns>
+        /// <param name="sakuraname">å–å¾—ã™ã‚‹ã‚´ãƒ¼ã‚¹ãƒˆã®sakuraname</param>
+        /// <returns>å–å¾—ã—ãŸã‚´ãƒ¼ã‚¹ãƒˆã®SakuraFMODataã€å¤±æ•—ã—ãŸå ´åˆã¯null</returns>
         public SakuraFMOData GetGhostBySakuraId(string id)
         {
             if (m_FMOData_id.ContainsKey(id))
@@ -94,67 +102,86 @@ namespace ExplorerLib
         }
 
         /// <summary>
-        /// FMO‚É‘¶İ‚·‚é‘SƒS[ƒXƒg‚Ìî•ñ‚ğæ“¾‚µ‚Ü‚·
+        /// FMOã«å­˜åœ¨ã™ã‚‹å…¨ã‚´ãƒ¼ã‚¹ãƒˆã®æƒ…å ±ã‚’å–å¾—ã—ã¾ã™
         /// </summary>
-        /// <returns>ƒS[ƒXƒg–¼‚Ì”z—ñ</returns>
-        public List<SakuraFMOData> GetGhosts() {
+        /// <returns>ã‚´ãƒ¼ã‚¹ãƒˆåã®é…åˆ—</returns>
+        public List<SakuraFMOData> GetGhosts()
+        {
             return m_FMOData_name.Values.ToList();
         }
         #endregion
 
 
-        #region ƒvƒ‰ƒCƒx[ƒgŠÖ”
-        private bool ParseFMO(string fmodata) {
-            if (m_FMOData_id != null) {
+        #region ãƒ—ãƒ©ã‚¤ãƒ™ãƒ¼ãƒˆé–¢æ•°
+        private bool ParseFMO(string fmodata)
+        {
+            if (m_FMOData_id != null)
+            {
                 m_FMOData_id = new Dictionary<string, SakuraFMOData>();
             }
-            if (m_FMOData_name != null) {
+            if (m_FMOData_name != null)
+            {
                 m_FMOData_name = new Dictionary<string, SakuraFMOData>();
             }
-            if (fmodata == null) {
+            if (fmodata == null)
+            {
                 return false;
             }
-            string[] pair = fmodata.Split(new char[] { '\n' });
-            for (int i = 0; i < pair.Length; i++) {
+            var pair = fmodata.Split(new char[] { '\n' });
+            for (var i = 0; i < pair.Length; i++)
+            {
                 System.Diagnostics.Debug.WriteLine(pair[i]);
-                string[] token = pair[i].Split(new char[] { '\u0001' });
-                if (token.Length != 2) {
+                var token = pair[i].Split(new char[] { '\u0001' });
+                if (token.Length != 2)
+                {
                     System.Diagnostics.Debug.WriteLine("illegal pair:" + pair[i]);
                     continue;
                 }
-                string entry = token[0];
-                string val = token[1];
-                string[] token2 = entry.Split(new char[] { '.' });
-                if (token2.Length < 2) {
+                var entry = token[0];
+                var val = token[1];
+                var token2 = entry.Split(new char[] { '.' });
+                if (token2.Length < 2)
+                {
                     System.Diagnostics.Debug.WriteLine("illegal entry:" + entry);
                     continue;
                 }
-                string id = token2[0];
-                string key = token2[1];
+                var id = token2[0];
+                var key = token2[1];
 
-                if (m_FMOData_name == null || m_FMOData_id == null) {
+                if (m_FMOData_name == null || m_FMOData_id == null)
+                {
                     return false;
                 }
-                if (!m_FMOData_id.ContainsKey(id)) {
-                    m_FMOData_id[id] = new SakuraFMOData();
-                    m_FMOData_id[id].Id = id;
+                if (!m_FMOData_id.ContainsKey(id))
+                {
+                    m_FMOData_id[id] = new SakuraFMOData
+                    {
+                        Id = id
+                    };
                 }
-                SakuraFMOData fd = m_FMOData_id[id];
-                switch (key.ToLower()) {
+                var fd = m_FMOData_id[id];
+                switch (key.ToLower())
+                {
                     case "hwnd":
                         uint v1;
-                        bool result1 = uint.TryParse(val, out v1);
-                        if (result1) {
+                        var result1 = uint.TryParse(val, out v1);
+                        if (result1)
+                        {
                             fd.HWnd = v1;
-                        } else {
+                        }
+                        else
+                        {
                             System.Diagnostics.Debug.WriteLine("illegal hwnd value:" + val);
                         }
                         break;
                     case "name":
                         fd.Name = val;
-                        if (m_FMOData_name.ContainsKey(val)) {
+                        if (m_FMOData_name.ContainsKey(val))
+                        {
                             System.Diagnostics.Debug.WriteLine("overwrite:" + val);
-                        } else {
+                        }
+                        else
+                        {
                             m_FMOData_name[val] = fd;
                         }
                         break;
@@ -163,28 +190,37 @@ namespace ExplorerLib
                         break;
                     case "sakura":
                         int v2;
-                        bool result2 = int.TryParse(val, out v2);
-                        if (result2) {
+                        var result2 = int.TryParse(val, out v2);
+                        if (result2)
+                        {
                             fd.SakuraSurface = v2;
-                        } else {
+                        }
+                        else
+                        {
                             System.Diagnostics.Debug.WriteLine("illegal sakura.surface value:" + val);
                         }
                         break;
                     case "kero":
                         int v3;
-                        bool result3 = int.TryParse(val, out v3);
-                        if (result3) {
+                        var result3 = int.TryParse(val, out v3);
+                        if (result3)
+                        {
                             fd.KeroSurface = v3;
-                        } else {
+                        }
+                        else
+                        {
                             System.Diagnostics.Debug.WriteLine("illegal kero.surface value:" + val);
                         }
                         break;
                     case "kerohwnd":
                         uint v4;
-                        bool result4 = uint.TryParse(val, out v4);
-                        if (result4) {
+                        var result4 = uint.TryParse(val, out v4);
+                        if (result4)
+                        {
                             fd.KeroHWnd = v4;
-                        } else {
+                        }
+                        else
+                        {
                             System.Diagnostics.Debug.WriteLine("illegal kerohwnd value:" + val);
                         }
                         break;

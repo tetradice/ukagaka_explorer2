@@ -1,35 +1,37 @@
-using System;
+ï»¿using System;
 using System.Runtime.InteropServices;
 
 namespace ExplorerLib
 {
     /// <summary>
-    /// FMO‚Ì“à—e‚ğ•\‚·ƒNƒ‰ƒX‚ÌƒCƒ“ƒ^ƒtƒF[ƒX‚Å‚·
+    /// FMOã®å†…å®¹ã‚’è¡¨ã™ã‚¯ãƒ©ã‚¹ã®ã‚¤ãƒ³ã‚¿ãƒ•ã‚§ãƒ¼ã‚¹ã§ã™
     /// </summary>
     /// <remarks>
-    /// –{ƒNƒ‰ƒX‚ÍA•‚q‰®‚³‚ñ‚ª”z•z‚³‚ê‚Ä‚¢‚éuSSTPLibv‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚éƒ\[ƒX‚ğA‰ü•Ï‚µ‚Äg—p‚³‚¹‚Ä‚¢‚½‚¾‚¢‚Ä‚¨‚è‚Ü‚·B
-    /// http://ukiya.sakura.ne.jp/index.php?f‚©ŠÖ˜Aƒc[ƒ‹%2FSSTPLib
+    /// æœ¬ã‚¯ãƒ©ã‚¹ã¯ã€æµ®å­å±‹ã•ã‚“ãŒé…å¸ƒã•ã‚Œã¦ã„ã‚‹ã€ŒSSTPLibã€ã«å«ã¾ã‚Œã¦ã„ã‚‹ã‚½ãƒ¼ã‚¹ã‚’ã€æ”¹å¤‰ã—ã¦ä½¿ç”¨ã•ã›ã¦ã„ãŸã ã„ã¦ãŠã‚Šã¾ã™ã€‚
+    /// http://ukiya.sakura.ne.jp/index.php?ä¼ºã‹é–¢é€£ãƒ„ãƒ¼ãƒ«%2FSSTPLib
     /// </remarks>
-    public interface IFMOReader {
+    public interface IFMOReader
+    {
         /// <summary>
-        /// FMO‚Ì“à—e‚ğæ“¾‚µA‰ğÍ‚µ‚Ü‚·
+        /// FMOã®å†…å®¹ã‚’å–å¾—ã—ã€è§£æã—ã¾ã™
         /// </summary>
-        /// <param name="isUseMutex">æ“¾‚ÉMutex‚ğg‚¤ê‡‚Ítrue</param>
-        /// <returns>¬Œ÷^¸”s</returns>
+        /// <param name="isUseMutex">å–å¾—ã«Mutexã‚’ä½¿ã†å ´åˆã¯true</param>
+        /// <returns>æˆåŠŸï¼å¤±æ•—</returns>
         bool Update(bool isUseMutex);
     }
 
     /// <summary>
-    /// File Mapping Object ‚ğ•\‚·ƒNƒ‰ƒX‚Å‚·
+    /// File Mapping Object ã‚’è¡¨ã™ã‚¯ãƒ©ã‚¹ã§ã™
     /// </summary>
-    public class FMO {
+    public class FMO
+    {
         private string m_FMOName;
         private string m_fmostring;
         private System.Threading.Mutex m_mutex = null;
         private IntPtr m_hFMO = IntPtr.Zero;
         private IntPtr m_hNativeAddress = IntPtr.Zero;
 
-        #region Win32ŠÖ”
+        #region Win32é–¢æ•°
         [DllImport("kernel32.dll")]
         public static extern IntPtr OpenFileMapping(int dwDesiredAccess, bool bInheritHandle, string lpName);
         public const int SECTION_MAP_READ = 0x4;
@@ -46,19 +48,20 @@ namespace ExplorerLib
 
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SECURITY_ATTRIBUTES {
+        public struct SECURITY_ATTRIBUTES
+        {
             public long nLength;
             public long lpSecurityDescriptor;
             public long bInheritHandle;
         }
         [DllImport("kernel32.dll")]
         public static extern IntPtr CreateFileMapping(
-            uint hFile,                       // ƒtƒ@ƒCƒ‹‚Ìƒnƒ“ƒhƒ‹
-            uint lpAttributes, // ƒZƒLƒ…ƒŠƒeƒB
-            int flProtect,                    // •ÛŒì
-            uint dwMaximumSizeHigh,            // ƒTƒCƒY‚ğ•\‚·ãˆÊ DWORD
-            uint dwMaximumSizeLow,             // ƒTƒCƒY‚ğ•\‚·‰ºˆÊ DWORD
-            string lpName                      // ƒIƒuƒWƒFƒNƒg–¼
+            uint hFile,                       // ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒãƒ³ãƒ‰ãƒ«
+            uint lpAttributes, // ã‚»ã‚­ãƒ¥ãƒªãƒ†ã‚£
+            int flProtect,                    // ä¿è­·
+            uint dwMaximumSizeHigh,            // ã‚µã‚¤ã‚ºã‚’è¡¨ã™ä¸Šä½ DWORD
+            uint dwMaximumSizeLow,             // ã‚µã‚¤ã‚ºã‚’è¡¨ã™ä¸‹ä½ DWORD
+            string lpName                      // ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå
         );
         public const int PAGE_READWRITE = 0x04;
         public const int ERROR_ALREADY_EXISTS = 0x183;
@@ -83,86 +86,101 @@ namespace ExplorerLib
         #endregion
 
 
-        #region ƒRƒ“ƒXƒgƒ‰ƒNƒ^AƒfƒXƒgƒ‰ƒNƒ^AƒvƒƒpƒeƒB
+        #region ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã€ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã€ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£
 
         /// <summary>
-        /// ƒRƒ“ƒXƒgƒ‰ƒNƒ^FFMO–¼"Sakura"
+        /// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ï¼šFMOå"Sakura"
         /// </summary>
         public FMO() : this("Sakura") { }
 
         /// <summary>
-        /// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+        /// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
         /// </summary>
-        /// <param name="name">FMO–¼Ì</param>
-        public FMO(string name) {
+        /// <param name="name">FMOåç§°</param>
+        public FMO(string name)
+        {
             FMOName = name;
         }
 
         /// <summary>
-        /// ƒfƒXƒgƒ‰ƒNƒ^
+        /// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
         /// </summary>
-        ~FMO() {
+        ~FMO()
+        {
             UnLockFMO();
         }
 
         /// <summary>
-        /// FMO–¼Ì‚ğİ’èAæ“¾‚µ‚Ü‚·
+        /// FMOåç§°ã‚’è¨­å®šã€å–å¾—ã—ã¾ã™
         /// </summary>
-        public string FMOName {
+        public string FMOName
+        {
             get { return m_FMOName; }
             set { m_FMOName = value; }
         }
 
         /// <summary>
-        /// FMO‚Ì“à—e‚ğ•¶š—ñ‚Åæ“¾‚µ‚Ü‚·
+        /// FMOã®å†…å®¹ã‚’æ–‡å­—åˆ—ã§å–å¾—ã—ã¾ã™
         /// </summary>
-        public string FMOString {
+        public string FMOString
+        {
             get { return m_fmostring; }
         }
         #endregion
 
-        #region ƒpƒuƒŠƒbƒNƒƒ“ƒo[
+        #region ãƒ‘ãƒ–ãƒªãƒƒã‚¯ãƒ¡ãƒ³ãƒãƒ¼
         /// <summary>
-        /// FMO‚ğ“Ç‚İ‚İAFMOString‚Ì“à—e‚ğƒAƒbƒvƒf[ƒg‚µ‚Ü‚·B
-        /// FMO‚ğƒƒbƒN‚µA“à—e‚ğ“Ç‚İ‚İAƒAƒ“ƒƒbƒN‚µ‚Ü‚·B
-        /// Mutex‚Íg‚¢‚Ü‚¹‚ñB
+        /// FMOã‚’èª­ã¿è¾¼ã¿ã€FMOStringã®å†…å®¹ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆã—ã¾ã™ã€‚
+        /// FMOã‚’ãƒ­ãƒƒã‚¯ã—ã€å†…å®¹ã‚’èª­ã¿è¾¼ã¿ã€ã‚¢ãƒ³ãƒ­ãƒƒã‚¯ã—ã¾ã™ã€‚
+        /// Mutexã¯ä½¿ã„ã¾ã›ã‚“ã€‚
         /// </summary>
         /// <returns></returns>
-        public bool UpdateData() {
+        public bool UpdateData()
+        {
             return UpdateData(false);
         }
 
         /// <summary>
-        /// FMO‚ğ“Ç‚İ‚İAFMOString‚Ì“à—e‚ğƒAƒbƒvƒf[ƒg‚µ‚Ü‚·B
-        /// FMO‚ğƒƒbƒN‚µA“à—e‚ğ“Ç‚İ‚İAƒAƒ“ƒƒbƒN‚µ‚Ü‚·B
+        /// FMOã‚’èª­ã¿è¾¼ã¿ã€FMOStringã®å†…å®¹ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆã—ã¾ã™ã€‚
+        /// FMOã‚’ãƒ­ãƒƒã‚¯ã—ã€å†…å®¹ã‚’èª­ã¿è¾¼ã¿ã€ã‚¢ãƒ³ãƒ­ãƒƒã‚¯ã—ã¾ã™ã€‚
         /// </summary>
-        /// <param name="isUseMutex">ƒƒbƒN‘O‚ÉMutex‚ğæ“¾‚·‚éê‡‚Ítrue</param>
-        /// <returns>¬Œ÷^¸”s</returns>
-        public bool UpdateData(bool isUseMutex) {
-            int size = 0;
+        /// <param name="isUseMutex">ãƒ­ãƒƒã‚¯å‰ã«Mutexã‚’å–å¾—ã™ã‚‹å ´åˆã¯true</param>
+        /// <returns>æˆåŠŸï¼å¤±æ•—</returns>
+        public bool UpdateData(bool isUseMutex)
+        {
+            var size = 0;
             byte[] data;
             m_fmostring = null;
-            try {
-                if (LockFMO(isUseMutex, false) == false) {
+            try
+            {
+                if (LockFMO(isUseMutex, false) == false)
+                {
                     return false;
                 }
                 size = Marshal.ReadInt32(m_hNativeAddress);
-                if (size <= 4) {
+                if (size <= 4)
+                {
                     return false;
                 }
                 data = new byte[size];
-                for (int i = 0; i < data.Length - 4; i++) {
-                    Byte dat = Marshal.ReadByte(m_hNativeAddress, i + 4);
-                    if (dat == 0) {
+                for (var i = 0; i < data.Length - 4; i++)
+                {
+                    var dat = Marshal.ReadByte(m_hNativeAddress, i + 4);
+                    if (dat == 0)
+                    {
                         break;
-                    } else {
+                    }
+                    else
+                    {
                         data[i] = dat;
                     }
                 }
-            } finally {
+            }
+            finally
+            {
                 UnLockFMO();
             }
-            System.Text.Encoding sjisenc = System.Text.Encoding.GetEncoding("Shift-JIS");
+            var sjisenc = System.Text.Encoding.GetEncoding("Shift-JIS");
             m_fmostring = sjisenc.GetString(data);
             m_fmostring = m_fmostring.Replace("\r\n", "\n");
             m_fmostring = m_fmostring.Trim(new char[] { '\u0000', '\u0001', '\n' });
@@ -170,41 +188,53 @@ namespace ExplorerLib
         }
 
         /// <summary>
-        /// FMO‚ğƒƒbƒN‚µ‚Ü‚·B
+        /// FMOã‚’ãƒ­ãƒƒã‚¯ã—ã¾ã™ã€‚
         /// </summary>
-        /// <param name="isUseMutex">ƒƒbƒN‘O‚ÉMutex‚ğæ“¾‚·‚éê‡‚Ítrue</param>
-        /// <param name="isCreate">FMO‘¶İ‚µ‚È‚©‚Á‚½‚çì¬‚·‚éê‡‚Ítrue</param>
-        /// <returns>¬Œ÷^¸”s</returns>
-        public bool LockFMO(bool isUseMutex, bool isCreate) {
+        /// <param name="isUseMutex">ãƒ­ãƒƒã‚¯å‰ã«Mutexã‚’å–å¾—ã™ã‚‹å ´åˆã¯true</param>
+        /// <param name="isCreate">FMOå­˜åœ¨ã—ãªã‹ã£ãŸã‚‰ä½œæˆã™ã‚‹å ´åˆã¯true</param>
+        /// <returns>æˆåŠŸï¼å¤±æ•—</returns>
+        public bool LockFMO(bool isUseMutex, bool isCreate)
+        {
             m_mutex = null;
             m_hFMO = IntPtr.Zero;
             m_hNativeAddress = IntPtr.Zero;
-            try {
-                if (isUseMutex) {
-                    m_mutex = new System.Threading.Mutex(false, this.FMOName + "FMO");
-                    if (m_mutex == null) {
+            try
+            {
+                if (isUseMutex)
+                {
+                    m_mutex = new System.Threading.Mutex(false, FMOName + "FMO");
+                    if (m_mutex == null)
+                    {
                         return false;
                     }
-                    if (m_mutex.WaitOne(1000, false) == false) {
+                    if (m_mutex.WaitOne(1000, false) == false)
+                    {
                         return false;
                     }
                 }
-                if (isCreate) {
-                    m_hFMO = CreateFileMapping(0xFFFFFFFF, 0, PAGE_READWRITE, 0, 64 * 1024, this.FMOName);
-                } else {
-                    m_hFMO = OpenFileMapping(FILE_MAP_WRITE, false, this.FMOName);
+                if (isCreate)
+                {
+                    m_hFMO = CreateFileMapping(0xFFFFFFFF, 0, PAGE_READWRITE, 0, 64 * 1024, FMOName);
                 }
-                if (m_hFMO == IntPtr.Zero) {
+                else
+                {
+                    m_hFMO = OpenFileMapping(FILE_MAP_WRITE, false, FMOName);
+                }
+                if (m_hFMO == IntPtr.Zero)
+                {
                     UnLockFMO();
                     return false;
                 }
                 m_hNativeAddress = MapViewOfFile(m_hFMO, FILE_MAP_WRITE, 0, 0, 0);
-                if (m_hNativeAddress == IntPtr.Zero) {
+                if (m_hNativeAddress == IntPtr.Zero)
+                {
                     System.Diagnostics.Debug.WriteLine(GetLastError().ToString());
                     UnLockFMO();
                     return false;
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
                 UnLockFMO();
                 return false;
@@ -213,20 +243,24 @@ namespace ExplorerLib
         }
 
         /// <summary>
-        /// FMO‚ğƒAƒ“ƒƒbƒN‚µ‚Ü‚·BMutex‚ğæ“¾‚µ‚Ä‚¢‚éê‡‚ÍƒŠƒŠ[ƒX‚µ‚Ü‚·B
+        /// FMOã‚’ã‚¢ãƒ³ãƒ­ãƒƒã‚¯ã—ã¾ã™ã€‚Mutexã‚’å–å¾—ã—ã¦ã„ã‚‹å ´åˆã¯ãƒªãƒªãƒ¼ã‚¹ã—ã¾ã™ã€‚
         /// </summary>
-        /// <returns>¬Œ÷^¸”s</returns>
-        public bool UnLockFMO() {
-            if (m_mutex != null) {
+        /// <returns>æˆåŠŸï¼å¤±æ•—</returns>
+        public bool UnLockFMO()
+        {
+            if (m_mutex != null)
+            {
                 m_mutex.ReleaseMutex();
                 m_mutex.Close();
                 m_mutex = null;
             }
-            if (m_hNativeAddress != IntPtr.Zero) {
+            if (m_hNativeAddress != IntPtr.Zero)
+            {
                 UnmapViewOfFile(m_hNativeAddress);
                 m_hNativeAddress = IntPtr.Zero;
             }
-            if (m_hFMO != IntPtr.Zero) {
+            if (m_hFMO != IntPtr.Zero)
+            {
                 CloseHandle(m_hFMO);
                 m_hFMO = IntPtr.Zero;
             }

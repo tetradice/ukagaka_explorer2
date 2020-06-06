@@ -1,6 +1,4 @@
-﻿using ExplorerLib;
-using ExplorerLib.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -17,6 +15,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ExplorerLib;
+using ExplorerLib.Exceptions;
 
 namespace GhostExplorer2
 {
@@ -164,7 +164,7 @@ namespace GhostExplorer2
         {
             InitializeComponent();
 
-            this.SurfaceNotificationMessages = new List<string>();
+            SurfaceNotificationMessages = new List<string>();
         }
 
         /// <summary>
@@ -199,8 +199,8 @@ namespace GhostExplorer2
             // ウインドウサイズが保存されていれば反映
             if (CurrentProfile.MainWindowWidth >= 1 && CurrentProfile.MainWindowHeight >= 1)
             {
-                this.Width = CurrentProfile.MainWindowWidth;
-                this.Height = CurrentProfile.MainWindowHeight;
+                Width = CurrentProfile.MainWindowWidth;
+                Height = CurrentProfile.MainWindowHeight;
             }
         }
 
@@ -271,7 +271,7 @@ namespace GhostExplorer2
                     var currentAbsent = standingGhosts.Contains(Tuple.Create(ghost.SakuraName, ghost.KeroName));
 
                     // いる→いない に変わった場合、不在画像をランダムに選択して設定
-                    if(!beforeAbsent && currentAbsent)
+                    if (!beforeAbsent && currentAbsent)
                     {
                         AbsenceInfo[ghost.DirPath] = AbsenceImageKeys[rand.Next(0, AbsenceImageKeys.Count)];
                     }
@@ -282,7 +282,8 @@ namespace GhostExplorer2
                         LoadShellAndFaceImage(ghost, reload: true);
                     }
 
-                    if (!currentAbsent){
+                    if (!currentAbsent)
+                    {
                         // いる場合は不在情報削除
                         if (AbsenceInfo.ContainsKey(ghost.DirPath))
                         {
@@ -305,17 +306,17 @@ namespace GhostExplorer2
         protected void UpdateUIState()
         {
             // 説明文設定
-            this.DescriptionText = GetDescriptionText();
+            DescriptionText = GetDescriptionText();
 
             // ゴースト切り替えボタン、および付随する設定チェックボックスは、SSP起動時かつゴースト選択中のみ表示
-            BtnChange.Visible = ChkCloseAfterChange.Visible = (CallerId != null && this.SelectedGhost != null);
+            BtnChange.Visible = ChkCloseAfterChange.Visible = (CallerId != null && SelectedGhost != null);
 
             // ゴースト呼び出しボタンは、ゴースト選択中のみ表示
-            BtnCall.Visible = (this.SelectedGhost != null);
+            BtnCall.Visible = (SelectedGhost != null);
 
             // ゴースト呼び出しボタンは、通常は常に押下可能
             BtnCall.Enabled = true;
-            
+
             // ゴースト切り替えボタンは、呼び出し元ゴーストが残っていないと押下できない
             BtnChange.Enabled = ChkCloseAfterChange.Enabled = !(CallerLost);
 
@@ -332,14 +333,14 @@ namespace GhostExplorer2
             BtnRemoveStartMenu.Enabled = File.Exists(StartMenuShortcutPath);
 
             // 選択ゴーストがすでに不在の場合は、上記に優先してボタンを無効化
-            if (this.SelectedGhost != null && AbsenceInfo.ContainsKey(this.SelectedGhost.DirPath))
+            if (SelectedGhost != null && AbsenceInfo.ContainsKey(SelectedGhost.DirPath))
             {
                 BtnCall.Enabled = false;
                 BtnChange.Enabled = ChkCloseAfterChange.Enabled = false;
             }
 
             // ゴーストの立ち絵は、選択されているゴーストがいて、かつ不在でない場合のみ表示
-            SelectedGhostSurfaceVisible = (this.SelectedGhost != null && !AbsenceInfo.ContainsKey(this.SelectedGhost.DirPath));
+            SelectedGhostSurfaceVisible = (SelectedGhost != null && !AbsenceInfo.ContainsKey(SelectedGhost.DirPath));
 
             // 立ち絵Paint再発生
             picSurface.Invalidate();
@@ -357,7 +358,7 @@ namespace GhostExplorer2
         private void lstGhost_SelectedIndexChanged(object sender, EventArgs e)
         {
             // ゴースト未選択時はスキップ
-            if (this.SelectedGhost == null)
+            if (SelectedGhost == null)
             {
                 UpdateUIState();
                 return;
@@ -373,14 +374,14 @@ namespace GhostExplorer2
             CurrentKeroSurface = null;
 
             // シェルが読み込み状態かどうかで処理を分ける
-            if (Shells.ContainsKey(this.SelectedGhost.DirPath))
+            if (Shells.ContainsKey(SelectedGhost.DirPath))
             {
-                var shell = Shells[this.SelectedGhost.DirPath];
+                var shell = Shells[SelectedGhost.DirPath];
 
                 // sakura側のサーフェス画像を取得
                 try
                 {
-                    CurrentSakuraSurface = GhostManager.DrawSakuraSurface(this.SelectedGhost, shell);
+                    CurrentSakuraSurface = GhostManager.DrawSakuraSurface(SelectedGhost, shell);
 
                     // サーフェスが何らかの原因で見つからなかった場合はエラー扱い
                     if (CurrentSakuraSurface == null)
@@ -406,7 +407,7 @@ namespace GhostExplorer2
                 // kero側のサーフェス画像を取得
                 try
                 {
-                    CurrentKeroSurface = GhostManager.DrawKeroSurface(this.SelectedGhost, shell);
+                    CurrentKeroSurface = GhostManager.DrawKeroSurface(SelectedGhost, shell);
                 }
                 catch (UnhandlableShellException ex)
                 {
@@ -422,13 +423,15 @@ namespace GhostExplorer2
                     Debug.WriteLine(ex.ToString());
                     SurfaceNotificationMessages.Add(@"ERROR: パートナー側の立ち絵描画に失敗しました。");
                 }
-            } else
+            }
+            else
             {
                 // シェルが未読み込み状態ならエラー
                 if (ErrorMessagesOnShellLoading.ContainsKey(SelectedGhost.DirPath))
                 {
                     SurfaceNotificationMessages.AddRange(ErrorMessagesOnShellLoading[SelectedGhost.DirPath]);
-                } else
+                }
+                else
                 {
                     SurfaceNotificationMessages.Add("シェル情報の読み込みが完了していません。もう少し経ってから選択し直してみてください。");
                 }
@@ -466,8 +469,8 @@ namespace GhostExplorer2
                 // sakura側とkero側が両方とも収まるように縮小率を決める
                 var requiredWidth = (CurrentKeroSurface != null ? CurrentKeroSurface.Width + keroRightPadding : 0) + CurrentSakuraSurface.Width + sakuraRightPadding;
                 var requiredHeight = Math.Max((CurrentKeroSurface != null ? CurrentKeroSurface.Height : 0), CurrentSakuraSurface.Height) + topPadding;
-                var scaleRateByWidth = (double)e.ClipRectangle.Width / (double)requiredWidth;
-                var scaleRateByHeight = (double)e.ClipRectangle.Height / (double)requiredHeight;
+                var scaleRateByWidth = e.ClipRectangle.Width / (double)requiredWidth;
+                var scaleRateByHeight = e.ClipRectangle.Height / (double)requiredHeight;
                 var scaleRate = Math.Min(Math.Min(1.0, scaleRateByWidth), scaleRateByHeight); // 1.0より大きくならないようにする (拡大しない) 
 
                 // 描画サイズの決定
@@ -504,7 +507,7 @@ namespace GhostExplorer2
         {
             if (SelectedGhost != null)
             {
-                if (this.SurfaceNotificationMessages.Any())
+                if (SurfaceNotificationMessages.Any())
                 {
                     return string.Join("\r\n", SurfaceNotificationMessages);
                 }
@@ -538,7 +541,7 @@ namespace GhostExplorer2
             //await WaitCurrentGhostTalkEnd();
 
             // ゴースト変更
-            SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
+            SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(SelectedGhost.Name) + @"]\e");
 
             // ゴースト変更後にアプリケーション終了
             if (ChkCloseAfterChange.Checked)
@@ -560,7 +563,7 @@ namespace GhostExplorer2
             // 立っているゴーストが一人もおらず、かつSSP.exeのパスが特定できるなら、代わりにSSP.exeの起動を試みる
             if (!FMOGhostList.Any() && SSPDirPath != null)
             {
-                Process.Start(Path.Combine(SSPDirPath, "SSP.exe"), string.Format(@"/g ""{0}""", this.SelectedGhost.Name));
+                Process.Start(Path.Combine(SSPDirPath, "SSP.exe"), string.Format(@"/g ""{0}""", SelectedGhost.Name));
                 return;
             }
 
@@ -574,7 +577,7 @@ namespace GhostExplorer2
             //await Task.Delay(1000);
 
             // ゴーストを呼ぶ
-            SendSSTPScript(@"\![call,ghost," + Util.QuoteForSakuraScriptParameter(this.SelectedGhost.Name) + @"]\e");
+            SendSSTPScript(@"\![call,ghost," + Util.QuoteForSakuraScriptParameter(SelectedGhost.Name) + @"]\e");
         }
 
         /// <summary>
@@ -617,7 +620,8 @@ namespace GhostExplorer2
             if (SendSSTPScript(req, out res))
             {
                 return res.AdditionalValue;
-            } else
+            }
+            else
             {
                 return null;
             }
@@ -756,7 +760,7 @@ namespace GhostExplorer2
             args.RemoveAt(0); // 先頭はexe名のため削除
 
             var caller = args.FirstOrDefault(); // 呼び出し元ゴースト (id or "unspecified") 省略された場合はunspecified扱い
-            if(args.Any()) args.RemoveAt(0); // 先頭削除
+            if (args.Any()) args.RemoveAt(0); // 先頭削除
 
             var specifiedSSPDirPath = args.FirstOrDefault(); // SSPが存在するフォルダパス
             if (!string.IsNullOrWhiteSpace(specifiedSSPDirPath))
@@ -897,7 +901,7 @@ namespace GhostExplorer2
             // 前回の選択フォルダと一致するものがあればそれを選択
             // なければ先頭項目を選択
             {
-                int lastUseIndex = -1;
+                var lastUseIndex = -1;
                 for (var i = 0; i < cmbGhostDir.Items.Count; i++)
                 {
                     var item = (DropDownItem)cmbGhostDir.Items[i];
@@ -923,7 +927,7 @@ namespace GhostExplorer2
             // なければ先頭項目を選択
             {
 
-                int lastSortIndex = -1;
+                var lastSortIndex = -1;
                 for (var i = 0; i < cmbSort.Items.Count; i++)
                 {
                     var item = (DropDownItem)cmbSort.Items[i];
@@ -1047,7 +1051,7 @@ namespace GhostExplorer2
         /// <summary>
         /// シェル情報および顔画像を読み込む
         /// </summary>
-        public async virtual Task LoadGhostShellsAsync(CancellationToken cToken)
+        public virtual async Task LoadGhostShellsAsync(CancellationToken cToken)
         {
             try
             {
@@ -1114,7 +1118,8 @@ namespace GhostExplorer2
 
                 Debug.WriteLine(string.Format("<{0}> <<< GhostImagesLoadAsync End", Thread.CurrentThread.ManagedThreadId));
 
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 // ロード中にエラーが発生し、補足できなかった場合は、エラーダイアログを表示する
                 MessageBox.Show("シェル情報の読み込み中にシステムエラーが発生しました。\nご迷惑をおかけし、申し訳ありません。\n\n" + ex.ToString()
@@ -1259,7 +1264,8 @@ namespace GhostExplorer2
             if (Shells.ContainsKey(SelectedGhost.DirPath))
             {
                 Process.Start(Shells[SelectedGhost.DirPath].DirPath);
-            } else
+            }
+            else
             {
                 Process.Start(SelectedGhost.DirPath);
             }
@@ -1270,10 +1276,10 @@ namespace GhostExplorer2
         /// </summary>
         protected override void WndProc(ref Message m)
         {
-            if(m.Msg == WMSakuraAPI)
+            if (m.Msg == WMSakuraAPI)
             {
                 // ゴースト変更通知なら処理
-                if((int)m.WParam == SAKURA_API_BROADCAST_GHOSTCHANGE)
+                if ((int)m.WParam == SAKURA_API_BROADCAST_GHOSTCHANGE)
                 {
                     // プロセスIDからSSPのパスを取得
                     SSPDirPath = null;
@@ -1328,7 +1334,7 @@ namespace GhostExplorer2
 
         private void txtFilter_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if(e.KeyChar == '\r')
+            if (e.KeyChar == '\r')
             {
                 // 前回値と変更されている場合のみゴースト一覧更新
                 if (txtFilter.Text != OldFilterText)
@@ -1347,14 +1353,14 @@ namespace GhostExplorer2
         private void MainForm_ResizeEnd(object sender, EventArgs e)
         {
             // リサイズ完了時には、ウインドウサイズを保存
-            CurrentProfile.MainWindowWidth = this.Width;
-            CurrentProfile.MainWindowHeight = this.Height;
+            CurrentProfile.MainWindowWidth = Width;
+            CurrentProfile.MainWindowHeight = Height;
             Util.SaveProfile(CurrentProfile);
         }
 
         private void BtnReloadShell_Click(object sender, EventArgs e)
         {
-            LoadShellAndFaceImage(this.SelectedGhost, reload: true);
+            LoadShellAndFaceImage(SelectedGhost, reload: true);
         }
 
         private void BtnAddStartMenu_Click(object sender, EventArgs e)
@@ -1371,7 +1377,7 @@ namespace GhostExplorer2
             //リンク先
             shortcut.TargetPath = Application.ExecutablePath;
             //コマンドパラメータ 「リンク先」の後ろに付く
-            shortcut.Arguments = @"unspecified """ + SSPDirPath +  @"""";
+            shortcut.Arguments = @"unspecified """ + SSPDirPath + @"""";
             //作業フォルダ
             shortcut.WorkingDirectory = Application.StartupPath;
             //コメント

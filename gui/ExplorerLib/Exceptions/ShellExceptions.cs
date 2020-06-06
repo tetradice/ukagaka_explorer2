@@ -26,8 +26,10 @@ namespace ExplorerLib.Exceptions
         /// <summary>
         /// 画面上に表示するためのエラーメッセージ
         /// </summary>
-        public string FriendlyMessage {
-            get {
+        public string FriendlyMessage
+        {
+            get
+            {
                 var prefix = (Unsupported ? "UNSUPPORTED: " : "ERROR: ");
                 if (Scope == 0) prefix += "[本体側]";
                 if (Scope == 1) prefix += "[パートナー側]";

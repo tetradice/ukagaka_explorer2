@@ -48,13 +48,13 @@ namespace ExplorerLib
             Values.Clear();
 
             // ファイル更新日時セット
-            this.LastWriteTime = File.GetLastWriteTime(Path);
+            LastWriteTime = File.GetLastWriteTime(Path);
 
             // まずはエンコーディングの判定を行うために、対象ファイルの内容を1行ずつ読み込む
             var sjis = Encoding.GetEncoding(932);
             var encoding = sjis;
             var preLines = File.ReadLines(Path, encoding: sjis);
-            foreach (string line in preLines)
+            foreach (var line in preLines)
             {
                 // charset行が見つかった場合は、文字コードを設定してループ終了
                 var matched = charsetPattern.Match(line);
@@ -68,7 +68,7 @@ namespace ExplorerLib
 
             // エンコーディングが確定したら、読み込みメイン処理
             var lines = File.ReadLines(Path, encoding: encoding);
-            foreach (string line in lines)
+            foreach (var line in lines)
             {
                 var matched = entryPattern.Match(line);
                 if (matched.Success)
@@ -86,10 +86,11 @@ namespace ExplorerLib
         /// </summary>
         public virtual string Get(string key)
         {
-            if (this.Values.ContainsKey(key))
+            if (Values.ContainsKey(key))
             {
-                return this.Values[key];
-            } else
+                return Values[key];
+            }
+            else
             {
                 return null;
             }

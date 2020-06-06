@@ -20,14 +20,14 @@ namespace ExplorerLib
             {
                 var msg = new StringBuilder();
                 msg.AppendLine(command);
-                foreach(var pair in headers)
+                foreach (var pair in headers)
                 {
                     msg.AppendLine(string.Format("{0}: {1}", pair.Key, pair.Value));
                 }
                 msg.AppendLine(); // 最後の空行
 
                 return msg.ToString();
-                    
+
             }
         }
 
@@ -44,7 +44,7 @@ namespace ExplorerLib
                 var headers = new Dictionary<string, string>();
                 headers["Charset"] = "UTF-8";
                 headers["Sender"] = Sender;
-                if(Id != null) headers["ID"] = Id;
+                if (Id != null) headers["ID"] = Id;
                 headers["Sender"] = Sender;
                 if (IfGhost != null)
                 {
@@ -105,7 +105,7 @@ namespace ExplorerLib
                     headers["Script"] = Script;
                 }
 
-                for(var i = 0; i < References.Count; i++)
+                for (var i = 0; i < References.Count; i++)
                 {
                     headers["Reference" + i.ToString()] = References[i];
                 }
@@ -159,7 +159,7 @@ namespace ExplorerLib
                     res.StatusExplanation = matched.Groups[2].Value.TrimEnd();
 
                     // 2行目以降があれば続けて解析
-                    for(var i = 1; i < lines.Length; i++)
+                    for (var i = 1; i < lines.Length; i++)
                     {
                         var line = lines[i].Trim();
 
@@ -169,7 +169,7 @@ namespace ExplorerLib
                             res.AdditionalValue = line;
                         }
                     }
-                    
+
 
                     return res;
                 }

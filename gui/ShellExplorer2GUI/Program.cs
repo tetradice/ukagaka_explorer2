@@ -6,13 +6,13 @@ using System.Windows.Forms;
 
 namespace ShellExplorer2
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             var args = Environment.GetCommandLineArgs().ToList();
             if (args.Count <= 1)

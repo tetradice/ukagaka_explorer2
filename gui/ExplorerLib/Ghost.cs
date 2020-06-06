@@ -1,5 +1,4 @@
-﻿using ExplorerLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ExplorerLib;
 
 namespace ExplorerLib
 {
@@ -80,9 +80,9 @@ namespace ExplorerLib
         /// </remarks>
         public virtual DateTime DescriptLastModified { get; set; }
 
-        public virtual string Name { get { return this.MasterGhostDescript.Get("name"); } }
-        public virtual string SakuraName { get { return this.MasterGhostDescript.Get("sakura.name") ?? ""; } } // 未設定の場合は空文字
-        public virtual string KeroName { get { return this.MasterGhostDescript.Get("kero.name") ?? ""; } } // 未設定の場合は空文字
+        public virtual string Name { get { return MasterGhostDescript.Get("name"); } }
+        public virtual string SakuraName { get { return MasterGhostDescript.Get("sakura.name") ?? ""; } } // 未設定の場合は空文字
+        public virtual string KeroName { get { return MasterGhostDescript.Get("kero.name") ?? ""; } } // 未設定の場合は空文字
 
         /// <summary>
         /// 最終使用シェルの、ゴーストルートフォルダ基準の相対パス (profile.datから読み込む) 。
@@ -165,7 +165,7 @@ namespace ExplorerLib
             ghost.Load();
             return ghost;
         }
-    
+
         public static bool IsGhostDir(string dirPath)
         {
             // ghost/master/descript.txt が存在するならゴーストフォルダとみなす
@@ -176,13 +176,13 @@ namespace ExplorerLib
         public virtual void Load()
         {
             // descript.txt 読み込み
-            this.MasterGhostDescript = DescriptText.Load(this.MasterGhostDesciptParh);
+            MasterGhostDescript = DescriptText.Load(MasterGhostDesciptParh);
 
             // explorer2\descript.txt 読み込み (存在すれば)
-            this.Explorer2Descript = null;
+            Explorer2Descript = null;
             if (File.Exists(Explorer2DescriptPath))
             {
-                this.Explorer2Descript = DescriptText.Load(Explorer2DescriptPath);
+                Explorer2Descript = DescriptText.Load(Explorer2DescriptPath);
             }
 
             // character_descript.txt があれば読み込み
@@ -227,11 +227,13 @@ namespace ExplorerLib
                     {
                         // デフォルトシェルが存在する場合は、デフォルトシェルを選択
                         CurrentShellRelDirPath = @"shell\" + DefaultShellDirName;
-                    } else
+                    }
+                    else
                     {
                         // デフォルトシェルが存在しない場合は、shellフォルダの中を探して最初に見つかったシェルを使う
                         var shellDir = Path.Combine(DirPath, "shell");
-                        foreach (var shellSubDir in Directory.GetDirectories(shellDir)){
+                        foreach (var shellSubDir in Directory.GetDirectories(shellDir))
+                        {
                             var descriptPath = Path.Combine(shellSubDir, "descript.txt");
                             if (File.Exists(descriptPath))
                             {
