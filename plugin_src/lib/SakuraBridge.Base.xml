@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SakuraBridge.Base</name>
+    </assembly>
+    <members>
+        <member name="T:SakuraBridge.Base.IModule">
+            <summary>
+            実際にリクエストを処理するモジュールクラスのインターフェース
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Base.IModule.Load(System.String)">
+            <summary>
+            DLLのロード時に呼び出される処理です。
+            </summary>
+            <param name="dllDirPath">bridge.dll が存在するフォルダのパス</param>
+        </member>
+        <member name="M:SakuraBridge.Base.IModule.Unload">
+            <summary>
+            DLLのアンロード時に呼び出される処理です。
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Base.IModule.Request(System.String)">
+            <summary>
+            リクエスト受信時に呼び出される処理です。
+            </summary>
+            <param name="msg">リクエスト文字列</param>
+            <returns>レスポンス文字列</returns>
+        </member>
+        <member name="T:SakuraBridge.Base.IModuleClassFinder">
+            <summary>
+            module dll (アセンブリ) 内からモジュールクラスを探し出すクラスのインターフェース
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Base.IModuleClassFinder.GetModuleClassFullNames(System.String)">
+            <summary>
+            module dll (アセンブリ) 内から全モジュールクラスの名前を取得
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Base.ModuleClassFinder">
+            <summary>
+            module dll (アセンブリ) 内からモジュールクラスを探し出すクラス (モジュールドメイン下で実行される)
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Base.ModuleClassFinder.GetModuleClassFullNames(System.String)">
+            <summary>
+            module dll (アセンブリ) 内からモジュールクラスを探し出し、配列として返す
+            </summary>
+        </member>
+    </members>
+</doc>

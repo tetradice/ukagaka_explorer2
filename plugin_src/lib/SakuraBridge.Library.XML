@@ -76,6 +76,23 @@
             EncodingからCharsetで使用可能な名前を取得 (一般的でないCharsetの場合はWebNameを返す)
             </summary>
         </member>
+        <member name="T:SakuraBridge.Library.ModuleBase">
+            <summary>
+            モジュールの基底クラス
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.ModuleBase.InitializeLifetimeService">
+            <inheritdoc />
+        </member>
+        <member name="M:SakuraBridge.Library.ModuleBase.Load(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:SakuraBridge.Library.ModuleBase.Request(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:SakuraBridge.Library.ModuleBase.Unload">
+            <inheritdoc />
+        </member>
         <member name="T:SakuraBridge.Library.Response">
             <summary>
             SHIORI/SAORI/PLUGINレスポンスの基底クラス
@@ -123,9 +140,7 @@
             <param name="statusCode">ステータスコード。ここで指定した値に応じて、ステータス説明文も自動設定される</param>
         </member>
         <member name="M:SakuraBridge.Library.Response.ToString">
-            <summary>
-            文字列化
-            </summary>
+            <inheritdoc />
         </member>
         <member name="T:SakuraBridge.Library.CommonStatusCode">
             <summary>
@@ -183,6 +198,11 @@
             リクエスト
             </summary>
         </member>
+        <member name="M:SakuraBridge.Library.PluginModule.MakeResponse(SakuraBridge.Library.PluginRequest)">
+            <summary>
+            リクエストIDに対応するResponseを作成する
+            </summary>
+        </member>
         <member name="M:SakuraBridge.Library.PluginModule.Unload">
             <summary>
             Unload処理
@@ -196,11 +216,6 @@
         <member name="M:SakuraBridge.Library.PluginModule.OnMenuExec(SakuraBridge.Library.PluginRequest)">
             <summary>
             メニューからのプラグイン選択時に呼び出される処理
-            </summary>
-        </member>
-        <member name="P:SakuraBridge.Library.PluginModule.Encoding">
-            <summary>
-            リクエスト/レスポンス時に使用するエンコーディング
             </summary>
         </member>
         <member name="T:SakuraBridge.Library.PluginResponse">
@@ -227,6 +242,11 @@
         <member name="P:SakuraBridge.Library.PluginResponse.Script">
             <summary>
             Scriptヘッダ
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.PluginRequest">
+            <summary>
+            PLUGIN/2.0 リクエスト
             </summary>
         </member>
         <member name="M:SakuraBridge.Library.PluginRequest.Parse(System.String)">
@@ -281,6 +301,16 @@
         <member name="T:SakuraBridge.Library.SSTPRequest">
             <summary>
             SSTPリクエスト
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.NotifySSTP11Request">
+            <summary>
+            NOTIFY SSTP/1.1 リクエスト
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.NotifySSTP11Request.Command">
+            <summary>
+            コマンド文字列
             </summary>
         </member>
         <member name="T:SakuraBridge.Library.SendSSTP14Request">
@@ -348,7 +378,6 @@
             <summary>
             コンストラクタ
             </summary>
-            <param name="statusCode">ステータスコード。ここで指定した値に応じて、ステータス説明文も自動設定される</param>
         </member>
         <member name="T:SakuraBridge.Library.SSTPClient">
             <summary>
