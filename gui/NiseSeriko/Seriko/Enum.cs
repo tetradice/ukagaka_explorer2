@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ExplorerLib.Seriko
+namespace NiseSeriko.Seriko
 {
     /// <summary>
     /// SERIKOのバージョン

@@ -16,7 +16,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExplorerLib;
-using ExplorerLib.Exceptions;
+using NiseSeriko;
+using NiseSeriko.Exceptions;
 
 namespace GhostExplorer2
 {
@@ -93,7 +94,7 @@ namespace GhostExplorer2
         /// <summary>
         /// リストで選択しているゴースト
         /// </summary>
-        protected Ghost SelectedGhost
+        protected ExplorerGhost SelectedGhost
         {
             get
             {
@@ -1132,7 +1133,7 @@ namespace GhostExplorer2
         /// <summary>
         /// 指定ゴーストのシェルを同期的に読み込む
         /// </summary>
-        protected void LoadShellAndFaceImage(Ghost ghost, bool reload = false)
+        protected void LoadShellAndFaceImage(ExplorerGhost ghost, bool reload = false)
         {
             // リロードフラグONの場合は既存情報を破棄
             if (reload)
@@ -1166,7 +1167,7 @@ namespace GhostExplorer2
         /// <summary>
         /// 指定ゴーストのシェルを読み込む
         /// </summary>
-        protected virtual void LoadShell(Ghost ghost)
+        protected virtual void LoadShell(ExplorerGhost ghost)
         {
             // ロック取得 (同期処理と非同期処理が競合しないように)
             lock (GhostManager)
@@ -1191,7 +1192,7 @@ namespace GhostExplorer2
         /// <summary>
         /// 指定ゴーストの顔画像を読み込む (シェルの読み込みに成功していれば)
         /// </summary>
-        protected virtual void LoadFaceImageIfShellLoaded(Ghost ghost)
+        protected virtual void LoadFaceImageIfShellLoaded(ExplorerGhost ghost)
         {
             // ロック取得 (同期処理と非同期処理が競合しないように)
             lock (GhostManager)
@@ -1213,7 +1214,7 @@ namespace GhostExplorer2
         /// <summary>
         /// 指定ゴーストの顔画像をFormへ反映
         /// </summary>
-        protected virtual void ReflectFaceImageToUIIfShellLoaded(Ghost ghost)
+        protected virtual void ReflectFaceImageToUIIfShellLoaded(ExplorerGhost ghost)
         {
             // ロック取得 (同期処理と非同期処理が競合しないように)
             lock (GhostManager)
@@ -1236,7 +1237,7 @@ namespace GhostExplorer2
         /// <summary>
         /// 指定ゴーストの顔画像を更新 (不在かどうかに応じて処理を分ける)
         /// </summary>
-        protected void UpdateFaceImageKey(Ghost ghost)
+        protected void UpdateFaceImageKey(ExplorerGhost ghost)
         {
             // リスト内に項目がなければ何もしない
             if (!lstGhost.Items.ContainsKey(ghost.DirPath)) return;

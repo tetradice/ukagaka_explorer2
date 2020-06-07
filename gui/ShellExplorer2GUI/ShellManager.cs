@@ -8,7 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExplorerLib;
-using ExplorerLib.Exceptions;
+using NiseSeriko;
+using NiseSeriko.Exceptions;
 
 namespace ShellExplorer2
 {

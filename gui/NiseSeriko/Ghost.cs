@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ExplorerLib;
+using NiseSeriko;
 
-namespace ExplorerLib
+namespace NiseSeriko
 {
     /// <summary>
     /// ゴースト情報クラス。descript.txt の情報などを保持する
@@ -26,8 +26,6 @@ namespace ExplorerLib
         /// ゴースト達を格納しているフォルダ のパス 
         /// </summary>
         public virtual string GhostBaseDirPath { get { return Path.GetDirectoryName(DirPath); } }
-
-
         public virtual string MasterGhostDirParh { get { return Path.Combine(DirPath, @"ghost\master"); } }
         public virtual string MasterGhostDesciptParh { get { return Path.Combine(MasterGhostDirParh, "descript.txt"); } }
 
@@ -52,19 +50,6 @@ namespace ExplorerLib
 
         public virtual string DefaultShellDirPath { get { return Path.Combine(DirPath, "shell", DefaultShellDirName); } }
         public virtual string DefaultShellDescriptPath { get { return Path.Combine(DefaultShellDirPath, "descript.txt"); } }
-
-        /// <summary>
-        /// explorer2\descript.txt の情報
-        /// </summary>
-        public virtual DescriptText Explorer2Descript { get; set; }
-
-        /// <summary>
-        /// explorer2\descript.txt のファイルパス
-        /// </summary>
-        public virtual string Explorer2DescriptPath { get { return Path.Combine(DirPath, @"ghost\master\explorer2\descript.txt"); } }
-
-        public virtual string CharacterDescriptPath { get { return Path.Combine(DirPath, @"ghost\master\explorer2\character_descript.txt"); } }
-        public virtual string CharacterDescript { get; set; }
 
         public virtual DescriptText MasterGhostDescript { get; protected set; }
 
@@ -97,17 +82,6 @@ namespace ExplorerLib
         {
             get
             {
-                // explorer2\descript.txt 内で sakura.defaultsurface が指定されていればその値
-                {
-                    int parsed;
-                    if (Explorer2Descript != null
-                        && Explorer2Descript.Values.ContainsKey("sakura.defaultsurface")
-                        && int.TryParse(Explorer2Descript.Get("sakura.defaultsurface"), out parsed))
-                    {
-                        return parsed;
-                    }
-                }
-
                 // descript.txt 内で sakura.seriko.defaultsurface が指定されていればその値
                 {
                     int parsed;
@@ -130,17 +104,6 @@ namespace ExplorerLib
         {
             get
             {
-                // explorer2\descript.txt 内で kero.defaultsurface が指定されていればその値
-                {
-                    int parsed;
-                    if (Explorer2Descript != null
-                        && Explorer2Descript.Values.ContainsKey("kero.defaultsurface")
-                        && int.TryParse(Explorer2Descript.Get("kero.defaultsurface"), out parsed))
-                    {
-                        return parsed;
-                    }
-                }
-
                 // descript.txt 内で kero.seriko.defaultsurface が指定されていればその値
                 {
                     int parsed;
@@ -151,13 +114,10 @@ namespace ExplorerLib
                     }
                 }
 
-
-
                 // 上記以外の場合は標準
                 return 10;
             }
         }
-
 
         public static Ghost Load(string dirPath)
         {
@@ -178,19 +138,6 @@ namespace ExplorerLib
             // descript.txt 読み込み
             MasterGhostDescript = DescriptText.Load(MasterGhostDesciptParh);
 
-            // explorer2\descript.txt 読み込み (存在すれば)
-            Explorer2Descript = null;
-            if (File.Exists(Explorer2DescriptPath))
-            {
-                Explorer2Descript = DescriptText.Load(Explorer2DescriptPath);
-            }
-
-            // character_descript.txt があれば読み込み
-            CharacterDescript = null;
-            if (File.Exists(CharacterDescriptPath))
-            {
-                CharacterDescript = File.ReadAllText(CharacterDescriptPath, Encoding.UTF8);
-            }
 
             // 現在シェルの決定
             {
@@ -257,13 +204,6 @@ namespace ExplorerLib
         {
             // descript.txt 更新日付
             DescriptLastModified = MasterGhostDescript.LastWriteTime;
-
-            // explorer2/descript.txt 更新日付
-            if (Explorer2Descript != null
-                && Explorer2Descript.LastWriteTime > DescriptLastModified)
-            {
-                DescriptLastModified = Explorer2Descript.LastWriteTime; // 新しければセット
-            }
         }
     }
 }

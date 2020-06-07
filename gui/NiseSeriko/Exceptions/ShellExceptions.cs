@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ExplorerLib.Exceptions
+namespace NiseSeriko.Exceptions
 {
     /// <summary>
     /// 立ち絵処理不可能なシェルを読み込んだ

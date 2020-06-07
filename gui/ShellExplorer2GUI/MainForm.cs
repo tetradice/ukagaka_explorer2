@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExplorerLib;
-using ExplorerLib.Exceptions;
+using NiseSeriko.Exceptions;
 
 namespace ShellExplorer2
 {
@@ -603,7 +603,7 @@ namespace ShellExplorer2
             ChkCloseAfterChange.Left = BtnChange.Left + 1;
 
             // ゴースト情報読み込み
-            var ghost = Ghost.Load(ghostDirPath);
+            var ghost = ExplorerGhost.Load(ghostDirPath);
 
             // シェル情報読み込み
             ShellManager = ShellManager.Load(ghostDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);

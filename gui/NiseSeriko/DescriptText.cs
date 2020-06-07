@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace ExplorerLib
+namespace NiseSeriko
 {
     /// <summary>
     /// descript.txt を表すクラス

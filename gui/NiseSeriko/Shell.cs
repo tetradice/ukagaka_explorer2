@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ExplorerLib.Exceptions;
+using NiseSeriko.Exceptions;
 
-namespace ExplorerLib
+namespace NiseSeriko
 {
     public class Shell
     {

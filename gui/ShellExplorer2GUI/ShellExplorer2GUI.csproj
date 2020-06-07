@@ -91,6 +91,10 @@
       <Project>{489d0121-a725-4ac7-a111-7c8db3d87c0d}</Project>
       <Name>ExplorerLib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NiseSeriko\NiseSeriko.csproj">
+      <Project>{8a5d01b3-5821-4983-9eee-fdac6d92d2d1}</Project>
+      <Name>NiseSeriko</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
