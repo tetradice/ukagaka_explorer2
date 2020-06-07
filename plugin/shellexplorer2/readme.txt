@@ -11,6 +11,7 @@
   (シェル側の立ち絵定義内容が著しく仕様に沿っていないような場合は、対応しない場合があります)
 
 作者: ポン
+Webサイト : http://sakura.morphball.net/explorer2/
 Twitter: https://twitter.com/tetradice
 Ukadon: https://ukadon.shillest.net/web/accounts/29648
 ソース (Github) : https://github.com/tetradice/ukagaka_explorer2
