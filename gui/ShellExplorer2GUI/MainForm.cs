@@ -395,9 +395,11 @@ namespace ShellExplorer2
         /// </summary>
         protected string SendSSTPGetProperty(string key)
         {
-            var req = new SSTPClient.Execute13Request();
-            req.Sender = Const.SSTPSender;
-            req.Command = "GetProperty[" + key + "]";
+            var req = new SSTPClient.Execute13Request
+            {
+                Sender = Const.SSTPSender,
+                Command = "GetProperty[" + key + "]"
+            };
 
             SSTPClient.Response res;
             if (SendSSTPScript(req, out res))
@@ -442,9 +444,11 @@ namespace ShellExplorer2
         /// </summary>
         protected bool SendSSTPScript(string script)
         {
-            var req = new SSTPClient.Send14Request();
-            req.Id = CallerId;
-            req.Sender = Const.SSTPSender;
+            var req = new SSTPClient.Send14Request
+            {
+                Id = CallerId,
+                Sender = Const.SSTPSender
+            };
 
             if (CallerLost)
             {

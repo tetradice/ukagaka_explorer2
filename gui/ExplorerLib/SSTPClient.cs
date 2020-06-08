@@ -154,9 +154,11 @@ namespace ExplorerLib
                 var matched = ResponseLinePattern.Match(lines[0]);
                 if (matched.Success)
                 {
-                    var res = new Response();
-                    res.StatusCode = int.Parse(matched.Groups[1].Value);
-                    res.StatusExplanation = matched.Groups[2].Value.TrimEnd();
+                    var res = new Response
+                    {
+                        StatusCode = int.Parse(matched.Groups[1].Value),
+                        StatusExplanation = matched.Groups[2].Value.TrimEnd()
+                    };
 
                     // 2行目以降があれば続けて解析
                     for (var i = 1; i < lines.Length; i++)

@@ -85,11 +85,13 @@ namespace ExplorerLib
                     var tokens = value.Split('\u0001');
 
                     // 値をセット
-                    var record = new Record();
-                    record.Name = tokens[0];
-                    record.TotalBootByMinute = long.Parse(tokens[4]);
-                    record.TotalBootCount = long.Parse(tokens[7]);
-                    record.LastBootSecond = long.Parse(tokens[5]);
+                    var record = new Record
+                    {
+                        Name = tokens[0],
+                        TotalBootByMinute = long.Parse(tokens[4]),
+                        TotalBootCount = long.Parse(tokens[7]),
+                        LastBootSecond = long.Parse(tokens[5])
+                    };
 
                     // レコード追加
                     if (type == "ghost")

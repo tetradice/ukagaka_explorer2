@@ -349,9 +349,11 @@ namespace NiseSeriko
                         var filePath = Path.Combine(DirPath, elem.FileName);
                         if (File.Exists(filePath))
                         {
-                            var layer = new SurfaceModel.Layer(filePath, elem.Method);
-                            layer.X = elem.OffsetX;
-                            layer.Y = elem.OffsetY;
+                            var layer = new SurfaceModel.Layer(filePath, elem.Method)
+                            {
+                                X = elem.OffsetX,
+                                Y = elem.OffsetY
+                            };
                             surfaceModel.Layers.Add(layer);
                             if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("element{0} - use {1}", elem.Id, Path.GetFileName(filePath)));
                         }
@@ -434,9 +436,11 @@ namespace NiseSeriko
                             // 画像が見つかった場合のみレイヤ追加
                             if (filePath != null)
                             {
-                                var layer = new SurfaceModel.Layer(filePath, pattern.Method);
-                                layer.X = cx;
-                                layer.Y = cy;
+                                var layer = new SurfaceModel.Layer(filePath, pattern.Method)
+                                {
+                                    X = cx,
+                                    Y = cy
+                                };
                                 surfaceModel.Layers.Add(layer);
 
                                 if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("    use {0}", Path.GetFileName(filePath)));
@@ -475,9 +479,11 @@ namespace NiseSeriko
                             {
                                 foreach (var childLayer in childSurfaceModel.Layers)
                                 {
-                                    var layer = new SurfaceModel.Layer(childLayer.Path, childLayer.ComposingMethod);
-                                    layer.X = cx + childLayer.X; // patternの処理によって決まった原点座標 + element側でのoffset
-                                    layer.Y = cy + childLayer.Y; // 同上
+                                    var layer = new SurfaceModel.Layer(childLayer.Path, childLayer.ComposingMethod)
+                                    {
+                                        X = cx + childLayer.X, // patternの処理によって決まった原点座標 + element側でのoffset
+                                        Y = cy + childLayer.Y // 同上
+                                    };
                                     surfaceModel.Layers.Add(layer);
 
                                     if (interimLogs != null) interimLogs.Add(interimLogPrefix + string.Format("    use {0}", Path.GetFileName(layer.Path)));
