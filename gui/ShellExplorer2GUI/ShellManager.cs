@@ -20,7 +20,7 @@ namespace ShellExplorer2
         /// </summary>
         public class ListItem
         {
-            public Shell Shell = null;
+            public ExplorerShell Shell = null;
             public string Name;
             public string DirPath;
             public string ErrorMessage = null;
@@ -65,7 +65,7 @@ namespace ShellExplorer2
                 try
                 {
                     // シェルを読み込み
-                    item.Shell = Shell.Load(subDir, sakuraSurfaceId, keroSurfaceId);
+                    item.Shell = ExplorerShell.Load(subDir, sakuraSurfaceId, keroSurfaceId);
                     item.Name = item.Shell.Name;
                 }
                 catch (UnhandlableShellException ex)

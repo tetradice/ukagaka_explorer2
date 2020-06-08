@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExplorerShell.cs" />
     <Compile Include="Realize2Text.cs" />
     <Compile Include="FMO\FMO.cs" />
     <Compile Include="FMO\SakuraFMO.cs" />

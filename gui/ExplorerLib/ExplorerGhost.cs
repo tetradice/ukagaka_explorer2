@@ -27,8 +27,14 @@ namespace ExplorerLib
         /// </summary>
         public virtual string Explorer2DescriptPath { get { return Path.Combine(DirPath, @"ghost\master\explorer2\descript.txt"); } }
 
+        /// <summary>
+        /// explorer2\character_descript.txt のファイルパス
+        /// </summary>
+        public virtual string CharacterDescriptPath { get { return Path.Combine(DirPath, @"explorer2\character_descript.txt"); } }
 
-        public virtual string CharacterDescriptPath { get { return Path.Combine(DirPath, @"ghost\master\explorer2\character_descript.txt"); } }
+        /// <summary>
+        /// explorer2\character_descript.txt の本文
+        /// </summary>
         public virtual string CharacterDescript { get; set; }
 
         /// <summary>

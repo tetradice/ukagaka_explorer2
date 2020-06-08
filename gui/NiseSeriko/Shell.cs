@@ -15,7 +15,6 @@ namespace NiseSeriko
 {
     public class Shell
     {
-
         #region プロパティ
 
         /// <summary>
@@ -37,26 +36,6 @@ namespace NiseSeriko
         /// profile情報のパス
         /// </summary>
         public virtual string ProfileDataPath { get { return Path.Combine(DirPath, @"profile\shell.dat"); } }
-
-        /// <summary>
-        /// explorer2\descript.txt の情報
-        /// </summary>
-        public virtual DescriptText Explorer2Descript { get; set; }
-
-        /// <summary>
-        /// explorer2\descript.txt のファイルパス
-        /// </summary>
-        public virtual string Explorer2DescriptPath { get { return Path.Combine(DirPath, @"explorer2\descript.txt"); } }
-
-        /// <summary>
-        /// explorer2\character_descript.txt のファイルパス
-        /// </summary>
-        public virtual string CharacterDescriptPath { get { return Path.Combine(DirPath, @"explorer2\character_descript.txt"); } }
-
-        /// <summary>
-        /// explorer2\character_descript.txt の本文
-        /// </summary>
-        public virtual string CharacterDescript { get; set; }
 
         /// <summary>
         /// シェル名
@@ -115,9 +94,10 @@ namespace NiseSeriko
         /// <summary>
         /// シェルを読み込み、使用するサーフェスファイルのパスと更新日付を取得
         /// </summary>
-        public static Shell Load(string dirPath, int sakuraSurfaceId, int keroSurfaceId, string interimOutputDirPathForDebug = null)
+        protected static T Load<T>(string dirPath, int sakuraSurfaceId, int keroSurfaceId, string interimOutputDirPathForDebug = null)
+        where T : Shell, new()
         {
-            var shell = new Shell()
+            var shell = new T()
             {
                 DirPath = dirPath,
                 SakuraSurfaceId = sakuraSurfaceId,
@@ -129,27 +109,32 @@ namespace NiseSeriko
         }
 
         /// <summary>
+        /// シェルを読み込み、使用するサーフェスファイルのパスと更新日付を取得
+        /// </summary>
+        public static Shell Load(string dirPath, int sakuraSurfaceId, int keroSurfaceId, string interimOutputDirPathForDebug = null)
+        {
+            return Shell.Load<Shell>(dirPath, sakuraSurfaceId, keroSurfaceId, interimOutputDirPathForDebug);
+        }
+
+        /// <summary>
         /// シェル情報を読み込み、使用するサーフェスファイルのパスと更新日付を取得 (ファイルの検索は行うが、画像ファイルの中身は読み込まない)
         /// </summary>
         public virtual void Load()
         {
+            // シェル関連ファイルの読み込み
+            LoadFiles();
+
+            // シェル更新日時の設定
+            UpdateLastModified();
+        }
+
+        /// <summary>
+        /// ファイルを検索してシェル情報を読み込む
+        /// </summary>
+        protected virtual void LoadFiles()
+        {
             // descript.txt 読み込み
             Descript = DescriptText.Load(DescriptPath);
-
-            // explorer2\descript.txt 読み込み (存在すれば)
-            Explorer2Descript = null;
-            if (File.Exists(Explorer2DescriptPath))
-            {
-                Explorer2Descript = DescriptText.Load(Explorer2DescriptPath);
-            }
-            Descript = DescriptText.Load(DescriptPath);
-
-            // character_descript.txt があれば読み込み
-            CharacterDescript = null;
-            if (File.Exists(CharacterDescriptPath))
-            {
-                CharacterDescript = File.ReadAllText(CharacterDescriptPath, Encoding.UTF8);
-            }
 
             // sakura側、kero側それぞれのbindgroup情報 (着せ替え情報) 読み込み
             var sakuraEnabledBindGroupIds = GetEnabledBindGroupIds("sakura");
@@ -197,9 +182,6 @@ namespace NiseSeriko
             {
                 Debug.WriteLine(ex.ToString());
             }
-
-            // シェル更新日時の設定
-            UpdateLastModified();
         }
 
         /// <summary>
@@ -213,17 +195,6 @@ namespace NiseSeriko
 
             // descript.txt 更新日付
             if (Descript.LastWriteTime > LastModified) LastModified = Descript.LastWriteTime; // 新しければセット
-
-            // explorer2/descript.txt 更新日付
-            if (Explorer2Descript != null
-                && Explorer2Descript.LastWriteTime > LastModified)
-            {
-                LastModified = Explorer2Descript.LastWriteTime; // 新しければセット
-            }
-
-            // explorer2/character_descript.txt 更新日付
-            var charDescPath = CharacterDescriptPath;
-            if (File.Exists(charDescPath) && File.GetLastWriteTime(charDescPath) > LastModified) LastModified = File.GetLastWriteTime(charDescPath); // 新しければセット
 
             // surfaces*.txt 更新日付
             foreach (var surfaceText in SurfacesTextList)
@@ -763,15 +734,21 @@ namespace NiseSeriko
         /// <summary>
         /// 立ち絵から顔画像を生成し、Bitmapオブジェクトを返す
         /// </summary>
-        public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int width, int height)
+        /// <param name="faceWidth">顔画像の幅</param>
+        /// <param name="faceHeight">顔画像の高さ</param>
+        public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight)
         {
-            // シェルフォルダに explorer2/descript.txt があれば読み込む
-            DescriptText desc = null;
-            if (File.Exists(Explorer2DescriptPath))
-            {
-                desc = DescriptText.Load(Explorer2DescriptPath);
-            }
+            return DrawFaceImage(surfaceModel, faceWidth, faceHeight, null);
+        }
 
+        /// <summary>
+        /// 立ち絵から顔画像を生成し、Bitmapオブジェクトを返す
+        /// </summary>
+        /// <param name="faceWidth">顔画像の幅</param>
+        /// <param name="faceHeight">顔画像の高さ</param>
+        /// <param name="faceTrimRange">顔画像の範囲指定 (left, top, width, height) nullを指定した場合は自動処理</param>
+        public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight, Tuple<int, int, int, int> faceTrimRange)
+        {
             // まずは立ち絵画像を生成
             var surface = DrawSurface(surfaceModel, trim: false); // 余白はこの段階では切らない
 
@@ -781,51 +758,13 @@ namespace NiseSeriko
                 mImg.Read(surface);
 
                 {
-                    // descript.txt 内で顔画像範囲指定があれば、立ち絵をその範囲で切り抜く
-                    if (desc != null &&
-                        (
-                            desc.Values.ContainsKey("face.left")
-                            || desc.Values.ContainsKey("face.top")
-                            || desc.Values.ContainsKey("face.width")
-                            || desc.Values.ContainsKey("face.height")
-                        ))
+                    // 顔画像範囲指定があれば、立ち絵をその範囲で切り抜く
+                    if (faceTrimRange != null)
                     {
-                        // 一部だけが指定された場合はエラー
-                        if (
-                            !desc.Values.ContainsKey("face.left")
-                            || !desc.Values.ContainsKey("face.top")
-                            || !desc.Values.ContainsKey("face.width")
-                            || !desc.Values.ContainsKey("face.height")
-                        )
-                        {
-                            throw new InvalidDescriptException(@"face.left ～ face.height は4つとも指定する必要があります。");
-                        }
+                        // 切り抜き前のチェック
+                        CheckFaceTrimRangeBeforeDrawing(surface, faceTrimRange);
 
-                        int left;
-                        if (!int.TryParse(desc.Values["face.left"], out left)) throw new InvalidDescriptException(@"face.left の指定が不正です。");
-                        if (left < 0) throw new InvalidDescriptException(@"face.left が負数です。");
-                        int top;
-                        if (!int.TryParse(desc.Values["face.top"], out top)) throw new InvalidDescriptException(@"face.top の指定が不正です。");
-                        if (top < 0) throw new InvalidDescriptException(@"face.top が負数です。");
-                        int dWidth;
-                        if (!int.TryParse(desc.Values["face.width"], out dWidth)) throw new InvalidDescriptException(@"face.width の指定が不正です。");
-                        if (width < 0) throw new InvalidDescriptException(@"face.width が負数です。");
-                        int dHeight;
-                        if (!int.TryParse(desc.Values["face.height"], out dHeight)) throw new InvalidDescriptException(@"face.height の指定が不正です。");
-                        if (height < 0) throw new InvalidDescriptException(@"face.height が負数です。");
-
-                        // 画像の範囲を超える場合はエラー
-                        if (left + width > mImg.Width)
-                        {
-                            throw new InvalidDescriptException(@"face.left, face.widthで指定された範囲が、サーフェスの横幅を超えています。");
-                        }
-                        if (top + height > mImg.Height)
-                        {
-                            throw new InvalidDescriptException(@"face.top, face.heightで指定された範囲が、サーフェスの縦幅を超えています。");
-                        }
-
-                        // 指定範囲を切り抜く
-                        mImg.Crop(new ImageMagick.MagickGeometry(left, top, dWidth, dHeight));
+                        mImg.Crop(new ImageMagick.MagickGeometry(faceTrimRange.Item1, faceTrimRange.Item2, faceTrimRange.Item3, faceTrimRange.Item4));
                         mImg.RePage(); // ページ範囲を更新
                     }
                     else
@@ -836,17 +775,17 @@ namespace NiseSeriko
                     }
 
                     // 縮小率を決定 (幅が収まるように縮小する)
-                    var scaleRate = width / (double)mImg.Width;
+                    var scaleRate = faceWidth / (double)mImg.Width;
                     if (scaleRate > 1.0) scaleRate = 1.0; // 拡大はしない
 
                     // リサイズ処理
                     mImg.Resize((int)Math.Round(mImg.Width * scaleRate), (int)Math.Round(mImg.Height * scaleRate));
 
                     // 切り抜く
-                    mImg.Crop(width, height);
+                    mImg.Crop(faceWidth, faceHeight);
 
                     // 顔画像のサイズに合うように余白追加
-                    mImg.Extent(width, height,
+                    mImg.Extent(faceWidth, faceHeight,
                                 gravity: ImageMagick.Gravity.South, // 中央下寄せ
                                 backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
                 }
@@ -856,6 +795,17 @@ namespace NiseSeriko
             }
 
             return surface;
+        }
+
+        /// <summary>
+        /// 顔画像の描画前に、指定された切り抜き範囲が適切かどうかチェックする処理
+        /// </summary>
+        /// <param name="surface">切り抜き元の立ち絵画像</param>
+        /// <param name="faceWidth">顔画像の幅</param>
+        /// <param name="faceHeight">顔画像の高さ</param>
+        /// <param name="faceTrimRange">切り抜き範囲</param>
+        protected virtual void CheckFaceTrimRangeBeforeDrawing(Bitmap surface, Tuple<int, int, int, int> faceTrimRange)
+        {
         }
 
         /// <summary>
