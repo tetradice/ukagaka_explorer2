@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ImageMagick;
 using NiseSeriko.Exceptions;
 
 namespace NiseSeriko
@@ -549,8 +550,12 @@ namespace NiseSeriko
                     if (layer.X + layerBmp.Width > surface.Width
                         || layer.Y + layerBmp.Height > surface.Height)
                     {
-                        using (var mImg = new ImageMagick.MagickImage(surface)) // Magick.NETを使用
+                        using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
                         {
+                            // Bitmapの読み込み
+                            mImg.Read(surface);
+
+                            // アルファ設定
                             mImg.Alpha(ImageMagick.AlphaOption.Transparent);
 
                             // 余白追加
@@ -649,8 +654,11 @@ namespace NiseSeriko
             // 空白があればトリム
             if (trim)
             {
-                using (var mImg = new ImageMagick.MagickImage(surface)) // Magick.NETを使用
+                using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
                 {
+                    // Bitmapの読み込み
+                    mImg.Read(surface);
+
                     // 余白切り抜き処理
                     mImg.Trim();
                     mImg.RePage(); // 切り抜き後の画像サイズ調整
@@ -761,8 +769,11 @@ namespace NiseSeriko
             // まずは立ち絵画像を生成
             var surface = DrawSurface(surfaceModel, trim: false); // 余白はこの段階では切らない
 
-            using (var mImg = new ImageMagick.MagickImage(surface)) // Magick.NETを使用
+            using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
             {
+                // Bitmapの読み込み
+                mImg.Read(surface);
+
                 {
                     // descript.txt 内で顔画像範囲指定があれば、立ち絵をその範囲で切り抜く
                     if (desc != null &&
@@ -919,8 +930,11 @@ namespace NiseSeriko
             // 新規画像の方が縦横ともに小さい場合、余白を追加して補正
             if (newBmp.Width <= baseBmp.Width && newBmp.Height <= baseBmp.Height)
             {
-                using (var mImg = new ImageMagick.MagickImage(newBmp)) // Magick.NETを使用
+                using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
                 {
+                    // Bitmapの読み込み
+                    mImg.Read(newBmp);
+
                     var backgroundColor = ImageMagick.MagickColor.FromRgba(255, 255, 255, 0);
                     if (newLayerOffsetSpecified)
                     {
@@ -953,8 +967,11 @@ namespace NiseSeriko
             // 新規画像の方が縦横ともに大きい場合、余分な幅を切る
             if (newBmp.Width >= baseBmp.Width && newBmp.Height >= baseBmp.Height)
             {
-                using (var mImg = new ImageMagick.MagickImage(newBmp)) // Magick.NETを使用
+                using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
                 {
+                    // Bitmapの読み込み
+                    mImg.Read(newBmp);
+
                     // 切り抜き
                     mImg.Crop(baseBmp.Width, baseBmp.Height);
 
