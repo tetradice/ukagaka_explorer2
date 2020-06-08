@@ -108,7 +108,7 @@ namespace ExplorerLib
         /// </summary>
         protected override void UpdateDescriptLastModified()
         {
-            base.Load();
+            base.UpdateDescriptLastModified();
 
             // explorer2/descript.txt 更新日付
             if (Explorer2Descript != null
@@ -117,6 +117,5 @@ namespace ExplorerLib
                 DescriptLastModified = Explorer2Descript.LastWriteTime; // 新しければセット
             }
         }
-
     }
 }
