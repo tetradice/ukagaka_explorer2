@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // アセンブリに関する一般情報は以下の属性セットをとおして制御されます。
 // 制御されます。アセンブリに関連付けられている情報を変更するには、
 // これらの属性値を変更してください。
-[assembly: AssemblyTitle("NiseSeriko")]
+[assembly: AssemblyTitle("NiseSeriko.Net45")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NiseSeriko")]
+[assembly: AssemblyProduct("NiseSeriko.Net45")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // このプロジェクトが COM に公開される場合、次の GUID が typelib の ID になります
-[assembly: Guid("8a5d01b3-5821-4983-9eee-fdac6d92d2d1")]
+[assembly: Guid("f7f099d8-23f8-4db5-89e1-c44d915ea0c1")]
 
 // アセンブリのバージョン情報は、以下の 4 つの値で構成されています:
 //

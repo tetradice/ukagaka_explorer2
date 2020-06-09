@@ -28,3 +28,9 @@
 /gui/NiseSeriko/bin/
 /gui/NiseSeriko/obj/
 /gui/.vs/Explorer2GUI/DesignTimeBuild/
+/gui/NiseSeriko/Net45/bin/
+/gui/NiseSeriko/Net45/obj/
+/gui/NiseSeriko/Net45/packages/
+.vs
+/gui/NiseSeriko/NetCore/bin/
+/gui/NiseSeriko/NetCore/obj/
