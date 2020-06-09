@@ -64,9 +64,7 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
 
 ■現時点での制限事項
 
-・シェルの切り替え時には、イベントトーク (OnShellChanging) が発生しますが、
-  これはSSP本体の動作を、仕様書などを元に模倣したものなので、SSP側で切り替えた時の動作と微妙に差があります。
-  また、技術的な制約のため、Reference2 (現在のシェル名) のみ設定されず、空文字列が渡されます。
+・他シェルへ切り替えた時のイベントトークは、SSP バージョン 2.4.74 (2020/6/9リリース版) 以降でのみ発生します。
 
 ・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, overlayfast, add, bind) 、および reduce, interpolate のみです。
   他の描画メソッドはすべてoverlay扱いで描画します。

@@ -378,7 +378,7 @@ namespace ShellExplorer2
             await WaitCurrentGhostTalkEnd();
 
             // ゴースト変更
-            SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.Name) + @"]\e");
+            SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.Name) + @",--option=raise-event]\e");
 
             // ゴースト変更後にアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)

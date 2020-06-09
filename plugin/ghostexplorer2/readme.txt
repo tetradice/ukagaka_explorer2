@@ -73,7 +73,7 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
 
 ■現時点での制限事項
 
-・技術的な制約のため、他ゴーストへの切り替えや呼び出しを実行した時に、切り替え前のトークが行われません。（OnGhostChangingなどのイベントが発生しません）
+・他ゴーストへの切り替えや呼び出しを実行した時のイベントトークは、SSP バージョン 2.4.74 (2020/6/9リリース版) 以降でのみ発生します。
 
 ・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, overlayfast, add, bind) 、および reduce, interpolate のみです。
   他の描画メソッドはすべてoverlay扱いで描画します。
