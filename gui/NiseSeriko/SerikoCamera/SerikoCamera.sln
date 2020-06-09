@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30128.36
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerikoCamera", "SerikoCamera.csproj", "{EBD12E7D-B002-4040-9AEE-86EAC3ED55C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NiseSeriko.NetCore", "..\NetCore\NiseSeriko.NetCore.csproj", "{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EBD12E7D-B002-4040-9AEE-86EAC3ED55C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBD12E7D-B002-4040-9AEE-86EAC3ED55C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBD12E7D-B002-4040-9AEE-86EAC3ED55C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBD12E7D-B002-4040-9AEE-86EAC3ED55C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CD6EE6EF-8BA2-4B26-B220-9785070FC383}
+	EndGlobalSection
+EndGlobal

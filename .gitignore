@@ -34,3 +34,5 @@
 .vs
 /gui/NiseSeriko/NetCore/bin/
 /gui/NiseSeriko/NetCore/obj/
+/gui/NiseSeriko/SerikoCamera/bin/
+/gui/NiseSeriko/SerikoCamera/obj/
