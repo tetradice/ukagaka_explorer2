@@ -2,15 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using CommandLine;
-using NiseSeriko;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
+using System.Text;
+using CommandLine;
+using NiseSeriko;
 
 namespace SerikoCamera
 {
-    class Options
+    internal class Options
     {
         [Option("shell", HelpText = "使用するシェルのフォルダ名")]
         public string Shell { get; set; }
@@ -25,12 +26,13 @@ namespace SerikoCamera
         public string GhostDirPath { get; set; }
     }
 
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Parser.Default.ParseArguments<Options>(args)
-                .WithParsed(opt => {
+                .WithParsed(opt =>
+                {
                     Debug.WriteLine(opt);
 
                     var ghost = Ghost.Load(opt.GhostDirPath);
@@ -45,7 +47,8 @@ namespace SerikoCamera
                     var keroBitmap = shell.DrawSurface(shell.KeroSurfaceModel);
                     keroBitmap.Save(Path.Combine(outputDir, @"p1.png"));
                 })
-                .WithNotParsed(err => {
+                .WithNotParsed(err =>
+                {
                     Debug.WriteLine(err);
                 });
         }

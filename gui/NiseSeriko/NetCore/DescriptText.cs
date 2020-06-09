@@ -18,6 +18,14 @@ namespace NiseSeriko
         public virtual Dictionary<string, string> Values { get; protected set; }
         public virtual DateTime LastWriteTime { get; protected set; }
 
+
+        static DescriptText()
+        {
+#if NETCOREAPP
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+#endif
+        }
+
         /// <summary>
         /// 指定したパスの descript.txt を読み込む
         /// </summary>
