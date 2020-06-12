@@ -26,7 +26,7 @@ namespace NiseSeriko
         /// ゴースト達を格納しているフォルダ のパス 
         /// </summary>
         public virtual string GhostBaseDirPath { get { return Path.GetDirectoryName(DirPath); } }
-        public virtual string MasterGhostDirParh { get { return Path.Combine(DirPath, @"ghost\master"); } }
+        public virtual string MasterGhostDirParh { get { return Path.Combine(DirPath, "ghost/master"); } }
         public virtual string MasterGhostDesciptParh { get { return Path.Combine(MasterGhostDirParh, "descript.txt"); } }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace NiseSeriko
                 CurrentShellRelDirPath = null; // 一度初期化
 
                 // profile\ghost.dat が存在すれば、その中から最終選択シェルを取得
-                var ghostProfPath = Path.Combine(DirPath, @"ghost\master\profile\ghost.dat");
+                var ghostProfPath = Path.Combine(DirPath, @"ghost/master/profile/ghost.dat");
                 if (File.Exists(ghostProfPath))
                 {
                     try
@@ -155,7 +155,7 @@ namespace NiseSeriko
                             if (line.StartsWith("shell,"))
                             {
                                 var tokens = line.TrimEnd().Split(',');
-                                CurrentShellRelDirPath = tokens[1].TrimEnd('\\'); // 最後の\は除去
+                                CurrentShellRelDirPath = tokens[1].TrimEnd('\\').Replace('\\', '/'); // 最後の\を除去し、\を/に変換
                                 break;
                             }
                         }
@@ -173,7 +173,7 @@ namespace NiseSeriko
                     if (File.Exists(DefaultShellDescriptPath))
                     {
                         // デフォルトシェルが存在する場合は、デフォルトシェルを選択
-                        CurrentShellRelDirPath = @"shell\" + DefaultShellDirName;
+                        CurrentShellRelDirPath = "shell/" + DefaultShellDirName;
                     }
                     else
                     {
@@ -184,7 +184,7 @@ namespace NiseSeriko
                             var descriptPath = Path.Combine(shellSubDir, "descript.txt");
                             if (File.Exists(descriptPath))
                             {
-                                CurrentShellRelDirPath = @"shell\" + Path.GetFileName(shellSubDir);
+                                CurrentShellRelDirPath = "shell/" + Path.GetFileName(shellSubDir);
                                 break;
                             }
                         }

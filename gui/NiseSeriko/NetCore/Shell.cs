@@ -35,7 +35,7 @@ namespace NiseSeriko
         /// <summary>
         /// profile情報のパス
         /// </summary>
-        public virtual string ProfileDataPath { get { return Path.Combine(DirPath, @"profile\shell.dat"); } }
+        public virtual string ProfileDataPath { get { return Path.Combine(DirPath, "profile/shell.dat"); } }
 
         /// <summary>
         /// シェル名

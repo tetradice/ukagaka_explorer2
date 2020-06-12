@@ -3,7 +3,7 @@
     <TargetFrameworks>net45;netcoreapp3.1</TargetFrameworks>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWindowsForms>false</UseWindowsForms>
     <AssemblyName>NiseSeriko</AssemblyName>
     <RootNamespace>NiseSeriko</RootNamespace>
   </PropertyGroup>
