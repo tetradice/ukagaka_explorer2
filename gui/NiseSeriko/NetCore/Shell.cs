@@ -523,6 +523,11 @@ namespace NiseSeriko
                     var layer = model.Layers[i];
                     var layerBmp = LoadAndProcessSurfaceFile(layer.Path);
 
+                    if (InterimOutputDirPathForDebug != null)
+                    {
+                        layerBmp.Save(Path.Combine(InterimOutputDirPathForDebug, $"s{model.Id:0000}_p{i:0000}_loaded.png"));
+                    };
+
                     // このとき、描画時に元画像のサイズをはみ出すなら、元画像の描画領域を広げる (SSP仕様)
                     if (layer.X + layerBmp.Width > surface.Width
                         || layer.Y + layerBmp.Height > surface.Height)
@@ -660,12 +665,32 @@ namespace NiseSeriko
                 throw new ArgumentException("合成元レイヤと追加レイヤの画像サイズが異なります。");
             }
 
-            // まずは出力用に、元レイヤをコピーして、アルファチャンネルありの32ビットbmpを生成
-            baseBmp = baseBmp.Clone(new Rectangle(0, 0, baseBmp.Width, baseBmp.Height), PixelFormat.Format32bppArgb);
+            // 出力用に、元レイヤをコピーして、アルファチャンネルありの32ビットbmpを生成
+            using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
+            {
+                // Bitmapの読み込み
+                mImg.Read(baseBmp);
+
+                // アルファを設定 (32ビットRGBAになるように強制する)
+                mImg.Alpha(AlphaOption.Set);
+
+                // Bitmapへ書き戻す
+                baseBmp = mImg.ToBitmap();
+            }
 
             // 新規レイヤをコピーして、アルファチャンネルありの32ビットbmpに変換
             // (インデックスカラーや8ビットカラーなどにも対応できるようにするため)
-            newBmp = newBmp.Clone(new Rectangle(0, 0, newBmp.Width, newBmp.Height), PixelFormat.Format32bppArgb);
+            using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
+            {
+                // Bitmapの読み込み
+                mImg.Read(newBmp);
+
+                // アルファを設定 (32ビットRGBAになるように強制する)
+                mImg.Alpha(AlphaOption.Set);
+
+                // Bitmapへ書き戻す
+                newBmp = mImg.ToBitmap();
+            }
 
             // 出力画像の1ピクセルあたりのバイト数を取得する (両方とも32ビットのため4固定)
             var pixelByteSize = 4;
@@ -698,6 +723,8 @@ namespace NiseSeriko
                 var basePtr = baseBmpData.Scan0;
                 var basePixels = new byte[baseBmpData.Stride * baseBmp.Height];
                 System.Runtime.InteropServices.Marshal.Copy(basePtr, basePixels, 0, basePixels.Length);
+
+
 
                 // 出力画像の全ピクセルに対して処理
                 for (var y = 0; y < newBmp.Height; y++)
@@ -866,8 +893,23 @@ namespace NiseSeriko
                 }
                 else
                 {
-                    // pnaなしの場合は、画像の左上の色を透過色として設定して返す
-                    surface.MakeTransparent(surface.GetPixel(0, 0));
+                    // pnaなしの場合は、画像の左上の色を透過色として設定する
+                    using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
+                    {
+                        // Bitmapの読み込み
+                        mImg.Read(surface);
+
+                        // 左上原点の色で透過
+                        var pixels = mImg.GetPixels();
+                        var basePixel = pixels.GetPixel(0, 0);
+                        mImg.Transparent(basePixel.ToColor());
+
+                        // 32ビットRGBA画像を強制
+                        mImg.Alpha(AlphaOption.Set);
+
+                        // Bitmapへ書き戻す
+                        surface = mImg.ToBitmap();
+                    }
                     return surface;
                 }
             }
