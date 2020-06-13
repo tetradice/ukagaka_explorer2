@@ -37,3 +37,5 @@
 /gui/NiseSeriko/SerikoCamera/bin/
 /gui/NiseSeriko/SerikoCamera/obj/
 *.pubxml.user
+/gui/NiseSeriko/SerikoCamera/trimtest/bin/
+/gui/NiseSeriko/SerikoCamera/trimtest/obj/

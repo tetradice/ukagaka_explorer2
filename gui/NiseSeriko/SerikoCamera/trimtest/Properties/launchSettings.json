@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "trimtest": {
+      "commandName": "Project",
+      "commandLineArgs": "surface0.png  surface0_trimmed.png"
+    }
+  }
+}
