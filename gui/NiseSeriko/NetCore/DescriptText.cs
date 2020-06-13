@@ -15,7 +15,7 @@ namespace NiseSeriko
     public class DescriptText
     {
         public virtual string Path { get; set; }
-        public virtual Dictionary<string, string> Values { get; protected set; }
+        public virtual Dictionary<string, string> Values { get; protected set; } = new Dictionary<string, string>();
         public virtual DateTime LastWriteTime { get; protected set; }
 
 
@@ -34,14 +34,6 @@ namespace NiseSeriko
             var descript = new DescriptText() { Path = path };
             descript.Load();
             return descript;
-        }
-
-        /// <summary>
-        /// コンストラクタ
-        /// </summary>
-        public DescriptText()
-        {
-            Values = new Dictionary<string, string>();
         }
 
         /// <summary>

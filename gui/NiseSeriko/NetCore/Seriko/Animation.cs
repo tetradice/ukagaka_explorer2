@@ -32,32 +32,22 @@ namespace NiseSeriko.Seriko
             RelativeFromPreviousFrame
         }
 
-        public virtual List<Pattern> Patterns { get; set; }
+        public virtual List<Pattern> Patterns { get; set; } = new List<Pattern>();
 
         /// <summary>
         /// 立ち絵表示時にどのパターン画像を使用するか
         /// </summary>
-        public virtual PatternDisplayType PatternDisplayForStaticImage { get; set; }
+        public virtual PatternDisplayType PatternDisplayForStaticImage { get; set; } = PatternDisplayType.No;
 
         /// <summary>
         /// Offset座標指定をどう解釈するか
         /// </summary>
-        public virtual OffsetInterpritingType OffsetInterpriting { get; set; }
+        public virtual OffsetInterpritingType OffsetInterpriting { get; set; } = OffsetInterpritingType.Absolute;
 
         /// <summary>
         /// bindgroupを見るかどうか (trueであれば対象の着せ替えグループが初期表示状態になっていないと、表示しない)
         /// </summary>
         public virtual bool UsingBindGroup { get; set; }
-
-        /// <summary>
-        /// コンストラクタ
-        /// </summary>
-        public Animation()
-        {
-            Patterns = new List<Pattern>();
-            PatternDisplayForStaticImage = PatternDisplayType.No;
-            OffsetInterpriting = OffsetInterpritingType.Absolute;
-        }
 
         #region pattern定義
 
