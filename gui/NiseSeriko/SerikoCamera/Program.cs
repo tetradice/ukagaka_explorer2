@@ -7,14 +7,15 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using CommandLine;
+using CommandLine.Text;
 using NiseSeriko;
 
 namespace SerikoCamera
 {
     internal class Options
     {
-        [Option("shell", HelpText = "使用するシェルのディレクトリ名")]
-        public string Shell { get; set; }
+        ////[Option("shell", HelpText = "使用するシェルのディレクトリ名")]
+        ////public string Shell { get; set; }
 
         [Option('o', "output", HelpText = "出力するディレクトリパス。省略時は (ゴーストディレクトリ)/photo")]
         public string OutputDirPath { get; set; }
@@ -24,6 +25,19 @@ namespace SerikoCamera
 
         [Value(0, Required = true, HelpText = "ゴーストのディレクトリパス\n(--subdir オプションを指定した場合は、ゴーストのディレクトリ\n複数を含むディレクトリのパス)")]
         public string GhostDirPath { get; set; }
+
+        [Usage()]
+        public static IEnumerable<Example> Examples
+        {
+            get
+            {
+                return new[] {
+                    new Example("通常の変換", new Options() {GhostDirPath = "./ghost/sakura"}),
+                    new Example("ghostフォルダ以下をまとめて変換", new Options() {GhostDirPath = "./ghost", SubDir = true}),
+                    new Example("出力先指定", new Options() {GhostDirPath = "./ghost/sakura", OutputDirPath = "./out"}),
+               };
+            }
+        }
     }
 
     internal class Program
