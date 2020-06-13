@@ -816,13 +816,13 @@ namespace GhostExplorer2
             }
 
             // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
-            if (CurrentProfile.LastBootVersion != null && Const.Version != CurrentProfile.LastBootVersion)
+            if (CurrentProfile.LastBootVersion != null && Util.GetVersion() != CurrentProfile.LastBootVersion)
             {
                 Directory.Delete(Util.GetCacheDirPath(), recursive: true);
             }
 
             // 最終起動情報をセットして、Profileを保存
-            CurrentProfile.LastBootVersion = Const.Version;
+            CurrentProfile.LastBootVersion = Util.GetVersion();
             Util.SaveProfile(CurrentProfile);
 
             // ゴーストフォルダ選択ドロップダウンの項目を選択

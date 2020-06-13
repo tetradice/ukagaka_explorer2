@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8284FECC-FD09-4D6D-B549-F85A32563EE0}</ProjectGuid>
+    <ProjectGuid>{5AA6E9B4-8CD6-4726-BFF9-33A2611FFC81}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ShellExplorer2</RootNamespace>

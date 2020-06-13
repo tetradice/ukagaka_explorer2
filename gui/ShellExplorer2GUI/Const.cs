@@ -8,7 +8,6 @@ namespace ShellExplorer2
 {
     public static class Const
     {
-        public const string Version = "0.4.0";
         public const string SSTPSender = "ShellExplorer2";
     }
 }

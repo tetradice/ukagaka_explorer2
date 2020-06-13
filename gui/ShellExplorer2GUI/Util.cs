@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
@@ -103,6 +104,15 @@ namespace ShellExplorer2
         public static string QuoteForSakuraScriptParameter(string value)
         {
             return string.Format(@"""{0}""", value);
+        }
+
+        /// <summary>
+        /// バージョン取得
+        /// </summary>
+        public static string GetVersion()
+        {
+            var ver = Assembly.GetExecutingAssembly().GetName().Version;
+            return string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Revision);
         }
     }
 }
