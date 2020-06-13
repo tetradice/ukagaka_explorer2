@@ -526,10 +526,10 @@ namespace GhostExplorer2
         private void BtnChange_Click(object sender, EventArgs e)
         {
             // ゴースト変更
-            SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(SelectedGhost.Name) + @",--option=raise-event]\e");
+            var success = SendSSTPScript(@"\![change,ghost," + Util.QuoteForSakuraScriptParameter(SelectedGhost.Name) + @",--option=raise-event]\e");
 
-            // ゴースト変更後にアプリケーション終了
-            if (ChkCloseAfterChange.Checked)
+            // 送信成功した場合、ゴースト変更後にアプリケーション終了
+            if (success && ChkCloseAfterChange.Checked)
             {
                 Application.Exit();
             }
@@ -561,9 +561,11 @@ namespace GhostExplorer2
         /// </summary>
         protected bool SendSSTPScript(string script)
         {
-            var req = new SSTPClient.Send14Request();
-            req.Id = CallerId;
-            req.Sender = Const.SSTPSender;
+            var req = new SSTPClient.Send14Request
+            {
+                Id = CallerId,
+                Sender = Const.SSTPSender
+            };
 
             if (CallerLost)
             {

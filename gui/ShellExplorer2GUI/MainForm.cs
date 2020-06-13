@@ -360,27 +360,11 @@ namespace ShellExplorer2
         /// <summary>
         /// シェル切り替えボタン押下
         /// </summary>
-        private async void BtnChange_Click(object sender, EventArgs e)
+        private void BtnChange_Click(object sender, EventArgs e)
         {
-            // まずはOnShellChangingイベントを発生させる
-            var success = SendSSTPScript(string.Format(@"\![raise,OnShellChanging,{0},{1},{2}]\e"
-                                                     , Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.Name)
-                                                     , "" // reference1 (現在のシェル名) を正しく取得する手段がないと思われる
-                                                     , Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.DirPath)));
+            var success = SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.Name) + @",--option=raise-event]\e");
 
-            // 送信成功した場合、オプションに応じてアプリケーションを隠す
-            if (success && ChkCloseAfterChange.Checked)
-            {
-                Hide();
-            }
-
-            // トーク終了を待つ
-            await WaitCurrentGhostTalkEnd();
-
-            // ゴースト変更
-            SendSSTPScript(@"\![change,shell," + Util.QuoteForSakuraScriptParameter(SelectedShellListItem.Shell.Name) + @",--option=raise-event]\e");
-
-            // ゴースト変更後にアプリケーション終了
+            // 送信成功した場合、オプションに応じてアプリケーション終了
             if (success && ChkCloseAfterChange.Checked)
             {
                 Application.Exit();
@@ -395,9 +379,11 @@ namespace ShellExplorer2
         /// </summary>
         protected string SendSSTPGetProperty(string key)
         {
-            var req = new SSTPClient.Execute13Request();
-            req.Sender = Const.SSTPSender;
-            req.Command = "GetProperty[" + key + "]";
+            var req = new SSTPClient.Execute13Request
+            {
+                Sender = Const.SSTPSender,
+                Command = "GetProperty[" + key + "]"
+            };
 
             SSTPClient.Response res;
             if (SendSSTPScript(req, out res))
@@ -442,9 +428,11 @@ namespace ShellExplorer2
         /// </summary>
         protected bool SendSSTPScript(string script)
         {
-            var req = new SSTPClient.Send14Request();
-            req.Id = CallerId;
-            req.Sender = Const.SSTPSender;
+            var req = new SSTPClient.Send14Request
+            {
+                Id = CallerId,
+                Sender = Const.SSTPSender
+            };
 
             if (CallerLost)
             {
