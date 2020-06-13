@@ -1,8 +1,8 @@
 #----------------------------------------------------------------------------------------------------
-# 私家版コーディングスタイル設定 (ver 0.1.1)
+# 私家版コーディングスタイル設定 (ver 0.2.0)
 #
 # 基本はVisual Studio 2019 の「追加 > 新しい項目 > editorconfig ファイル (.NET)」を使用していますが
-# C# 5.0 (Visual Studio 2012-) で動くように、C# 6.0以降でのみ利用可能なスタイルの一部を切っています。
+# C# 6.0 (Visual Studio 2015-) で動くように、C# 7.0以降でのみ利用可能なスタイルの一部を切っています。
 #
 # Visual Studio 2019でのコードクリーンアップの実行時には
 #
@@ -50,7 +50,7 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:silent
 dotnet_style_readonly_field = true:suggestion
 # Expression-level preferences
 dotnet_style_object_initializer = true:suggestion
-dotnet_style_collection_initializer = false:suggestion
+dotnet_style_collection_initializer = true:suggestion
 dotnet_style_explicit_tuple_names = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_coalesce_expression = true:suggestion

@@ -41,9 +41,11 @@ namespace ExplorerLib
 
             public override string ToString()
             {
-                var headers = new Dictionary<string, string>();
-                headers["Charset"] = "UTF-8";
-                headers["Sender"] = Sender;
+                var headers = new Dictionary<string, string>
+                {
+                    ["Charset"] = "UTF-8",
+                    ["Sender"] = Sender
+                };
                 if (Id != null) headers["ID"] = Id;
                 headers["Sender"] = Sender;
                 if (IfGhost != null)
@@ -64,10 +66,12 @@ namespace ExplorerLib
 
             public override string ToString()
             {
-                var headers = new Dictionary<string, string>();
-                headers["Charset"] = "UTF-8";
-                headers["Sender"] = Sender;
-                headers["Command"] = Command;
+                var headers = new Dictionary<string, string>
+                {
+                    ["Charset"] = "UTF-8",
+                    ["Sender"] = Sender,
+                    ["Command"] = Command
+                };
 
                 return Request.BuildMessage(COMMAND_STRING, headers);
             }
@@ -90,10 +94,12 @@ namespace ExplorerLib
 
             public override string ToString()
             {
-                var headers = new Dictionary<string, string>();
-                headers["Charset"] = "UTF-8";
-                headers["Sender"] = Sender;
-                headers["Event"] = Event;
+                var headers = new Dictionary<string, string>
+                {
+                    ["Charset"] = "UTF-8",
+                    ["Sender"] = Sender,
+                    ["Event"] = Event
+                };
                 if (Id != null) headers["ID"] = Id;
                 headers["Sender"] = Sender;
                 if (IfGhost != null)
