@@ -13,16 +13,16 @@ namespace SerikoCamera
 {
     internal class Options
     {
-        [Option("shell", HelpText = "使用するシェルのフォルダ名")]
+        [Option("shell", HelpText = "使用するシェルのディレクトリ名")]
         public string Shell { get; set; }
 
-        //[Option('p', "char", HelpText = "出力するキャラ側", Default = new[] {0, 1}, Separator = ',')]
-        //public IEnumerable<int> Characters { get; set; }
-
-        [Option('o', "output", HelpText = "出力するフォルダパス。省略時はゴーストフォルダ以下のphoto")]
+        [Option('o', "output", HelpText = "出力するディレクトリパス。省略時は (ゴーストディレクトリ)/photo")]
         public string OutputDirPath { get; set; }
 
-        [Value(0, Required = true, HelpText = "ゴーストのフォルダパス")]
+        [Option("subdir", HelpText = "指定したディレクトリの1階層下ゴーストをすべて変換対象とする")]
+        public bool SubDir { get; set; }
+
+        [Value(0, Required = true, HelpText = "ゴーストのディレクトリパス\n(--subdir オプションを指定した場合は、ゴーストのディレクトリ\n複数を含むディレクトリのパス)")]
         public string GhostDirPath { get; set; }
     }
 
@@ -33,30 +33,49 @@ namespace SerikoCamera
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(opt =>
                 {
-                    Debug.WriteLine(opt);
+                    if (opt.SubDir)
+                    {
+                        foreach(var subDirPath in Directory.GetDirectories(opt.GhostDirPath))
+                        {
+                            if (NiseSeriko.Ghost.IsGhostDir(subDirPath))
+                            {
+                                var outputDirPath = (opt.OutputDirPath != null ? Path.Combine(opt.OutputDirPath, Path.GetFileName(subDirPath)) : null);
+                                Convert(subDirPath, outputDirPath);
+                            }
+                        }
+                    } else
+                    {
+                        Convert(opt.GhostDirPath, opt.OutputDirPath);
+                    }
 
-                    var ghost = Ghost.Load(opt.GhostDirPath);
-                    var shellDirPath = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
 
-                    var outputDir = opt.OutputDirPath != null ? Path.GetFullPath(opt.OutputDirPath) : Path.Combine(ghost.DirPath, @"photo");
-                    Directory.CreateDirectory(outputDir);
-
-                    var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
-                    //var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: Path.Combine(outputDir, "interim")); var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: Path.Combine(outputDir, "interim"));
-
-                    var sakuraBitmap = shell.DrawSurface(shell.SakuraSurfaceModel);
-                    var sakuraOutputPath = Path.Combine(outputDir, @"p0.png");
-                    sakuraBitmap.Save(sakuraOutputPath);
-                    Console.WriteLine($"output -> {sakuraOutputPath}");
-                    var keroBitmap = shell.DrawSurface(shell.KeroSurfaceModel);
-                    var keroOutputPath = Path.Combine(outputDir, @"p1.png");
-                    keroBitmap.Save(keroOutputPath);
-                    Console.WriteLine($"output -> {keroOutputPath}");
                 })
                 .WithNotParsed(err =>
                 {
                     Debug.WriteLine(err);
                 });
+        }
+
+        protected static void Convert(string ghostDirPath, string outputDirPath)
+        {
+            var ghost = Ghost.Load(ghostDirPath);
+            var shellDirPath = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
+
+            var outputDir = outputDirPath != null ? Path.GetFullPath(outputDirPath) : Path.Combine(ghost.DirPath, @"photo");
+            Directory.CreateDirectory(outputDir);
+
+            var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
+            //var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: Path.Combine(outputDir, "interim")); var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: Path.Combine(outputDir, "interim"));
+
+            var sakuraBitmap = shell.DrawSurface(shell.SakuraSurfaceModel);
+            var sakuraOutputPath = Path.Combine(outputDir, @"p0.png");
+            sakuraBitmap.Save(sakuraOutputPath);
+            Console.WriteLine($"output -> {sakuraOutputPath}");
+
+            var keroBitmap = shell.DrawSurface(shell.KeroSurfaceModel);
+            var keroOutputPath = Path.Combine(outputDir, @"p1.png");
+            keroBitmap.Save(keroOutputPath);
+            Console.WriteLine($"output -> {keroOutputPath}");
         }
     }
 }
