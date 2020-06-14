@@ -630,175 +630,59 @@ namespace NiseSeriko
             return surface;
         }
 
-        ///// <summary>
-        ///// ピクセル単位で画像（レイヤ）の合成処理を行う汎用メソッド
-        ///// </summary>
-        //public virtual void ComposeBitmaps(ref Bitmap baseBmp, bool writingToBase, ref Bitmap newBmp, bool writingToNew, Action<byte[], byte[], int> pixelProcess)
-        //{
-        //    // 元画像とマスク画像のサイズが異なる場合はエラーとする
-        //    if (baseBmp.Size != newBmp.Size)
-        //    {
-        //        throw new ArgumentException("合成元レイヤと追加レイヤの画像サイズが異なります。");
-        //    }
+        /// <summary>
+        /// 立ち絵から顔画像を生成し、MagickImageオブジェクトを返す
+        /// </summary>
+        /// <param name="faceWidth">顔画像の幅</param>
+        /// <param name="faceHeight">顔画像の高さ</param>
+        public virtual MagickImage DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight)
+        {
+            return DrawFaceImage(surfaceModel, faceWidth, faceHeight, null);
+        }
 
-        //    // 出力用に、元レイヤをコピーして、アルファチャンネルありの32ビットbmpを生成
-        //    using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-        //    {
-        //        // Bitmapの読み込み
-        //        mImg.Read(baseBmp);
+        /// <summary>
+        /// 立ち絵から顔画像を生成し、MagickImageオブジェクトを返す
+        /// </summary>
+        /// <param name="faceWidth">顔画像の幅</param>
+        /// <param name="faceHeight">顔画像の高さ</param>
+        /// <param name="faceTrimRange">顔画像の範囲指定 (left, top, width, height) nullを指定した場合は自動処理</param>
+        public virtual MagickImage DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight, Tuple<int, int, int, int> faceTrimRange)
+        {
+            // まずは立ち絵画像を生成
+            var surface = DrawSurface(surfaceModel, trim: false); // 余白はこの段階では切らない
 
-        //        // アルファを設定 (32ビットRGBAになるように強制する)
-        //        mImg.Alpha(AlphaOption.Set);
+            // 顔画像範囲指定があれば、立ち絵をその範囲で切り抜く
+            if (faceTrimRange != null)
+            {
+                // 切り抜き前のチェック
+                CheckFaceTrimRangeBeforeDrawing(surface, faceTrimRange);
 
-        //        // Bitmapへ書き戻す
-        //        baseBmp = mImg.ToBitmap();
-        //    }
+                surface.Crop(new ImageMagick.MagickGeometry(faceTrimRange.Item1, faceTrimRange.Item2, faceTrimRange.Item3, faceTrimRange.Item4));
+                surface.RePage(); // ページ範囲を更新
+            }
+            else
+            {
+                // 顔画像範囲指定がなければ、余白の削除のみ行う
+                surface.Trim();
+                surface.RePage(); // ページ範囲を更新
+            }
 
-        //    // 新規レイヤをコピーして、アルファチャンネルありの32ビットbmpに変換
-        //    // (インデックスカラーや8ビットカラーなどにも対応できるようにするため)
-        //    using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-        //    {
-        //        // Bitmapの読み込み
-        //        mImg.Read(newBmp);
+            // 縮小率を決定 (幅が収まるように縮小する)
+            var scaleRate = faceWidth / (double)surface.Width;
+            if (scaleRate > 1.0) scaleRate = 1.0; // 拡大はしない
 
-        //        // アルファを設定 (32ビットRGBAになるように強制する)
-        //        mImg.Alpha(AlphaOption.Set);
+            // リサイズ処理
+            surface.Resize((int)Math.Round(surface.Width * scaleRate), (int)Math.Round(surface.Height * scaleRate));
 
-        //        // Bitmapへ書き戻す
-        //        newBmp = mImg.ToBitmap();
-        //    }
+            // 切り抜く
+            surface.Crop(faceWidth, faceHeight);
 
-        //    // 出力画像の1ピクセルあたりのバイト数を取得する (両方とも32ビットのため4固定)
-        //    var pixelByteSize = 4;
+            // 顔画像のサイズに合うように余白追加
+            surface.Extent(faceWidth, faceHeight,
+                           gravity: ImageMagick.Gravity.South); // (中央下寄せ)
 
-        //    // 出力bmpと新規bmpをロック
-        //    var baseBmpData = baseBmp.LockBits(
-        //        new Rectangle(0, 0, baseBmp.Width, baseBmp.Height),
-        //        (writingToBase ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), baseBmp.PixelFormat);
-        //    var newBmpData = newBmp.LockBits(
-        //        new Rectangle(0, 0, newBmp.Width, newBmp.Height),
-        //        (writingToNew ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), newBmp.PixelFormat);
-
-        //    try
-        //    {
-        //        if (baseBmpData.Stride < 0)
-        //        {
-        //            throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
-        //        }
-        //        if (newBmpData.Stride < 0)
-        //        {
-        //            throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
-        //        }
-
-        //        // 新規レイヤのピクセルデータをバイト型配列で取得する
-        //        var newBmpPtr = newBmpData.Scan0;
-        //        var newBmpPixels = new byte[newBmpData.Stride * newBmp.Height];
-        //        System.Runtime.InteropServices.Marshal.Copy(newBmpPtr, newBmpPixels, 0, newBmpPixels.Length);
-
-        //        // 出力画像のピクセルデータをバイト型配列で取得する
-        //        var basePtr = baseBmpData.Scan0;
-        //        var basePixels = new byte[baseBmpData.Stride * baseBmp.Height];
-        //        System.Runtime.InteropServices.Marshal.Copy(basePtr, basePixels, 0, basePixels.Length);
-
-
-
-        //        // 出力画像の全ピクセルに対して処理
-        //        for (var y = 0; y < newBmp.Height; y++)
-        //        {
-        //            for (var x = 0; x < newBmp.Width; x++)
-        //            {
-        //                //ピクセルデータでのピクセル(x,y)の開始位置を計算する
-        //                var pos = y * newBmpData.Stride + x * pixelByteSize;
-
-        //                //ピクセル単位処理を実行
-        //                pixelProcess.Invoke(basePixels, newBmpPixels, pos);
-        //            }
-        //        }
-
-        //        //ピクセルデータを元に戻す
-        //        if (writingToBase)
-        //        {
-        //            System.Runtime.InteropServices.Marshal.Copy(basePixels, 0, basePtr, basePixels.Length);
-        //        }
-        //        if (writingToNew)
-        //        {
-        //            System.Runtime.InteropServices.Marshal.Copy(newBmpPixels, 0, newBmpPtr, newBmpPixels.Length);
-        //        }
-        //    }
-        //    finally
-        //    {
-
-        //        // 画像のロックを解除
-        //        baseBmp.UnlockBits(baseBmpData);
-        //        newBmp.UnlockBits(newBmpData);
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 立ち絵から顔画像を生成し、Bitmapオブジェクトを返す
-        ///// </summary>
-        ///// <param name="faceWidth">顔画像の幅</param>
-        ///// <param name="faceHeight">顔画像の高さ</param>
-        //public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight)
-        //{
-        //    return DrawFaceImage(surfaceModel, faceWidth, faceHeight, null);
-        //}
-
-        ///// <summary>
-        ///// 立ち絵から顔画像を生成し、Bitmapオブジェクトを返す
-        ///// </summary>
-        ///// <param name="faceWidth">顔画像の幅</param>
-        ///// <param name="faceHeight">顔画像の高さ</param>
-        ///// <param name="faceTrimRange">顔画像の範囲指定 (left, top, width, height) nullを指定した場合は自動処理</param>
-        //public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight, Tuple<int, int, int, int> faceTrimRange)
-        //{
-        //    // まずは立ち絵画像を生成
-        //    var surface = DrawSurface(surfaceModel, trim: false); // 余白はこの段階では切らない
-
-        //    using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-        //    {
-        //        // Bitmapの読み込み
-        //        mImg.Read(surface);
-
-        //        {
-        //            // 顔画像範囲指定があれば、立ち絵をその範囲で切り抜く
-        //            if (faceTrimRange != null)
-        //            {
-        //                // 切り抜き前のチェック
-        //                CheckFaceTrimRangeBeforeDrawing(surface, faceTrimRange);
-
-        //                mImg.Crop(new ImageMagick.MagickGeometry(faceTrimRange.Item1, faceTrimRange.Item2, faceTrimRange.Item3, faceTrimRange.Item4));
-        //                mImg.RePage(); // ページ範囲を更新
-        //            }
-        //            else
-        //            {
-        //                // 顔画像範囲指定がなければ、余白の削除のみ行う
-        //                mImg.Trim();
-        //                mImg.RePage(); // ページ範囲を更新
-        //            }
-
-        //            // 縮小率を決定 (幅が収まるように縮小する)
-        //            var scaleRate = faceWidth / (double)mImg.Width;
-        //            if (scaleRate > 1.0) scaleRate = 1.0; // 拡大はしない
-
-        //            // リサイズ処理
-        //            mImg.Resize((int)Math.Round(mImg.Width * scaleRate), (int)Math.Round(mImg.Height * scaleRate));
-
-        //            // 切り抜く
-        //            mImg.Crop(faceWidth, faceHeight);
-
-        //            // 顔画像のサイズに合うように余白追加
-        //            mImg.Extent(faceWidth, faceHeight,
-        //                        gravity: ImageMagick.Gravity.South, // 中央下寄せ
-        //                        backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
-        //        }
-
-        //        // Bitmapへ書き戻す
-        //        surface = mImg.ToBitmap();
-        //    }
-
-        //    return surface;
-        //}
+            return surface;
+        }
 
         /// <summary>
         /// 指定したパスのサーフェスを読み込み、必要な透過処理を施す
@@ -848,69 +732,61 @@ namespace NiseSeriko
             }
         }
 
-        ///// <summary>
-        ///// ベース画像に新規画像を重ねるときに必要な、サイズの補正を行う
-        ///// </summary>
-        ///// <param name="baseBmp">ベース画像</param>
-        ///// <param name="newBmp">新規画像 (補正が必要であれば変更される)</param>
-        //protected virtual void SizeAdjustForComposingBitmap(Bitmap baseBmp, ref Bitmap newBmp, int? newLayerOffsetX = null, int? newLayerOffsetY = null)
-        //{
-        //    // オフセットが指定されているかどうか
-        //    var newLayerOffsetSpecified = (newLayerOffsetX.HasValue && newLayerOffsetY.HasValue);
+        /// <summary>
+        /// ベース画像に新規画像を重ねるときに必要な、サイズの補正を行う
+        /// </summary>
+        /// <param name="baseImg">ベース画像</param>
+        /// <param name="newImg">新規画像 (補正が必要であれば変更される)</param>
+        protected virtual void SizeAdjustForComposingBitmap(MagickImage baseImg, ref MagickImage newImg, int? newLayerOffsetX = null, int? newLayerOffsetY = null)
+        {
+            // オフセットが指定されているかどうか
+            var newLayerOffsetSpecified = (newLayerOffsetX.HasValue && newLayerOffsetY.HasValue);
 
-        //    // 新規画像の方が縦横ともに小さい場合、余白を追加して補正
-        //    if (newBmp.Width <= baseBmp.Width && newBmp.Height <= baseBmp.Height)
-        //    {
-        //        using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-        //        {
-        //            // Bitmapの読み込み
-        //            mImg.Read(newBmp);
+            // 新規画像の方が縦横ともに小さい場合、余白を追加して補正
+            if (newImg.Width <= baseImg.Width && newImg.Height <= baseImg.Height)
+            {
+                var backgroundColor = ImageMagick.MagickColor.FromRgba(255, 255, 255, 0);
+                if (newLayerOffsetSpecified)
+                {
+                    var offsetX = newLayerOffsetX.Value;
+                    var offsetY = newLayerOffsetY.Value;
 
-        //            var backgroundColor = ImageMagick.MagickColor.FromRgba(255, 255, 255, 0);
-        //            if (newLayerOffsetSpecified)
-        //            {
-        //                var offsetX = newLayerOffsetX.Value;
-        //                var offsetY = newLayerOffsetY.Value;
+                    // オフセット指定がある場合、オフセット分の余白を左上に追加し、その後に右下に余白追加
+                    newImg.Extent(offsetX + newImg.Width, offsetY + newImg.Height,
+                                  gravity: ImageMagick.Gravity.Southeast, // 右下寄せ
+                                  backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+                    newImg.RePage(); // ページ情報更新
+                    newImg.Extent(baseImg.Width, baseImg.Height,
+                                  gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
+                                  backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+                }
+                else
+                {
+                    // オフセット指定がなければ、右下に余白追加
+                    newImg.Extent(baseImg.Width, baseImg.Height,
+                                  gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
+                                  backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
 
-        //                // オフセット指定がある場合、オフセット分の余白を左上に追加し、その後に右下に余白追加
-        //                mImg.Extent(offsetX + newBmp.Width, offsetY + newBmp.Height,
-        //                            gravity: ImageMagick.Gravity.Southeast, // 右下寄せ
-        //                            backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
-        //                mImg.RePage(); // ページ情報更新
-        //                mImg.Extent(baseBmp.Width, baseBmp.Height,
-        //                            gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
-        //                            backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
-        //            }
-        //            else
-        //            {
-        //                // オフセット指定がなければ、右下に余白追加
-        //                mImg.Extent(baseBmp.Width, baseBmp.Height,
-        //                            gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
-        //                            backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+                }
+            }
 
-        //            }
+            // 新規画像の方が縦横ともに大きい場合、余分な幅を切る
+            if (newImg.Width >= baseImg.Width && newImg.Height >= baseImg.Height)
+            {
+                newImg.Crop(baseImg.Width, baseImg.Height);
+            }
+        }
 
-        //            // Bitmapへ書き戻す
-        //            newBmp = mImg.ToBitmap();
-        //        }
-        //    }
-
-        //    // 新規画像の方が縦横ともに大きい場合、余分な幅を切る
-        //    if (newBmp.Width >= baseBmp.Width && newBmp.Height >= baseBmp.Height)
-        //    {
-        //        using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-        //        {
-        //            // Bitmapの読み込み
-        //            mImg.Read(newBmp);
-
-        //            // 切り抜き
-        //            mImg.Crop(baseBmp.Width, baseBmp.Height);
-
-        //            // Bitmapへ書き戻す
-        //            newBmp = mImg.ToBitmap();
-        //        }
-        //    }
-        //}
+        /// <summary>
+        /// 顔画像の描画前に、指定された切り抜き範囲が適切かどうかチェックする処理
+        /// </summary>
+        /// <param name="surface">切り抜き元の立ち絵画像</param>
+        /// <param name="faceWidth">顔画像の幅</param>
+        /// <param name="faceHeight">顔画像の高さ</param>
+        /// <param name="faceTrimRange">切り抜き範囲</param>
+        protected virtual void CheckFaceTrimRangeBeforeDrawing(MagickImage surface, Tuple<int, int, int, int> faceTrimRange)
+        {
+        }
 
         /// <summary>
         /// 指定した番号のサーフェス画像を、フォルダ内から検索して返す (見つからない場合はnull)

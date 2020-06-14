@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExplorerLib;
+using ImageMagick;
 using NiseSeriko;
 using NiseSeriko.Exceptions;
 
@@ -130,10 +131,16 @@ namespace ShellExplorer2
                 var surface = targetShell.DrawSurface(surfaceModel);
 
                 // キャッシュとして保存
-                surface.Save(cachePath);
+                surface.Write(cachePath);
 
-                // サーフェス画像を返す
-                return surface;
+                // サーフェス画像をBitmap形式に変換
+                var surfaceBmp = surface.ToBitmap();
+
+                // 元画像を即時破棄
+                surface.Dispose();
+
+                // サーフェス画像をBitmap形式に変換して返す
+                return surfaceBmp;
             }
         }
 
@@ -171,7 +178,11 @@ namespace ShellExplorer2
                         // キャッシュがない場合、サーフェス0から顔画像を生成 (サーフェスを読み込めている場合のみ)
                         if (shell.SakuraSurfaceModel != null)
                         {
-                            face = shell.DrawFaceImage(shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height);
+                            using (var faceImg = shell.DrawFaceImage(shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height))
+                            {
+                                face = faceImg.ToBitmap();
+                            }
+
                             if (face != null)
                             {
                                 // 顔画像のキャッシュを保存

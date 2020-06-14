@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ImageMagick;
 using NiseSeriko;
 using NiseSeriko.Exceptions;
 
@@ -85,7 +86,7 @@ namespace ExplorerLib
         }
 
         /// <inheritdoc />
-        public override Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight)
+        public override MagickImage DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight)
         {
             var desc = Explorer2Descript;
 
@@ -133,7 +134,7 @@ namespace ExplorerLib
         }
 
         /// <inheritdoc />
-        protected override void CheckFaceTrimRangeBeforeDrawing(Bitmap surface, Tuple<int, int, int, int> faceTrimRange)
+        protected override void CheckFaceTrimRangeBeforeDrawing(MagickImage surface, Tuple<int, int, int, int> faceTrimRange)
         {
             var left = faceTrimRange.Item1;
             var top = faceTrimRange.Item2;

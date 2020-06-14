@@ -49,7 +49,7 @@ namespace SerikoCamera
                 {
                     if (opt.SubDir)
                     {
-                        foreach(var subDirPath in Directory.GetDirectories(opt.GhostDirPath))
+                        foreach (var subDirPath in Directory.GetDirectories(opt.GhostDirPath))
                         {
                             if (NiseSeriko.Ghost.IsGhostDir(subDirPath))
                             {
@@ -57,7 +57,8 @@ namespace SerikoCamera
                                 Convert(subDirPath, outputDirPath);
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         Convert(opt.GhostDirPath, opt.OutputDirPath);
                     }
