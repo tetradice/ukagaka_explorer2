@@ -12,8 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.editorconfig = ..\.editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trimtest", "trimtest\trimtest.csproj", "{B43BDC1D-C9D0-4C18-9873-12E1B3B32D0A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,10 +26,6 @@ Global
 		{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B43BDC1D-C9D0-4C18-9873-12E1B3B32D0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B43BDC1D-C9D0-4C18-9873-12E1B3B32D0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B43BDC1D-C9D0-4C18-9873-12E1B3B32D0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B43BDC1D-C9D0-4C18-9873-12E1B3B32D0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

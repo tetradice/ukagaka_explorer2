@@ -78,17 +78,17 @@ namespace SerikoCamera
             var outputDir = outputDirPath != null ? Path.GetFullPath(outputDirPath) : Path.Combine(ghost.DirPath, @"photo");
             Directory.CreateDirectory(outputDir);
 
-            var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
-            //var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: Path.Combine(outputDir, "interim")); var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: Path.Combine(outputDir, "interim"));
+            //var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
+            var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: Path.Combine(outputDir, "interim"));
 
             var sakuraBitmap = shell.DrawSurface(shell.SakuraSurfaceModel);
             var sakuraOutputPath = Path.Combine(outputDir, @"p0.png");
-            sakuraBitmap.Save(sakuraOutputPath);
+            sakuraBitmap.Write(sakuraOutputPath);
             Console.WriteLine($"output -> {sakuraOutputPath}");
 
             var keroBitmap = shell.DrawSurface(shell.KeroSurfaceModel);
             var keroOutputPath = Path.Combine(outputDir, @"p1.png");
-            keroBitmap.Save(keroOutputPath);
+            keroBitmap.Write(keroOutputPath);
             Console.WriteLine($"output -> {keroOutputPath}");
         }
     }

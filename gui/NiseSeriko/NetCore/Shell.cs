@@ -493,10 +493,10 @@ namespace NiseSeriko
         }
 
         /// <summary>
-        /// サーフェスを立ち絵として描画し、Bitmapオブジェクトを返す
+        /// サーフェスを立ち絵として描画し、Imageオブジェクトを返す
         /// </summary>
         /// <param name="trim">画像周辺の余白を削除するかどうか</param>
-        public virtual Bitmap DrawSurface(SurfaceModel model, bool trim = true)
+        public virtual MagickImage DrawSurface(SurfaceModel model, bool trim = true)
         {
             // まずは1枚目のレイヤをベースレイヤとして読み込む
             var sw1st = Stopwatch.StartNew();
@@ -509,7 +509,7 @@ namespace NiseSeriko
                 interimLogPath = Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}.log", model.Id));
                 if (File.Exists(interimLogPath)) File.Delete(interimLogPath);
 
-                surface.Save(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}.png", model.Id, 0)));
+                surface.Write(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}.png", model.Id, 0)));
                 var msg = string.Format("p{0:000} : {1} method={2} x={3} y={4} (rendering time: {5} ms)", 0, Path.GetFileName(model.Layers[0].Path), model.Layers[0].ComposingMethod.ToString(), model.Layers[0].X, model.Layers[0].Y, sw1st.ElapsedMilliseconds);
                 File.AppendAllLines(interimLogPath, new[] { msg });
             };
@@ -525,31 +525,19 @@ namespace NiseSeriko
 
                     if (InterimOutputDirPathForDebug != null)
                     {
-                        layerBmp.Save(Path.Combine(InterimOutputDirPathForDebug, $"s{model.Id:0000}_p{i:0000}_loaded.png"));
+                        layerBmp.Write(Path.Combine(InterimOutputDirPathForDebug, $"s{model.Id:0000}_p{i:0000}_loaded.png"));
                     };
 
                     // このとき、描画時に元画像のサイズをはみ出すなら、元画像の描画領域を広げる (SSP仕様)
                     if (layer.X + layerBmp.Width > surface.Width
                         || layer.Y + layerBmp.Height > surface.Height)
                     {
-                        using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-                        {
-                            // Bitmapの読み込み
-                            mImg.Read(surface);
-
-                            // アルファ設定
-                            mImg.Alpha(ImageMagick.AlphaOption.Transparent);
-
-                            // 余白追加
-                            mImg.Extent(Math.Max(layer.X + layerBmp.Width, surface.Width), Math.Max(layer.Y + layerBmp.Height, surface.Height),
-                                        backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
-                            // Bitmapへ書き戻す
-                            surface = mImg.ToBitmap();
-                        }
+                        // 余白追加
+                        surface.Extent(Math.Max(layer.X + layerBmp.Width, surface.Width), Math.Max(layer.Y + layerBmp.Height, surface.Height)); // アルファチャンネルで透過色を設定
 
                         if (InterimOutputDirPathForDebug != null)
                         {
-                            surface.Save(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}_extented.png", model.Id, i)));
+                            surface.Write(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}_extented.png", model.Id, i)));
                         };
                     }
 
@@ -557,76 +545,72 @@ namespace NiseSeriko
                     // メソッドによって処理を分ける
                     if (layer.ComposingMethod == Seriko.ComposingMethodType.Reduce)
                     {
-                        // reduce
-                        ComposeBitmaps(
-                              baseBmp: ref surface
-                            , writingToBase: true
-                            , newBmp: ref layerBmp
-                            , writingToNew: false
-                            , pixelProcess: (baseBmpData, newBmpData, pos) =>
-                        {
-                            // ベースレイヤ、新規レイヤ両方の不透明度を取得
-                            var baseOpacity = baseBmpData[pos + 3];
-                            var newOpacity = newBmpData[pos + 3];
+                        //// reduce
+                        //ComposeBitmaps(
+                        //      baseBmp: ref surface
+                        //    , writingToBase: true
+                        //    , newBmp: ref layerBmp
+                        //    , writingToNew: false
+                        //    , pixelProcess: (baseBmpData, newBmpData, pos) =>
+                        //{
+                        //    // ベースレイヤ、新規レイヤ両方の不透明度を取得
+                        //    var baseOpacity = baseBmpData[pos + 3];
+                        //    var newOpacity = newBmpData[pos + 3];
 
-                            // 不透明度を乗算
-                            var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
-                            baseBmpData[pos + 3] = (byte)Math.Round(rate * 255);
-                        });
+                        //    // 不透明度を乗算
+                        //    var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
+                        //    baseBmpData[pos + 3] = (byte)Math.Round(rate * 255);
+                        //});
                     }
                     else if (layer.ComposingMethod == Seriko.ComposingMethodType.Interpolate)
                     {
-                        // 新規画像のサイズがベース画像より小さい場合の補正
-                        if (layerBmp.Size != surface.Size)
-                        {
-                            // 画像サイズ補正処理
-                            SizeAdjustForComposingBitmap(surface, ref layerBmp, layer.X, layer.Y);
+                        //// 新規画像のサイズがベース画像より小さい場合の補正
+                        //if (layerBmp.Size != surface.Size)
+                        //{
+                        //    // 画像サイズ補正処理
+                        //    SizeAdjustForComposingBitmap(surface, ref layerBmp, layer.X, layer.Y);
 
-                            // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
-                            if (layerBmp.Size != surface.Size)
-                            {
-                                throw new IllegalImageFormatException("複数の画像を重ねる際に、2つの画像の間でサイズが異なり、かつ縦横のサイズが矛盾しているような画像が存在します。") { Unsupported = true };
-                            }
-                        }
+                        //    // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
+                        //    if (layerBmp.Size != surface.Size)
+                        //    {
+                        //        throw new IllegalImageFormatException("複数の画像を重ねる際に、2つの画像の間でサイズが異なり、かつ縦横のサイズが矛盾しているような画像が存在します。") { Unsupported = true };
+                        //    }
+                        //}
 
-                        // overlayfast / interpolate
-                        ComposeBitmaps(
-                              baseBmp: ref surface
-                            , writingToBase: false
-                            , newBmp: ref layerBmp
-                            , writingToNew: true
-                            , pixelProcess: (baseBmpData, newBmpData, pos) =>
-                        {
-                            // 新規レイヤ側が完全透過 (アルファ0) であれば処理しない
-                            if (newBmpData[pos + 3] == 0) return;
+                        //// overlayfast / interpolate
+                        //ComposeBitmaps(
+                        //      baseBmp: ref surface
+                        //    , writingToBase: false
+                        //    , newBmp: ref layerBmp
+                        //    , writingToNew: true
+                        //    , pixelProcess: (baseBmpData, newBmpData, pos) =>
+                        //{
+                        //    // 新規レイヤ側が完全透過 (アルファ0) であれば処理しない
+                        //    if (newBmpData[pos + 3] == 0) return;
 
-                            // ベースレイヤの不透明度を取得
-                            var baseOpacity = baseBmpData[pos + 3];
+                        //    // ベースレイヤの不透明度を取得
+                        //    var baseOpacity = baseBmpData[pos + 3];
 
-                            // 新規レイヤの不透明度を、ベースレイヤの不透明度の逆と同じ値にする
-                            newBmpData[pos + 3] = (byte)(255 - baseOpacity);
-                        });
+                        //    // 新規レイヤの不透明度を、ベースレイヤの不透明度の逆と同じ値にする
+                        //    newBmpData[pos + 3] = (byte)(255 - baseOpacity);
+                        //});
 
-                        // 描画
-                        using (var g = Graphics.FromImage(surface))
-                        {
-                            // すでに画像サイズの調整を行っているため、0原点とする
-                            g.DrawImage(layerBmp, 0, 0, layerBmp.Width, layerBmp.Height);
-                        }
+                        //// 描画
+                        //using (var g = Graphics.FromImage(surface))
+                        //{
+                        //    // すでに画像サイズの調整を行っているため、0原点とする
+                        //    g.DrawImage(layerBmp, 0, 0, layerBmp.Width, layerBmp.Height);
+                        //}
                     }
                     else
                     {
                         // 上記以外はoverlay扱いで、普通に重ねていく
-                        using (var g = Graphics.FromImage(surface))
-                        {
-                            // 描画
-                            g.DrawImage(layerBmp, layer.X, layer.Y, layerBmp.Width, layerBmp.Height);
-                        }
+                        surface.Composite(layerBmp, layer.X, layer.Y, CompositeOperator.Over);
                     }
 
                     if (InterimOutputDirPathForDebug != null)
                     {
-                        surface.Save(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}.png", model.Id, i)));
+                        surface.Write(Path.Combine(InterimOutputDirPathForDebug, string.Format(@"s{0:0000}_p{1:0000}.png", model.Id, i)));
                         var msg = string.Format("p{0:000} : {1} method={2} x={3} y={4} (rendering time: {5} ms)", i, Path.GetFileName(layer.Path), layer.ComposingMethod.ToString(), layer.X, layer.Y, sw.ElapsedMilliseconds);
                         File.AppendAllLines(interimLogPath, new[] { msg });
                     };
@@ -636,215 +620,194 @@ namespace NiseSeriko
             // 空白があればトリム
             if (trim)
             {
-                using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-                {
-                    // Bitmapの読み込み
-                    mImg.Read(surface);
-
-                    // 余白切り抜き処理
-                    mImg.Trim();
-                    mImg.RePage(); // 切り抜き後の画像サイズ調整
-
-                    // Bitmapへ書き戻す
-                    surface = mImg.ToBitmap();
-                }
+                surface.Trim();
+                surface.RePage(); // 切り抜き後の画像サイズ調整
             }
 
             // 合成後のサーフェスを返す
             return surface;
         }
 
-        /// <summary>
-        /// ピクセル単位で画像（レイヤ）の合成処理を行う汎用メソッド
-        /// </summary>
-        public virtual void ComposeBitmaps(ref Bitmap baseBmp, bool writingToBase, ref Bitmap newBmp, bool writingToNew, Action<byte[], byte[], int> pixelProcess)
-        {
-            // 元画像とマスク画像のサイズが異なる場合はエラーとする
-            if (baseBmp.Size != newBmp.Size)
-            {
-                throw new ArgumentException("合成元レイヤと追加レイヤの画像サイズが異なります。");
-            }
+        ///// <summary>
+        ///// ピクセル単位で画像（レイヤ）の合成処理を行う汎用メソッド
+        ///// </summary>
+        //public virtual void ComposeBitmaps(ref Bitmap baseBmp, bool writingToBase, ref Bitmap newBmp, bool writingToNew, Action<byte[], byte[], int> pixelProcess)
+        //{
+        //    // 元画像とマスク画像のサイズが異なる場合はエラーとする
+        //    if (baseBmp.Size != newBmp.Size)
+        //    {
+        //        throw new ArgumentException("合成元レイヤと追加レイヤの画像サイズが異なります。");
+        //    }
 
-            // 出力用に、元レイヤをコピーして、アルファチャンネルありの32ビットbmpを生成
-            using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-            {
-                // Bitmapの読み込み
-                mImg.Read(baseBmp);
+        //    // 出力用に、元レイヤをコピーして、アルファチャンネルありの32ビットbmpを生成
+        //    using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
+        //    {
+        //        // Bitmapの読み込み
+        //        mImg.Read(baseBmp);
 
-                // アルファを設定 (32ビットRGBAになるように強制する)
-                mImg.Alpha(AlphaOption.Set);
+        //        // アルファを設定 (32ビットRGBAになるように強制する)
+        //        mImg.Alpha(AlphaOption.Set);
 
-                // Bitmapへ書き戻す
-                baseBmp = mImg.ToBitmap();
-            }
+        //        // Bitmapへ書き戻す
+        //        baseBmp = mImg.ToBitmap();
+        //    }
 
-            // 新規レイヤをコピーして、アルファチャンネルありの32ビットbmpに変換
-            // (インデックスカラーや8ビットカラーなどにも対応できるようにするため)
-            using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-            {
-                // Bitmapの読み込み
-                mImg.Read(newBmp);
+        //    // 新規レイヤをコピーして、アルファチャンネルありの32ビットbmpに変換
+        //    // (インデックスカラーや8ビットカラーなどにも対応できるようにするため)
+        //    using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
+        //    {
+        //        // Bitmapの読み込み
+        //        mImg.Read(newBmp);
 
-                // アルファを設定 (32ビットRGBAになるように強制する)
-                mImg.Alpha(AlphaOption.Set);
+        //        // アルファを設定 (32ビットRGBAになるように強制する)
+        //        mImg.Alpha(AlphaOption.Set);
 
-                // Bitmapへ書き戻す
-                newBmp = mImg.ToBitmap();
-            }
+        //        // Bitmapへ書き戻す
+        //        newBmp = mImg.ToBitmap();
+        //    }
 
-            // 出力画像の1ピクセルあたりのバイト数を取得する (両方とも32ビットのため4固定)
-            var pixelByteSize = 4;
+        //    // 出力画像の1ピクセルあたりのバイト数を取得する (両方とも32ビットのため4固定)
+        //    var pixelByteSize = 4;
 
-            // 出力bmpと新規bmpをロック
-            var baseBmpData = baseBmp.LockBits(
-                new Rectangle(0, 0, baseBmp.Width, baseBmp.Height),
-                (writingToBase ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), baseBmp.PixelFormat);
-            var newBmpData = newBmp.LockBits(
-                new Rectangle(0, 0, newBmp.Width, newBmp.Height),
-                (writingToNew ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), newBmp.PixelFormat);
+        //    // 出力bmpと新規bmpをロック
+        //    var baseBmpData = baseBmp.LockBits(
+        //        new Rectangle(0, 0, baseBmp.Width, baseBmp.Height),
+        //        (writingToBase ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), baseBmp.PixelFormat);
+        //    var newBmpData = newBmp.LockBits(
+        //        new Rectangle(0, 0, newBmp.Width, newBmp.Height),
+        //        (writingToNew ? ImageLockMode.ReadWrite : ImageLockMode.ReadOnly), newBmp.PixelFormat);
 
-            try
-            {
-                if (baseBmpData.Stride < 0)
-                {
-                    throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
-                }
-                if (newBmpData.Stride < 0)
-                {
-                    throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
-                }
+        //    try
+        //    {
+        //        if (baseBmpData.Stride < 0)
+        //        {
+        //            throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
+        //        }
+        //        if (newBmpData.Stride < 0)
+        //        {
+        //            throw new IllegalImageFormatException(string.Format("ボトムアップ形式のイメージには対応していません。"));
+        //        }
 
-                // 新規レイヤのピクセルデータをバイト型配列で取得する
-                var newBmpPtr = newBmpData.Scan0;
-                var newBmpPixels = new byte[newBmpData.Stride * newBmp.Height];
-                System.Runtime.InteropServices.Marshal.Copy(newBmpPtr, newBmpPixels, 0, newBmpPixels.Length);
+        //        // 新規レイヤのピクセルデータをバイト型配列で取得する
+        //        var newBmpPtr = newBmpData.Scan0;
+        //        var newBmpPixels = new byte[newBmpData.Stride * newBmp.Height];
+        //        System.Runtime.InteropServices.Marshal.Copy(newBmpPtr, newBmpPixels, 0, newBmpPixels.Length);
 
-                // 出力画像のピクセルデータをバイト型配列で取得する
-                var basePtr = baseBmpData.Scan0;
-                var basePixels = new byte[baseBmpData.Stride * baseBmp.Height];
-                System.Runtime.InteropServices.Marshal.Copy(basePtr, basePixels, 0, basePixels.Length);
+        //        // 出力画像のピクセルデータをバイト型配列で取得する
+        //        var basePtr = baseBmpData.Scan0;
+        //        var basePixels = new byte[baseBmpData.Stride * baseBmp.Height];
+        //        System.Runtime.InteropServices.Marshal.Copy(basePtr, basePixels, 0, basePixels.Length);
 
 
 
-                // 出力画像の全ピクセルに対して処理
-                for (var y = 0; y < newBmp.Height; y++)
-                {
-                    for (var x = 0; x < newBmp.Width; x++)
-                    {
-                        //ピクセルデータでのピクセル(x,y)の開始位置を計算する
-                        var pos = y * newBmpData.Stride + x * pixelByteSize;
+        //        // 出力画像の全ピクセルに対して処理
+        //        for (var y = 0; y < newBmp.Height; y++)
+        //        {
+        //            for (var x = 0; x < newBmp.Width; x++)
+        //            {
+        //                //ピクセルデータでのピクセル(x,y)の開始位置を計算する
+        //                var pos = y * newBmpData.Stride + x * pixelByteSize;
 
-                        //ピクセル単位処理を実行
-                        pixelProcess.Invoke(basePixels, newBmpPixels, pos);
-                    }
-                }
+        //                //ピクセル単位処理を実行
+        //                pixelProcess.Invoke(basePixels, newBmpPixels, pos);
+        //            }
+        //        }
 
-                //ピクセルデータを元に戻す
-                if (writingToBase)
-                {
-                    System.Runtime.InteropServices.Marshal.Copy(basePixels, 0, basePtr, basePixels.Length);
-                }
-                if (writingToNew)
-                {
-                    System.Runtime.InteropServices.Marshal.Copy(newBmpPixels, 0, newBmpPtr, newBmpPixels.Length);
-                }
-            }
-            finally
-            {
+        //        //ピクセルデータを元に戻す
+        //        if (writingToBase)
+        //        {
+        //            System.Runtime.InteropServices.Marshal.Copy(basePixels, 0, basePtr, basePixels.Length);
+        //        }
+        //        if (writingToNew)
+        //        {
+        //            System.Runtime.InteropServices.Marshal.Copy(newBmpPixels, 0, newBmpPtr, newBmpPixels.Length);
+        //        }
+        //    }
+        //    finally
+        //    {
 
-                // 画像のロックを解除
-                baseBmp.UnlockBits(baseBmpData);
-                newBmp.UnlockBits(newBmpData);
-            }
-        }
+        //        // 画像のロックを解除
+        //        baseBmp.UnlockBits(baseBmpData);
+        //        newBmp.UnlockBits(newBmpData);
+        //    }
+        //}
 
-        /// <summary>
-        /// 立ち絵から顔画像を生成し、Bitmapオブジェクトを返す
-        /// </summary>
-        /// <param name="faceWidth">顔画像の幅</param>
-        /// <param name="faceHeight">顔画像の高さ</param>
-        public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight)
-        {
-            return DrawFaceImage(surfaceModel, faceWidth, faceHeight, null);
-        }
+        ///// <summary>
+        ///// 立ち絵から顔画像を生成し、Bitmapオブジェクトを返す
+        ///// </summary>
+        ///// <param name="faceWidth">顔画像の幅</param>
+        ///// <param name="faceHeight">顔画像の高さ</param>
+        //public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight)
+        //{
+        //    return DrawFaceImage(surfaceModel, faceWidth, faceHeight, null);
+        //}
 
-        /// <summary>
-        /// 立ち絵から顔画像を生成し、Bitmapオブジェクトを返す
-        /// </summary>
-        /// <param name="faceWidth">顔画像の幅</param>
-        /// <param name="faceHeight">顔画像の高さ</param>
-        /// <param name="faceTrimRange">顔画像の範囲指定 (left, top, width, height) nullを指定した場合は自動処理</param>
-        public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight, Tuple<int, int, int, int> faceTrimRange)
-        {
-            // まずは立ち絵画像を生成
-            var surface = DrawSurface(surfaceModel, trim: false); // 余白はこの段階では切らない
+        ///// <summary>
+        ///// 立ち絵から顔画像を生成し、Bitmapオブジェクトを返す
+        ///// </summary>
+        ///// <param name="faceWidth">顔画像の幅</param>
+        ///// <param name="faceHeight">顔画像の高さ</param>
+        ///// <param name="faceTrimRange">顔画像の範囲指定 (left, top, width, height) nullを指定した場合は自動処理</param>
+        //public virtual Bitmap DrawFaceImage(SurfaceModel surfaceModel, int faceWidth, int faceHeight, Tuple<int, int, int, int> faceTrimRange)
+        //{
+        //    // まずは立ち絵画像を生成
+        //    var surface = DrawSurface(surfaceModel, trim: false); // 余白はこの段階では切らない
 
-            using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-            {
-                // Bitmapの読み込み
-                mImg.Read(surface);
+        //    using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
+        //    {
+        //        // Bitmapの読み込み
+        //        mImg.Read(surface);
 
-                {
-                    // 顔画像範囲指定があれば、立ち絵をその範囲で切り抜く
-                    if (faceTrimRange != null)
-                    {
-                        // 切り抜き前のチェック
-                        CheckFaceTrimRangeBeforeDrawing(surface, faceTrimRange);
+        //        {
+        //            // 顔画像範囲指定があれば、立ち絵をその範囲で切り抜く
+        //            if (faceTrimRange != null)
+        //            {
+        //                // 切り抜き前のチェック
+        //                CheckFaceTrimRangeBeforeDrawing(surface, faceTrimRange);
 
-                        mImg.Crop(new ImageMagick.MagickGeometry(faceTrimRange.Item1, faceTrimRange.Item2, faceTrimRange.Item3, faceTrimRange.Item4));
-                        mImg.RePage(); // ページ範囲を更新
-                    }
-                    else
-                    {
-                        // 顔画像範囲指定がなければ、余白の削除のみ行う
-                        mImg.Trim();
-                        mImg.RePage(); // ページ範囲を更新
-                    }
+        //                mImg.Crop(new ImageMagick.MagickGeometry(faceTrimRange.Item1, faceTrimRange.Item2, faceTrimRange.Item3, faceTrimRange.Item4));
+        //                mImg.RePage(); // ページ範囲を更新
+        //            }
+        //            else
+        //            {
+        //                // 顔画像範囲指定がなければ、余白の削除のみ行う
+        //                mImg.Trim();
+        //                mImg.RePage(); // ページ範囲を更新
+        //            }
 
-                    // 縮小率を決定 (幅が収まるように縮小する)
-                    var scaleRate = faceWidth / (double)mImg.Width;
-                    if (scaleRate > 1.0) scaleRate = 1.0; // 拡大はしない
+        //            // 縮小率を決定 (幅が収まるように縮小する)
+        //            var scaleRate = faceWidth / (double)mImg.Width;
+        //            if (scaleRate > 1.0) scaleRate = 1.0; // 拡大はしない
 
-                    // リサイズ処理
-                    mImg.Resize((int)Math.Round(mImg.Width * scaleRate), (int)Math.Round(mImg.Height * scaleRate));
+        //            // リサイズ処理
+        //            mImg.Resize((int)Math.Round(mImg.Width * scaleRate), (int)Math.Round(mImg.Height * scaleRate));
 
-                    // 切り抜く
-                    mImg.Crop(faceWidth, faceHeight);
+        //            // 切り抜く
+        //            mImg.Crop(faceWidth, faceHeight);
 
-                    // 顔画像のサイズに合うように余白追加
-                    mImg.Extent(faceWidth, faceHeight,
-                                gravity: ImageMagick.Gravity.South, // 中央下寄せ
-                                backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
-                }
+        //            // 顔画像のサイズに合うように余白追加
+        //            mImg.Extent(faceWidth, faceHeight,
+        //                        gravity: ImageMagick.Gravity.South, // 中央下寄せ
+        //                        backgroundColor: ImageMagick.MagickColor.FromRgba(255, 255, 255, 0)); // アルファチャンネルで透過色を設定
+        //        }
 
-                // Bitmapへ書き戻す
-                surface = mImg.ToBitmap();
-            }
+        //        // Bitmapへ書き戻す
+        //        surface = mImg.ToBitmap();
+        //    }
 
-            return surface;
-        }
-
-        /// <summary>
-        /// 顔画像の描画前に、指定された切り抜き範囲が適切かどうかチェックする処理
-        /// </summary>
-        /// <param name="surface">切り抜き元の立ち絵画像</param>
-        /// <param name="faceWidth">顔画像の幅</param>
-        /// <param name="faceHeight">顔画像の高さ</param>
-        /// <param name="faceTrimRange">切り抜き範囲</param>
-        protected virtual void CheckFaceTrimRangeBeforeDrawing(Bitmap surface, Tuple<int, int, int, int> faceTrimRange)
-        {
-        }
+        //    return surface;
+        //}
 
         /// <summary>
         /// 指定したパスのサーフェスを読み込み、必要な透過処理を施す
         /// </summary>
-        public virtual Bitmap LoadAndProcessSurfaceFile(string surfacePath)
+        public virtual MagickImage LoadAndProcessSurfaceFile(string surfacePath)
         {
             // 画像ファイル読み込み
-            var surface = new Bitmap(surfacePath);
+            var surface = new MagickImage(surfacePath);
 
             // seriko.use_self_alpha が1、かつアルファチャンネルありの画像の場合は、元画像をそのまま返す
-            if (SerikoUseSelfAlpha && (surface.PixelFormat.HasFlag(PixelFormat.Alpha) || surface.PixelFormat.HasFlag(PixelFormat.PAlpha)))
+            if (SerikoUseSelfAlpha && surface.HasAlpha)
             {
                 return surface;
             }
@@ -858,126 +821,91 @@ namespace NiseSeriko
                     // from <https://dobon.net/vb/dotnet/graphics/drawnegativeimage.html>
 
                     // pnaマスク画像の読み込み
-                    var mask = new Bitmap(pnaPath);
+                    var mask = new MagickImage(pnaPath);
+                    mask.Alpha(AlphaOption.Copy);
 
-                    // 元画像とマスク画像のサイズが異なる場合
-                    if (mask.Size != surface.Size)
-                    {
-                        // 画像サイズ補正処理
-                        SizeAdjustForComposingBitmap(surface, ref mask);
-
-                        // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
-                        if (mask.Size != surface.Size)
-                        {
-                            throw new IllegalImageFormatException("pngとpnaのサイズが異なり、かつ縦横のサイズが矛盾しています。") { Unsupported = true };
-                        }
-                    }
-
-                    // 透過実行
-                    ComposeBitmaps(
-                          baseBmp: ref surface
-                        , writingToBase: true
-                        , newBmp: ref mask
-                        , writingToNew: false
-                        , pixelProcess: (baseBmpData, maskBmpData, pos) =>
-                    {
-                        // 色を取得
-                        var color = Color.FromArgb(maskBmpData[pos + 2], maskBmpData[pos + 1], maskBmpData[pos]);
-
-                        // 輝度を取得し、それをそのまま不透明度として設定する
-                        var brightness = (byte)Math.Round(color.GetBrightness() * 255); // 0 - 1.0で表される輝度値を、0 - 255の範囲に変換
-                        baseBmpData[pos + 3] = brightness;
-                    });
+                    // 透過設定
+                    surface.Composite(mask, CompositeOperator.CopyAlpha);
 
                     return surface;
                 }
                 else
                 {
                     // pnaなしの場合は、画像の左上の色を透過色として設定する
-                    using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-                    {
-                        // Bitmapの読み込み
-                        mImg.Read(surface);
+                    var pixels = surface.GetPixels();
+                    var basePixel = pixels.GetPixel(0, 0);
+                    surface.Transparent(basePixel.ToColor());
 
-                        // 左上原点の色で透過
-                        var pixels = mImg.GetPixels();
-                        var basePixel = pixels.GetPixel(0, 0);
-                        mImg.Transparent(basePixel.ToColor());
-
-                        // 32ビットRGBA画像を強制
-                        mImg.Alpha(AlphaOption.Set);
-
-                        // Bitmapへ書き戻す
-                        surface = mImg.ToBitmap();
-                    }
+                    // 32ビットRGBA画像を強制
+                    surface.Alpha(AlphaOption.Set);
                     return surface;
                 }
             }
         }
 
-        /// <summary>
-        /// ベース画像に新規画像を重ねるときに必要な、サイズの補正を行う
-        /// </summary>
-        /// <param name="baseBmp">ベース画像</param>
-        /// <param name="newBmp">新規画像 (補正が必要であれば変更される)</param>
-        protected virtual void SizeAdjustForComposingBitmap(Bitmap baseBmp, ref Bitmap newBmp, int? newLayerOffsetX = null, int? newLayerOffsetY = null)
-        {
-            // オフセットが指定されているかどうか
-            var newLayerOffsetSpecified = (newLayerOffsetX.HasValue && newLayerOffsetY.HasValue);
+        ///// <summary>
+        ///// ベース画像に新規画像を重ねるときに必要な、サイズの補正を行う
+        ///// </summary>
+        ///// <param name="baseBmp">ベース画像</param>
+        ///// <param name="newBmp">新規画像 (補正が必要であれば変更される)</param>
+        //protected virtual void SizeAdjustForComposingBitmap(Bitmap baseBmp, ref Bitmap newBmp, int? newLayerOffsetX = null, int? newLayerOffsetY = null)
+        //{
+        //    // オフセットが指定されているかどうか
+        //    var newLayerOffsetSpecified = (newLayerOffsetX.HasValue && newLayerOffsetY.HasValue);
 
-            // 新規画像の方が縦横ともに小さい場合、余白を追加して補正
-            if (newBmp.Width <= baseBmp.Width && newBmp.Height <= baseBmp.Height)
-            {
-                using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-                {
-                    // Bitmapの読み込み
-                    mImg.Read(newBmp);
+        //    // 新規画像の方が縦横ともに小さい場合、余白を追加して補正
+        //    if (newBmp.Width <= baseBmp.Width && newBmp.Height <= baseBmp.Height)
+        //    {
+        //        using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
+        //        {
+        //            // Bitmapの読み込み
+        //            mImg.Read(newBmp);
 
-                    var backgroundColor = ImageMagick.MagickColor.FromRgba(255, 255, 255, 0);
-                    if (newLayerOffsetSpecified)
-                    {
-                        var offsetX = newLayerOffsetX.Value;
-                        var offsetY = newLayerOffsetY.Value;
+        //            var backgroundColor = ImageMagick.MagickColor.FromRgba(255, 255, 255, 0);
+        //            if (newLayerOffsetSpecified)
+        //            {
+        //                var offsetX = newLayerOffsetX.Value;
+        //                var offsetY = newLayerOffsetY.Value;
 
-                        // オフセット指定がある場合、オフセット分の余白を左上に追加し、その後に右下に余白追加
-                        mImg.Extent(offsetX + newBmp.Width, offsetY + newBmp.Height,
-                                    gravity: ImageMagick.Gravity.Southeast, // 右下寄せ
-                                    backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
-                        mImg.RePage(); // ページ情報更新
-                        mImg.Extent(baseBmp.Width, baseBmp.Height,
-                                    gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
-                                    backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
-                    }
-                    else
-                    {
-                        // オフセット指定がなければ、右下に余白追加
-                        mImg.Extent(baseBmp.Width, baseBmp.Height,
-                                    gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
-                                    backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+        //                // オフセット指定がある場合、オフセット分の余白を左上に追加し、その後に右下に余白追加
+        //                mImg.Extent(offsetX + newBmp.Width, offsetY + newBmp.Height,
+        //                            gravity: ImageMagick.Gravity.Southeast, // 右下寄せ
+        //                            backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+        //                mImg.RePage(); // ページ情報更新
+        //                mImg.Extent(baseBmp.Width, baseBmp.Height,
+        //                            gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
+        //                            backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
+        //            }
+        //            else
+        //            {
+        //                // オフセット指定がなければ、右下に余白追加
+        //                mImg.Extent(baseBmp.Width, baseBmp.Height,
+        //                            gravity: ImageMagick.Gravity.Northwest, // 左上寄せ
+        //                            backgroundColor: backgroundColor); // アルファチャンネルで透過色を設定
 
-                    }
+        //            }
 
-                    // Bitmapへ書き戻す
-                    newBmp = mImg.ToBitmap();
-                }
-            }
+        //            // Bitmapへ書き戻す
+        //            newBmp = mImg.ToBitmap();
+        //        }
+        //    }
 
-            // 新規画像の方が縦横ともに大きい場合、余分な幅を切る
-            if (newBmp.Width >= baseBmp.Width && newBmp.Height >= baseBmp.Height)
-            {
-                using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
-                {
-                    // Bitmapの読み込み
-                    mImg.Read(newBmp);
+        //    // 新規画像の方が縦横ともに大きい場合、余分な幅を切る
+        //    if (newBmp.Width >= baseBmp.Width && newBmp.Height >= baseBmp.Height)
+        //    {
+        //        using (var mImg = new ImageMagick.MagickImage()) // Magick.NETを使用
+        //        {
+        //            // Bitmapの読み込み
+        //            mImg.Read(newBmp);
 
-                    // 切り抜き
-                    mImg.Crop(baseBmp.Width, baseBmp.Height);
+        //            // 切り抜き
+        //            mImg.Crop(baseBmp.Width, baseBmp.Height);
 
-                    // Bitmapへ書き戻す
-                    newBmp = mImg.ToBitmap();
-                }
-            }
-        }
+        //            // Bitmapへ書き戻す
+        //            newBmp = mImg.ToBitmap();
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// 指定した番号のサーフェス画像を、フォルダ内から検索して返す (見つからない場合はnull)
