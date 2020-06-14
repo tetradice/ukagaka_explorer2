@@ -531,7 +531,7 @@ namespace NiseSeriko
                         || layer.Y + layerBmp.Height > surface.Height)
                     {
                         // 余白追加
-                        surface.Extent(Math.Max(layer.X + layerBmp.Width, surface.Width), Math.Max(layer.Y + layerBmp.Height, surface.Height)); // アルファチャンネルで透過色を設定
+                        surface.Extent(Math.Max(layer.X + layerBmp.Width, surface.Width), Math.Max(layer.Y + layerBmp.Height, surface.Height));
 
                         if (InterimOutputDirPathForDebug != null)
                         {
