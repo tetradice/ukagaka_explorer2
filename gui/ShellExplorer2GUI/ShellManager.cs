@@ -93,7 +93,7 @@ namespace ShellExplorer2
         /// sakura側サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawSakuraSurface(Shell targetShell)
+        public virtual Bitmap DrawSakuraSurface(ExplorerShell targetShell)
         {
             return DrawSurfaceInternal(targetShell, targetShell.SakuraSurfaceModel, targetShell.SakuraSurfaceId);
         }
@@ -102,7 +102,7 @@ namespace ShellExplorer2
         /// kero側サーフェス画像を取得  （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawKeroSurface(Shell targetShell)
+        public virtual Bitmap DrawKeroSurface(ExplorerShell targetShell)
         {
             return DrawSurfaceInternal(targetShell, targetShell.KeroSurfaceModel, targetShell.KeroSurfaceId);
         }
@@ -111,7 +111,7 @@ namespace ShellExplorer2
         /// サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        protected virtual Bitmap DrawSurfaceInternal(Shell targetShell, Shell.SurfaceModel surfaceModel, int surfaceId)
+        protected virtual Bitmap DrawSurfaceInternal(ExplorerShell targetShell, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
             var cacheDir = Util.GetCacheDirPath(Path.GetFileName(GhostDirPath));
             if (surfaceModel == null) return null;

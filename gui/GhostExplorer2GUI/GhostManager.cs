@@ -151,7 +151,7 @@ namespace GhostExplorer2
         /// <summary>
         /// 対象ゴーストのシェル情報読み込み
         /// </summary>
-        public virtual Shell LoadShell(ExplorerGhost ghost)
+        public virtual ExplorerShell LoadShell(ExplorerGhost ghost)
         {
             // シェルが1つも存在しない場合はエラーとする
             if (ghost.CurrentShellRelDirPath == null)
@@ -160,14 +160,14 @@ namespace GhostExplorer2
             }
 
             var shellDir = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
-            return Shell.Load(shellDir, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
+            return ExplorerShell.Load(shellDir, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
         }
 
         /// <summary>
         /// sakura側サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawSakuraSurface(ExplorerGhost ghost, Shell shell)
+        public virtual Bitmap DrawSakuraSurface(ExplorerGhost ghost, ExplorerShell shell)
         {
             return DrawSurfaceInternal(ghost, shell, shell.SakuraSurfaceModel, shell.SakuraSurfaceId);
         }
@@ -176,7 +176,7 @@ namespace GhostExplorer2
         /// kero側サーフェス画像を取得  （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawKeroSurface(ExplorerGhost ghost, Shell shell)
+        public virtual Bitmap DrawKeroSurface(ExplorerGhost ghost, ExplorerShell shell)
         {
             return DrawSurfaceInternal(ghost, shell, shell.KeroSurfaceModel, shell.KeroSurfaceId);
         }
@@ -185,7 +185,7 @@ namespace GhostExplorer2
         /// サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        protected virtual Bitmap DrawSurfaceInternal(ExplorerGhost ghost, Shell shell, Shell.SurfaceModel surfaceModel, int surfaceId)
+        protected virtual Bitmap DrawSurfaceInternal(ExplorerGhost ghost, ExplorerShell shell, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
             var cacheDir = Util.GetCacheDirPath();
             if (surfaceModel == null) return null;
@@ -222,7 +222,7 @@ namespace GhostExplorer2
         /// 全ゴーストの顔画像の取得・変換を行う (キャッシュ処理も行う)
         /// </summary>
         /// <returns>ゴーストフォルダパスをキー、顔画像 (Bitmap) を値とするDictionary</returns>
-        public virtual Bitmap GetFaceImage(ExplorerGhost ghost, Shell shell, Size faceSize)
+        public virtual Bitmap GetFaceImage(ExplorerGhost ghost, ExplorerShell shell, Size faceSize)
         {
             var cacheDir = Util.GetCacheDirPath();
 

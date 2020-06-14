@@ -30,7 +30,7 @@ namespace ExplorerLib
         /// <summary>
         /// explorer2\character_descript.txt のファイルパス
         /// </summary>
-        public virtual string CharacterDescriptPath { get { return Path.Combine(DirPath, @"explorer2\character_descript.txt"); } }
+        public virtual string CharacterDescriptPath { get { return Path.Combine(DirPath, @"ghost\master\explorer2\character_descript.txt"); } }
 
         /// <summary>
         /// explorer2\character_descript.txt の本文

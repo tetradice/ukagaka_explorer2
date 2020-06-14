@@ -30,7 +30,7 @@ namespace GhostExplorer2
         }
 
         protected GhostManager GhostManager;
-        protected Dictionary<string, Shell> Shells = new Dictionary<string, Shell>();
+        protected Dictionary<string, ExplorerShell> Shells = new Dictionary<string, ExplorerShell>();
         protected Dictionary<string, List<string>> ErrorMessagesOnShellLoading = new Dictionary<string, List<string>>();
         protected Dictionary<string, Bitmap> FaceImages = new Dictionary<string, Bitmap>();
         protected Bitmap CurrentSakuraSurface;
