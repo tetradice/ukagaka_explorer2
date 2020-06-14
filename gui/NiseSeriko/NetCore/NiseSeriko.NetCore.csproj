@@ -1,12 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
-    <OutputType>Library</OutputType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>false</UseWindowsForms>
     <AssemblyName>NiseSeriko</AssemblyName>
-    <RootNamespace>NiseSeriko</RootNamespace>
     <LangVersion>6</LangVersion>
+    <PackageId>NiseSeriko</PackageId>
+    <Authors>Ghost Company</Authors>
+    <Description>A library that loads a shell for Ukagaka and renders static images</Description>
+    <AssemblyVersion>0.5.0.0</AssemblyVersion>
+    <FileVersion>0.5.0.0</FileVersion>
+    <Version>0.5.0</Version>
+    <RootNamespace>NiseSeriko</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
