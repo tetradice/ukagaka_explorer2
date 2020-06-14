@@ -543,62 +543,53 @@ namespace NiseSeriko
                     // メソッドによって処理を分ける
                     if (layer.ComposingMethod == Seriko.ComposingMethodType.Reduce)
                     {
-                        //// reduce
-                        //ComposeBitmaps(
-                        //      baseBmp: ref surface
-                        //    , writingToBase: true
-                        //    , newBmp: ref layerBmp
-                        //    , writingToNew: false
-                        //    , pixelProcess: (baseBmpData, newBmpData, pos) =>
-                        //{
-                        //    // ベースレイヤ、新規レイヤ両方の不透明度を取得
-                        //    var baseOpacity = baseBmpData[pos + 3];
-                        //    var newOpacity = newBmpData[pos + 3];
+                        var surfacePixels = surface.GetPixels();
+                        foreach (var layerPixel in layerBmp.GetPixels())
+                        {
+                            var surfacePixel = surfacePixels[layerPixel.X, layerPixel.Y];
 
-                        //    // 不透明度を乗算
-                        //    var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
-                        //    baseBmpData[pos + 3] = (byte)Math.Round(rate * 255);
-                        //});
+                            // ベースレイヤ、新規レイヤ両方の不透明度を取得
+                            var baseOpacity = surfacePixel[3];
+                            var newOpacity = layerPixel[3];
+
+                            // 不透明度を乗算
+                            var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
+                            surfacePixel[3] = (byte)Math.Round(rate * 255);
+                        }
                     }
                     else if (layer.ComposingMethod == Seriko.ComposingMethodType.Interpolate)
                     {
-                        //// 新規画像のサイズがベース画像より小さい場合の補正
-                        //if (layerBmp.Size != surface.Size)
-                        //{
-                        //    // 画像サイズ補正処理
-                        //    SizeAdjustForComposingBitmap(surface, ref layerBmp, layer.X, layer.Y);
+                        // 新規画像のサイズがベース画像より小さい場合の補正
+                        if (layerBmp.Width != surface.Width || layerBmp.Height != surface.Height)
+                        {
+                            // 画像サイズ補正処理
+                            SizeAdjustForComposingBitmap(surface, ref layerBmp, layer.X, layer.Y);
 
-                        //    // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
-                        //    if (layerBmp.Size != surface.Size)
-                        //    {
-                        //        throw new IllegalImageFormatException("複数の画像を重ねる際に、2つの画像の間でサイズが異なり、かつ縦横のサイズが矛盾しているような画像が存在します。") { Unsupported = true };
-                        //    }
-                        //}
+                            // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
+                            if (layerBmp.Width != surface.Width || layerBmp.Height != surface.Height)
+                            {
+                                throw new IllegalImageFormatException("複数の画像を重ねる際に、2つの画像の間でサイズが異なり、かつ縦横のサイズが矛盾しているような画像が存在します。") { Unsupported = true };
+                            }
+                        }
 
-                        //// overlayfast / interpolate
-                        //ComposeBitmaps(
-                        //      baseBmp: ref surface
-                        //    , writingToBase: false
-                        //    , newBmp: ref layerBmp
-                        //    , writingToNew: true
-                        //    , pixelProcess: (baseBmpData, newBmpData, pos) =>
-                        //{
-                        //    // 新規レイヤ側が完全透過 (アルファ0) であれば処理しない
-                        //    if (newBmpData[pos + 3] == 0) return;
+                        var surfacePixels = surface.GetPixels();
+                        foreach (var layerPixel in layerBmp.GetPixels())
+                        {
+                            // 新規レイヤ側が完全透過 (アルファ0) であれば処理しない
+                            if (layerPixel[3] == 0) continue;
 
-                        //    // ベースレイヤの不透明度を取得
-                        //    var baseOpacity = baseBmpData[pos + 3];
+                            var surfacePixel = surfacePixels[layerPixel.X, layerPixel.Y];
 
-                        //    // 新規レイヤの不透明度を、ベースレイヤの不透明度の逆と同じ値にする
-                        //    newBmpData[pos + 3] = (byte)(255 - baseOpacity);
-                        //});
+                            // ベースレイヤの不透明度を取得
+                            var baseOpacity = surfacePixel[3];
 
-                        //// 描画
-                        //using (var g = Graphics.FromImage(surface))
-                        //{
-                        //    // すでに画像サイズの調整を行っているため、0原点とする
-                        //    g.DrawImage(layerBmp, 0, 0, layerBmp.Width, layerBmp.Height);
-                        //}
+                            // 新規レイヤの不透明度を、ベースレイヤの不透明度の逆と同じ値にする
+                            layerPixel[3] = (byte)(255 - baseOpacity);
+                        }
+
+                        // 合成
+                        // すでに画像サイズ調整を行っているため、0原点とする
+                        surface.Composite(layerBmp, 0, 0, CompositeOperator.Over);
                     }
                     else
                     {
