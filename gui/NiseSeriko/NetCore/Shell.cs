@@ -605,6 +605,8 @@ namespace NiseSeriko
                     else
                     {
                         // 上記以外はoverlay扱いで、普通に重ねていく
+                        // 重ねる際のメソッドにはoverを使用
+                        // <https://www.imagemagick.org/Usage/compose/#over>
                         surface.Composite(layerBmp, layer.X, layer.Y, CompositeOperator.Over);
                     }
 
@@ -822,9 +824,12 @@ namespace NiseSeriko
 
                     // pnaマスク画像の読み込み
                     var mask = new MagickImage(pnaPath);
+
+                    // Alpha copy処理を行い、グレースケール画像を透過マスクに変換する
+                    // <https://www.imagemagick.org/Usage/masking/#alpha_copy>
                     mask.Alpha(AlphaOption.Copy);
 
-                    // 透過設定
+                    // 透過度をサーフェス画像にコピー
                     surface.Composite(mask, CompositeOperator.CopyAlpha);
 
                     return surface;
