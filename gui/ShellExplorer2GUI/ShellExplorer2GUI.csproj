@@ -43,6 +43,10 @@
     <Reference Include="Magick.NET.SystemDrawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
       <HintPath>..\packages\Magick.NET.SystemDrawing.2.0.0\lib\net40\Magick.NET.SystemDrawing.dll</HintPath>
     </Reference>
+    <Reference Include="NiseSeriko, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\NiseSeriko\NiseSeriko.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
@@ -101,10 +105,6 @@
     <ProjectReference Include="..\ExplorerLib\ExplorerLib.csproj">
       <Project>{489d0121-a725-4ac7-a111-7c8db3d87c0d}</Project>
       <Name>ExplorerLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NiseSeriko\Net45\NiseSeriko.Net45.csproj">
-      <Project>{f7f099d8-23f8-4db5-89e1-c44d915ea0c1}</Project>
-      <Name>NiseSeriko.Net45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
