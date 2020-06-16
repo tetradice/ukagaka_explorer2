@@ -45,6 +45,11 @@ namespace SerikoCamera
     {
         private static void Main(string[] args)
         {
+#if NETCOREAPP
+            // .NET Core Appの場合、Shift JISなども扱えるようにするためにエンコーディングプロバイダを追加
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+#endif
+
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(opt =>
                 {
