@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net45;netcoreapp3.0</TargetFrameworks>
     <AssemblyName>NiseSeriko</AssemblyName>
     <LangVersion>6</LangVersion>
     <PackageId>NiseSeriko</PackageId>
@@ -18,7 +18,7 @@
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="7.19.0" />
     <PackageReference Include="Magick.NET.Core" Version="2.0.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <PackageReference Include="System.Text.Encoding.CodePages">
       <Version>4.7.1</Version>
     </PackageReference>

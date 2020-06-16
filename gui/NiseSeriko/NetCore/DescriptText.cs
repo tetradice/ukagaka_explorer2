@@ -21,7 +21,7 @@ namespace NiseSeriko
 
         static DescriptText()
         {
-#if NETCOREAPP
+#if NETCOREAPP3_0
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 #endif
         }
