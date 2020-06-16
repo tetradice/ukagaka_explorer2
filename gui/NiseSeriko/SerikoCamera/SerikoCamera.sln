@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30128.36
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "serikocamera", "serikocamera.csproj", "{EBD12E7D-B002-4040-9AEE-86EAC3ED55C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NiseSeriko.NetCore", "..\NetCore\NiseSeriko.NetCore.csproj", "{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NiseSeriko", "..\NetCore\NiseSeriko.csproj", "{DF4E3520-BF4D-4BE1-BB7E-9EBECE4A419D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5C21A9FA-67C9-4989-8670-C11B56D18F4A}"
 	ProjectSection(SolutionItems) = preProject
