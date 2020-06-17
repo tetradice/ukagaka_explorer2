@@ -531,7 +531,9 @@ namespace NiseSeriko
                         || layer.Y + layerBmp.Height > surface.Height)
                     {
                         // 余白追加
-                        surface.Extent(Math.Max(layer.X + layerBmp.Width, surface.Width), Math.Max(layer.Y + layerBmp.Height, surface.Height));
+                        var backgroundColor = ImageMagick.MagickColor.FromRgba(255, 255, 255, 0);
+                        surface.Extent(Math.Max(layer.X + layerBmp.Width, surface.Width), Math.Max(layer.Y + layerBmp.Height, surface.Height),
+                                       backgroundColor: backgroundColor);
 
                         if (InterimOutputDirPathForDebug != null)
                         {
@@ -667,8 +669,10 @@ namespace NiseSeriko
             surface.Crop(faceWidth, faceHeight);
 
             // 顔画像のサイズに合うように余白追加
+            var backgroundColor = ImageMagick.MagickColor.FromRgba(255, 255, 255, 0);
             surface.Extent(faceWidth, faceHeight,
-                           gravity: ImageMagick.Gravity.South); // (中央下寄せ)
+                           gravity: ImageMagick.Gravity.South,
+                           backgroundColor: backgroundColor); // (中央下寄せ)
 
             return surface;
         }
