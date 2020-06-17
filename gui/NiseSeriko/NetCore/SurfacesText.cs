@@ -185,7 +185,7 @@ namespace NiseSeriko
                     if (currentScope != null)
                     {
                         if (!Scopes.ContainsKey(currentScope)) Scopes[currentScope] = new Scope();
-                        Scopes[currentScope].Entries.Add(Tuple.Create(pair[0], pair[1])); // 仕様上は不正と思われるが、たまに大文字混じりでキーを指定しているケースがあるためdowncase
+                        Scopes[currentScope].Entries.Add(Tuple.Create(pair[0].Trim(), pair[1].Trim())); // 仕様上は不正と思われるが、たまに大文字混じりでキーを指定しているケースがあるためdowncase
                     }
                 }
 
@@ -242,15 +242,15 @@ namespace NiseSeriko
 
             // パターンの生成
             var elemKeyRegex = new Regex(@"\Aelement(\d+)\z");
-            var elemValueRegex = new Regex(@"\A(?<method>[a-z]+),(?<filename>[^,]+),(?<offsetx>\d+),(?<offsety>\d+)\z");
+            var elemValueRegex = new Regex(@"\A(?<method>[a-z]+)\s*,\s*(?<filename>[^,]+)\s*,\s*(?<offsetx>\d+)\s*,\s*(?<offsety>\d+)\z");
 
             // SERIKO V1, V2のパターンを両方とも解釈 (version表記と矛盾していても読む)
             var intervalKeyRegexV2 = new Regex(@"\Aanimation(\d+).interval");
             var intervalKeyRegexV1 = new Regex(@"\A(\d+)interval");
             var patKeyRegexV2 = new Regex(@"\Aanimation(?<animID>\d+).pattern(?<patID>\d+)\z");
             var patKeyRegexV1 = new Regex(@"\A(?<animID>\d+)pattern(?<patID>\d+)\z");
-            var patValueRegexV2 = new Regex(@"\A(?<method>[a-z]+),(?<surfaceID>[\d-]+),[\d-]+(?:,(?<offsetX>[^,]+),(?<offsetY>[^,]+))?\z");
-            var patValueRegexV1 = new Regex(@"\A(?<surfaceID>[\d-]+),[\d-]+,(?<method>[a-z]+)(?:,(?<offsetX>[^,]+),(?<offsetY>[^,]+))\z");
+            var patValueRegexV2 = new Regex(@"\A(?<method>[a-z]+)\s*,\s*(?<surfaceID>[\d-]+)\s*,\s*[\d-]+(?:,(?<offsetX>[^,]+)\s*,\s*(?<offsetY>[^,]+))?\z");
+            var patValueRegexV1 = new Regex(@"\A(?<surfaceID>[\d-]+)\s*,\s*[\d-]+\s*,\s*(?<method>[a-z]+)(?:,(?<offsetX>[^,]+)\s*,\s*(?<offsetY>[^,]+))\z");
 
             // スコープ1つごとに処理
             foreach (var pair in Scopes)
@@ -286,7 +286,7 @@ namespace NiseSeriko
                                 if (methodValue == "reduce") elem.Method = Seriko.ComposingMethodType.Reduce;
                                 if (methodValue == "replace") elem.Method = Seriko.ComposingMethodType.Replace;
 
-                                elem.FileName = matched2.Groups["filename"].Value.ToLower();
+                                elem.FileName = matched2.Groups["filename"].Value.ToLower().Trim();
                                 if (!elem.FileName.EndsWith(".png")) elem.FileName = elem.FileName + ".png"; // 拡張子が .png でなければ自動補完 (れいちぇるなど対応)
                                 var offsetX = 0;
                                 if (matched2.Groups["offsetx"].Success) int.TryParse(matched2.Groups["offsetx"].Value, out offsetX);
