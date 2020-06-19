@@ -574,24 +574,9 @@ namespace NiseSeriko
                             }
                         }
 
-                        var surfacePixels = surface.GetPixels();
-                        foreach (var layerPixel in layerBmp.GetPixels())
-                        {
-                            // 新規レイヤ側が完全透過 (アルファ0) であれば処理しない
-                            if (layerPixel[3] == 0) continue;
-
-                            var surfacePixel = surfacePixels[layerPixel.X, layerPixel.Y];
-
-                            // ベースレイヤの不透明度を取得
-                            var baseOpacity = surfacePixel[3];
-
-                            // 新規レイヤの不透明度を、ベースレイヤの不透明度の逆と同じ値にする
-                            layerPixel[3] = (byte)(255 - baseOpacity);
-                        }
-
                         // 合成
                         // すでに画像サイズ調整を行っているため、0原点とする
-                        surface.Composite(layerBmp, 0, 0, CompositeOperator.Over);
+                        surface.Composite(layerBmp, 0, 0, CompositeOperator.DstOver);
                     }
                     else
                     {
