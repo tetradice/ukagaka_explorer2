@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using CommandLine;
 using CommandLine.Text;
+using ImageMagick;
 using NiseSeriko;
 
 namespace SerikoCamera
@@ -15,16 +17,30 @@ namespace SerikoCamera
         ////[Option("shell", HelpText = "使用するシェルのディレクトリ名")]
         ////public string Shell { get; set; }
 
-        [Option('o', "output", HelpText = "出力先のディレクトリパス。省略時は (ゴーストディレクトリ)/photo")]
-        public string OutputDirPath { get; set; }
+        [Option('o', "output", HelpText = "出力先の画像ファイルパス\n省略時はカレントディレクトリに、 --target に従うファイル名で出力\n(pair.png, p0.pngなど)")]
+        public string OutputPath { get; set; }
 
-        [Option("subdir", HelpText = "指定したディレクトリの1階層下ゴーストをすべて変換対象とする")]
-        public bool SubDir { get; set; }
+        [Option('t', "target", HelpText = @"
+撮影対象。省略時は 'pair'
 
-        [Option("debug", HelpText = "合成途中の中間画像ファイルやログファイルを追加出力する\n出力先は (出力先ディレクトリ)/_interim")]
+  pair - sakura側とkero側の立ち絵を並べて1枚の画像を生成
+  p0 - sakura側の立ち絵画像を生成
+  p1 - kero側の立ち絵画像を生成
+  p0face - sakura側の顔画像を生成
+  p1face - kero側の顔画像を生成
+")]
+        public string Target { get; set; } = "pair";
+
+        [Option("pair-margin", HelpText = "target = 'pair' 時に二人の間に入れる空白（ピクセル単位）\n省略時は64")]
+        public int PairMargin { get; set; } = 64;
+
+        [Option("padding", Min=4, Max=4, HelpText = "画像の周囲に入れる余白の幅（ピクセル単位）\ntop,right,bottom,leftの順で指定\n省略時は '16,32,0,32' (上16px、左右32pxの余白を空ける)")]
+        public IEnumerable<int> Padding { get; set; }
+
+        [Option("debug", HelpText = "合成途中の中間画像ファイルやログファイルを追加出力する\n出力先は、(画像ファイルの出力先ディレクトリ)/_interim")]
         public bool Debug { get; set; }
 
-        [Value(0, Required = true, HelpText = "ゴーストのディレクトリパス\n(--subdir オプションを指定した場合は、ゴーストのディレクトリ\n複数を含むディレクトリのパス)")]
+        [Value(0, Required = true, HelpText = "変換するゴーストのディレクトリパス")]
         public string GhostDirPath { get; set; }
 
         [Usage()]
@@ -34,8 +50,6 @@ namespace SerikoCamera
             {
                 return new[] {
                     new Example("通常の変換", new Options() {GhostDirPath = "./ghost/sakura"}),
-                    new Example("ghostフォルダ以下をまとめて変換", new Options() {GhostDirPath = "./ghost", SubDir = true}),
-                    new Example("出力先指定", new Options() {GhostDirPath = "./ghost/sakura", OutputDirPath = "./out"}),
                };
             }
         }
@@ -53,50 +67,76 @@ namespace SerikoCamera
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(opt =>
                 {
-                    if (opt.SubDir)
+                    var ghost = Ghost.Load(opt.GhostDirPath);
+                    var shellDirPath = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
+
+                    var target = opt.Target.ToLower();
+
+                    var outputPath = opt.OutputPath ?? $"./{target}.png";
+                    Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
+                    var interimOutputDirPathForDebug = (opt.Debug ? Path.Combine(Path.GetDirectoryName(outputPath), "_interim") : null);
+                    var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: interimOutputDirPathForDebug);
+
+
+                    MagickImage dest;
+                    switch (target)
                     {
-                        foreach (var subDirPath in Directory.GetDirectories(opt.GhostDirPath))
-                        {
-                            if (NiseSeriko.Ghost.IsGhostDir(subDirPath))
-                            {
-                                var outputDirPath = (opt.OutputDirPath != null ? Path.Combine(opt.OutputDirPath, Path.GetFileName(subDirPath)) : null);
-                                Convert(subDirPath, outputDirPath, opt.Debug);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Convert(opt.GhostDirPath, opt.OutputDirPath, opt.Debug);
+                        case "pair":
+                            var sakuraImg = shell.DrawSurface(shell.SakuraSurfaceModel);
+                            var keroImg = shell.DrawSurface(shell.KeroSurfaceModel);
+                            sakuraImg.Extent(sakuraImg.Width + keroImg.Width + opt.PairMargin, sakuraImg.Height,
+                                             gravity: Gravity.East,
+                                             backgroundColor: MagickColor.FromRgba(255, 255, 255, 0));
+                            sakuraImg.Composite(keroImg, Gravity.Southwest, CompositeOperator.Over);
+                            dest = sakuraImg;
+
+                            break;
+
+                        case "p0":
+                            dest = shell.DrawSurface(shell.SakuraSurfaceModel);
+                            break;
+
+                        case "p1":
+                            dest = shell.DrawSurface(shell.KeroSurfaceModel);
+                            break;
+
+                        case "p0face":
+                            dest = shell.DrawFaceImage(shell.SakuraSurfaceModel, 120, 100);
+                            break;
+
+                        case "p1face":
+                            dest = shell.DrawFaceImage(shell.KeroSurfaceModel, 120, 100);
+
+                            break;
+
+                        default:
+                            Console.Error.WriteLine($"ERROR: target '{opt.Target}' は処理できません。");
+                            return;
                     }
 
+                    // パディングを入れる
+                    var paddings = (opt.Padding.Count() == 4 ? opt.Padding.ToArray() :  new[] { 16, 32, 0, 32 });
+                    var topPadding = paddings[0];
+                    var rightPadding = paddings[1];
+                    var bottomPadding = paddings[2];
+                    var leftPadding = paddings[3];
+                    dest.Extent(dest.Width + rightPadding, dest.Height + topPadding,
+                                gravity: Gravity.Southwest,
+                                backgroundColor: MagickColor.FromRgba(255, 255, 255, 0));
+                    dest.Extent(dest.Width + leftPadding, dest.Height + bottomPadding,
+                                gravity: Gravity.Northeast,
+                                backgroundColor: MagickColor.FromRgba(255, 255, 255, 0));
+                    dest.RePage();
+
+                    dest.Write(outputPath);
+                    Console.WriteLine($"output -> {outputPath}");
 
                 })
                 .WithNotParsed(err =>
                 {
                     Debug.WriteLine(err);
                 });
-        }
-
-        protected static void Convert(string ghostDirPath, string outputDirPath, bool debug)
-        {
-            var ghost = Ghost.Load(ghostDirPath);
-            var shellDirPath = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
-
-            var outputDir = outputDirPath != null ? Path.GetFullPath(outputDirPath) : Path.Combine(ghost.DirPath, @"photo");
-            Directory.CreateDirectory(outputDir);
-
-            var interimOutputDirPathForDebug = (debug ? Path.Combine(outputDir, "_interim") : null);
-            var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: interimOutputDirPathForDebug);
-
-            var sakuraBitmap = shell.DrawSurface(shell.SakuraSurfaceModel);
-            var sakuraOutputPath = Path.Combine(outputDir, @"p0.png");
-            sakuraBitmap.Write(sakuraOutputPath);
-            Console.WriteLine($"output -> {sakuraOutputPath}");
-
-            var keroBitmap = shell.DrawSurface(shell.KeroSurfaceModel);
-            var keroOutputPath = Path.Combine(outputDir, @"p1.png");
-            keroBitmap.Write(keroOutputPath);
-            Console.WriteLine($"output -> {keroOutputPath}");
         }
     }
 }
