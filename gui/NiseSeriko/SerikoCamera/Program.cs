@@ -32,8 +32,8 @@ namespace SerikoCamera
 ")]
         public string Target { get; set; } = "pair";
 
-        [Option("pair-margin", HelpText = "target = 'pair' 時に二人の間に入れる空白（ピクセル単位）\n省略時は64")]
-        public int PairMargin { get; set; } = 64;
+        [Option("pair-margin", HelpText = "target = 'pair' 時に二人の間に空ける間隔（ピクセル単位）\nただし、kero側立ち絵がダミー画像と思われる場合は間隔を入れない\n省略時は64")]
+        public int? PairMargin { get; set; }
 
         [Option("padding", HelpText = "画像の周囲に入れる余白の幅（ピクセル単位）\ntop,right,bottom,leftの順で指定\n省略時は '16,32,0,32' (上16px、左右32pxの余白を空ける)")]
         public string Padding { get; set; }
@@ -68,10 +68,27 @@ namespace SerikoCamera
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(opt =>
                 {
+                    // オプションチェック
+                    var target = opt.Target.ToLower();
+                    if (opt.PairMargin != null && target != "pair")
+                    {
+                        Console.Error.WriteLine($"ERROR: pair marginは target = 'pair' の場合のみ指定できます。");
+                        return;
+
+                    }
+
+                    var pairMargin = opt.PairMargin.GetValueOrDefault(64);
+
+                    if (opt.PairMargin < 0)
+                    {
+                        Console.Error.WriteLine($"ERROR: pair margin指定 '{opt.PairMargin}' が正しくありません。 0以上の整数で指定してください。");
+                        return;
+
+                    }
+
                     var ghost = Ghost.Load(opt.GhostDirPath);
                     var shellDirPath = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
 
-                    var target = opt.Target.ToLower();
 
                     var outputPath = opt.OutputPath ?? $"./{target}.png";
                     Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
@@ -86,7 +103,7 @@ namespace SerikoCamera
                         case "pair":
                             var sakuraImg = shell.DrawSurface(shell.SakuraSurfaceModel);
                             var keroImg = shell.DrawSurface(shell.KeroSurfaceModel);
-                            sakuraImg.Extent(sakuraImg.Width + keroImg.Width + opt.PairMargin, sakuraImg.Height,
+                            sakuraImg.Extent(sakuraImg.Width + keroImg.Width + pairMargin, sakuraImg.Height,
                                              gravity: Gravity.East,
                                              backgroundColor: MagickColor.FromRgba(255, 255, 255, 0));
                             sakuraImg.Composite(keroImg, Gravity.Southwest, CompositeOperator.Over);
