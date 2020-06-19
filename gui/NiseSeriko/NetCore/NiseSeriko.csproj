@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="7.19.0" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="7.19.0.1" />
     <PackageReference Include="Magick.NET.Core" Version="2.0.0" />
   </ItemGroup>
 </Project>
