@@ -545,19 +545,22 @@ namespace NiseSeriko
                     // メソッドによって処理を分ける
                     if (layer.ComposingMethod == Seriko.ComposingMethodType.Reduce)
                     {
-                        var surfacePixels = surface.GetPixels();
-                        foreach (var layerPixel in layerBmp.GetPixels())
+                        // 新規画像のサイズがベース画像より小さい場合の補正
+                        if (layerBmp.Width != surface.Width || layerBmp.Height != surface.Height)
                         {
-                            var surfacePixel = surfacePixels[layerPixel.X, layerPixel.Y];
+                            // 画像サイズ補正処理
+                            SizeAdjustForComposingBitmap(surface, ref layerBmp, layer.X, layer.Y);
 
-                            // ベースレイヤ、新規レイヤ両方の不透明度を取得
-                            var baseOpacity = surfacePixel[3];
-                            var newOpacity = layerPixel[3];
-
-                            // 不透明度を乗算
-                            var rate = (baseOpacity / 255.0) * (newOpacity / 255.0); // 0 - 255 の値を 0.0 - 1.0の範囲に変換してから乗算する
-                            surfacePixel[3] = (byte)Math.Round(rate * 255);
+                            // 上記処理の後でもまだサイズが異なる場合（縦が大きいが横は小さいような場合）はUNSUPPORTED
+                            if (layerBmp.Width != surface.Width || layerBmp.Height != surface.Height)
+                            {
+                                throw new IllegalImageFormatException("複数の画像を重ねる際に、2つの画像の間でサイズが異なり、かつ縦横のサイズが矛盾しているような画像が存在します。") { Unsupported = true };
+                            }
                         }
+
+                        // 合成
+                        // すでに画像サイズ調整を行っているため、0原点とする
+                        surface.Composite(layerBmp, 0, 0, CompositeOperator.DstIn);
                     }
                     else if (layer.ComposingMethod == Seriko.ComposingMethodType.Interpolate)
                     {
