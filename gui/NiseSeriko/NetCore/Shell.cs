@@ -115,6 +115,16 @@ namespace NiseSeriko
         }
 
         /// <summary>
+        /// シェルフォルダかどうかを判定
+        /// </summary>
+        public static bool IsShellDir(string dirPath)
+        {
+            // descript.txt が存在するならゴーストフォルダとみなす
+            var shellDesc = Path.Combine(dirPath, "descript.txt");
+            return (File.Exists(shellDesc));
+        }
+
+        /// <summary>
         /// シェル情報を読み込み、使用するサーフェスファイルのパスと更新日付を取得 (ファイルの検索は行うが、画像ファイルの中身は読み込まない)
         /// </summary>
         public virtual void Load()

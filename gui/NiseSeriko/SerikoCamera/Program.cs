@@ -15,9 +15,6 @@ namespace SerikoCamera
 {
     internal class Options
     {
-        ////[Option("shell", HelpText = "使用するシェルのディレクトリ名")]
-        ////public string Shell { get; set; }
-
         [Option('o', "output", HelpText = "出力先の画像ファイルパス\n省略時はカレントディレクトリに、 --target に従うファイル名で出力\n(pair.png, p0.pngなど)")]
         public string OutputPath { get; set; }
 
@@ -41,8 +38,8 @@ namespace SerikoCamera
         [Option("debug", HelpText = "合成途中の中間画像ファイルやログファイルを追加出力する\n出力先は、(画像ファイルの出力先ディレクトリ)/_interim")]
         public bool Debug { get; set; }
 
-        [Value(0, Required = true, HelpText = "変換するゴーストのディレクトリパス")]
-        public string GhostDirPath { get; set; }
+        [Value(0, Required = true, HelpText = "変換するゴースト or シェルのディレクトリパス")]
+        public string TargetDirPath { get; set; }
 
         [Usage()]
         public static IEnumerable<Example> Examples
@@ -50,7 +47,7 @@ namespace SerikoCamera
             get
             {
                 return new[] {
-                    new Example("通常の変換", new Options() {GhostDirPath = "./ghost/sakura"})
+                    new Example("通常の変換", new Options() {TargetDirPath = "./ghost/sakura"})
                };
             }
         }
@@ -86,17 +83,33 @@ namespace SerikoCamera
 
                     }
 
-                    var ghost = Ghost.Load(opt.GhostDirPath);
-                    var shellDirPath = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
-
-
+                    // 出力先決定
                     var outputPath = opt.OutputPath ?? $"./{target}.png";
                     Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
+                    // シェルを読み込む
+                    Shell shell;
                     var interimOutputDirPathForDebug = (opt.Debug ? Path.Combine(Path.GetDirectoryName(outputPath), "_interim") : null);
-                    var shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: interimOutputDirPathForDebug);
+                    if (Ghost.IsGhostDir(opt.TargetDirPath))
+                    {
+                        // ゴーストフォルダのルートが指定された場合
+                        var ghost = Ghost.Load(opt.TargetDirPath);
+                        var shellDirPath = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
+                        shell = Shell.Load(shellDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId, interimOutputDirPathForDebug: interimOutputDirPathForDebug);
+                    }
+                    else if (Shell.IsShellDir(opt.TargetDirPath))
+                    {
+                        // シェルフォルダが指定された場合
+                        var shellDirPath = opt.TargetDirPath;
+                        shell = Shell.Load(shellDirPath, 0, 10, interimOutputDirPathForDebug: interimOutputDirPathForDebug); // サーフェス番号はデフォルトの0, 10とする
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine($"ERROR: 指定したフォルダ '{opt.TargetDirPath}' が、ゴーストフォルダでもシェルフォルダでもありませんでした。");
+                        return;
+                    }
 
-
+                    // 出力
                     MagickImage dest;
                     switch (target)
                     {
