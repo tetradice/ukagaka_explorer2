@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using CommandLine;
 using CommandLine.Text;
 using ImageMagick;
@@ -34,8 +35,8 @@ namespace SerikoCamera
         [Option("pair-margin", HelpText = "target = 'pair' 時に二人の間に入れる空白（ピクセル単位）\n省略時は64")]
         public int PairMargin { get; set; } = 64;
 
-        [Option("padding", Min=4, Max=4, HelpText = "画像の周囲に入れる余白の幅（ピクセル単位）\ntop,right,bottom,leftの順で指定\n省略時は '16,32,0,32' (上16px、左右32pxの余白を空ける)")]
-        public IEnumerable<int> Padding { get; set; }
+        [Option("padding", HelpText = "画像の周囲に入れる余白の幅（ピクセル単位）\ntop,right,bottom,leftの順で指定\n省略時は '16,32,0,32' (上16px、左右32pxの余白を空ける)")]
+        public string Padding { get; set; }
 
         [Option("debug", HelpText = "合成途中の中間画像ファイルやログファイルを追加出力する\n出力先は、(画像ファイルの出力先ディレクトリ)/_interim")]
         public bool Debug { get; set; }
@@ -49,7 +50,7 @@ namespace SerikoCamera
             get
             {
                 return new[] {
-                    new Example("通常の変換", new Options() {GhostDirPath = "./ghost/sakura"}),
+                    new Example("通常の変換", new Options() {GhostDirPath = "./ghost/sakura"})
                };
             }
         }
@@ -116,7 +117,31 @@ namespace SerikoCamera
                     }
 
                     // パディングを入れる
-                    var paddings = (opt.Padding.Count() == 4 ? opt.Padding.ToArray() :  new[] { 16, 32, 0, 32 });
+                    IList<int> paddings;
+                    if (opt.Padding != null)
+                    {
+                        var matched = Regex.Match(opt.Padding, @"^(\d{1,5}),(\d{1,5}),(\d{1,5}),(\d{1,5})$");
+                        if (matched.Success)
+                        {
+                            paddings = new[]
+                            {
+                                  int.Parse(matched.Groups[1].Value)
+                                , int.Parse(matched.Groups[2].Value)
+                                , int.Parse(matched.Groups[3].Value)
+                                , int.Parse(matched.Groups[4].Value)
+                            };
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine($"ERROR: padding指定 '{opt.Padding}' が正しくありません。 '16,32,0,16' のようなフォーマットで指定してください。");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        paddings = new[] { 16, 32, 0, 32 };
+                    }
+
                     var topPadding = paddings[0];
                     var rightPadding = paddings[1];
                     var bottomPadding = paddings[2];
