@@ -39,3 +39,4 @@
 *.pubxml.user
 /gui/NiseSeriko/SerikoCamera/trimtest/bin/
 /gui/NiseSeriko/SerikoCamera/trimtest/obj/
+/gui/NiseSeriko/SerikoCamera/Properties/launchSettings.json
