@@ -27,7 +27,7 @@ namespace SerikoCamera
   p0face - sakura側の顔画像を生成
   p1face - kero側の顔画像を生成
 ")]
-        public string Target { get; set; } = "pair";
+        public string Target { get; set; }
 
         [Option("pair-margin", HelpText = "target = 'pair' 時に二人の間に空ける間隔（ピクセル単位）\nただし、kero側立ち絵がダミー画像と思われる場合は間隔を入れない\n省略時は64")]
         public int? PairMargin { get; set; }
@@ -48,6 +48,10 @@ namespace SerikoCamera
             {
                 return new[] {
                     new Example("通常の変換", new Options() {TargetDirPath = "./ghost/sakura"})
+                    , new Example("出力先を指定", new Options() { OutputPath = "./out/sakura_p0.png", TargetDirPath = "./ghost/sakura"})
+                    , new Example("kero側の画像のみ出力", new Options() { Target = "p1", TargetDirPath = "./ghost/sakura"})
+                    , new Example("シェルを指定して変換", new Options() {TargetDirPath = "./ghost/sakura/shell/summer_dress"})
+                    , new Example("余白を指定", new Options() {PairMargin=30, Padding="20,40,0,40", TargetDirPath = "./ghost/sakura"})
                };
             }
         }
@@ -66,7 +70,7 @@ namespace SerikoCamera
                 .WithParsed(opt =>
                 {
                     // オプションチェック
-                    var target = opt.Target.ToLower();
+                    var target = (opt.Target == null ? "pair" : opt.Target.ToLower());
                     if (opt.PairMargin != null && target != "pair")
                     {
                         Console.Error.WriteLine($"ERROR: pair marginは target = 'pair' の場合のみ指定できます。");
