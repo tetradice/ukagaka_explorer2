@@ -57,7 +57,7 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
     face.height,160
 
   left, topで左上原点を指定し、width, heightで幅と高さを指定します。
-  できる限り幅と高さが同じサイズ 幅1:1) になるようにしてください。
+  できる限り幅と高さが同じサイズ（1:1）になるようにしてください。
   （実際に表示する顔画像のサイズは、幅120px × 高さ120pxです）
 
 
