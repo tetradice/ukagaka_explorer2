@@ -15,7 +15,7 @@ namespace SerikoCamera
 {
     internal class Options
     {
-        [Option('o', "output", HelpText = "出力先の画像ファイルパス\n省略時はカレントディレクトリに、 --target に従うファイル名で出力\n(pair.png, p0.pngなど)")]
+        [Option('o', "output", HelpText = "出力先の画像ファイルパス\n省略時はカレントディレクトリに、 --target に基づく\nファイル名で出力する (pair.png, p0.pngなど)")]
         public string OutputPath { get; set; }
 
         [Option('t', "target", HelpText = @"
@@ -24,16 +24,18 @@ namespace SerikoCamera
   pair - sakura側とkero側の立ち絵を並べて1枚の画像を生成
   p0 - sakura側の立ち絵画像を生成
   p1 - kero側の立ち絵画像を生成
-  p0face - sakura側の顔画像を生成
-  p1face - kero側の顔画像を生成
-")]
+  p0-face - sakura側の顔画像を生成
+  p1-face - kero側の顔画像を生成")]
         public string Target { get; set; }
 
-        [Option("pair-margin", HelpText = "target = 'pair' 時に二人の間に空ける間隔（ピクセル単位）\nただし、kero側立ち絵がダミー画像と思われる場合は間隔を入れない\n省略時は64")]
+        [Option("pair-margin", HelpText = "target = 'pair' 時に二人の間に空ける間隔（ピクセル単位）\nただし、kero側の立ち絵がダミー画像と思われる場合は\n間隔を入れない。省略時は64")]
         public int? PairMargin { get; set; }
 
-        [Option("padding", HelpText = "画像の周囲に入れる余白の幅（ピクセル単位）\ntop,right,bottom,leftの順で指定\n省略時は '16,32,0,32' (上16px、左右32pxの余白を空ける)")]
+        [Option("padding", HelpText = "画像の周囲に入れる余白の幅（ピクセル単位）\ntop,right,bottom,leftの順で指定\n省略時は、顔画像は余白なし、それ以外は '16,32,0,32'\n(上16px、左右32pxの余白を空ける)")]
         public string Padding { get; set; }
+
+        [Option("face-size", HelpText = "target = 'p0-face', 'p1-face' 時の\n顔画像サイズ（ピクセル単位）。width,heightの順で指定\n省略時は '120,120'\n(縦横ともに120px、ゴーストエクスプローラ通準拠)")]
+        public string FaceSize { get; set; }
 
         [Option("debug", HelpText = "合成途中の中間画像ファイルやログファイルを追加出力する\n出力先は、(画像ファイルの出力先ディレクトリ)/_interim")]
         public bool Debug { get; set; }
@@ -50,6 +52,7 @@ namespace SerikoCamera
                     new Example("通常の変換", new Options() {TargetDirPath = "./ghost/sakura"})
                     , new Example("出力先を指定", new Options() { OutputPath = "./out/sakura_p0.png", TargetDirPath = "./ghost/sakura"})
                     , new Example("kero側の画像のみ出力", new Options() { Target = "p1", TargetDirPath = "./ghost/sakura"})
+                    , new Example("顔画像を120x100サイズで出力", new Options() { Target = "p0-face", FaceSize = "120,100", TargetDirPath = "./ghost/sakura"})
                     , new Example("シェルを指定して変換", new Options() {TargetDirPath = "./ghost/sakura/shell/summer_dress"})
                     , new Example("余白を指定", new Options() {PairMargin=30, Padding="20,40,0,40", TargetDirPath = "./ghost/sakura"})
                };
@@ -75,16 +78,41 @@ namespace SerikoCamera
                     {
                         Console.Error.WriteLine($"ERROR: pair marginは target = 'pair' の場合のみ指定できます。");
                         return;
+                    }
 
+                    if (opt.FaceSize != null && target != "p0-face" && target != "p1-face")
+                    {
+                        Console.Error.WriteLine($"ERROR: face sizeは target = 'p0-face' or 'p1-face' の場合のみ指定できます。");
+                        return;
                     }
 
                     var pairMargin = opt.PairMargin.GetValueOrDefault(64);
-
                     if (opt.PairMargin < 0)
                     {
                         Console.Error.WriteLine($"ERROR: pair margin指定 '{opt.PairMargin}' が正しくありません。 0以上の整数で指定してください。");
                         return;
+                    }
 
+                    Tuple<int, int> faceSizes;
+                    if (opt.Padding != null)
+                    {
+                        var matched = Regex.Match(opt.Padding, @"^(\d{1,5}),(\d{1,5})$");
+                        if (matched.Success)
+                        {
+                            faceSizes = Tuple.Create(
+                                  int.Parse(matched.Groups[1].Value)
+                                , int.Parse(matched.Groups[2].Value)
+                            );
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine($"ERROR: face size指定 '{opt.Padding}' が正しくありません。 '120,100' のようなフォーマットで指定してください。");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        faceSizes = Tuple.Create(120, 120);
                     }
 
                     // 出力先決定
@@ -136,12 +164,12 @@ namespace SerikoCamera
                             dest = shell.DrawSurface(shell.KeroSurfaceModel);
                             break;
 
-                        case "p0face":
-                            dest = shell.DrawFaceImage(shell.SakuraSurfaceModel, 120, 100);
+                        case "p0-face":
+                            dest = shell.DrawFaceImage(shell.SakuraSurfaceModel, faceSizes.Item1, faceSizes.Item2);
                             break;
 
-                        case "p1face":
-                            dest = shell.DrawFaceImage(shell.KeroSurfaceModel, 120, 100);
+                        case "p1-face":
+                            dest = shell.DrawFaceImage(shell.KeroSurfaceModel, faceSizes.Item1, faceSizes.Item2);
 
                             break;
 
@@ -151,19 +179,18 @@ namespace SerikoCamera
                     }
 
                     // パディングを入れる
-                    IList<int> paddings;
+                    Tuple<int, int, int, int> paddings;
                     if (opt.Padding != null)
                     {
                         var matched = Regex.Match(opt.Padding, @"^(\d{1,5}),(\d{1,5}),(\d{1,5}),(\d{1,5})$");
                         if (matched.Success)
                         {
-                            paddings = new[]
-                            {
+                            paddings = Tuple.Create(
                                   int.Parse(matched.Groups[1].Value)
                                 , int.Parse(matched.Groups[2].Value)
                                 , int.Parse(matched.Groups[3].Value)
                                 , int.Parse(matched.Groups[4].Value)
-                            };
+                            );
                         }
                         else
                         {
@@ -173,13 +200,20 @@ namespace SerikoCamera
                     }
                     else
                     {
-                        paddings = new[] { 16, 32, 0, 32 };
+                        if (target == "p0-face" || target == "p1-face")
+                        {
+                            paddings = Tuple.Create(0, 0, 0, 0);
+                        }
+                        else
+                        {
+                            paddings = Tuple.Create(16, 32, 0, 32);
+                        }
                     }
 
-                    var topPadding = paddings[0];
-                    var rightPadding = paddings[1];
-                    var bottomPadding = paddings[2];
-                    var leftPadding = paddings[3];
+                    var topPadding = paddings.Item1;
+                    var rightPadding = paddings.Item2;
+                    var bottomPadding = paddings.Item3;
+                    var leftPadding = paddings.Item4;
                     dest.Extent(dest.Width + rightPadding, dest.Height + topPadding,
                                 gravity: Gravity.Southwest,
                                 backgroundColor: MagickColor.FromRgba(255, 255, 255, 0));
