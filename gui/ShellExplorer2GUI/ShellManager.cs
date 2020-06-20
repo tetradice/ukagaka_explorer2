@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExplorerLib;
-using ExplorerLib.Exceptions;
+using ImageMagick;
+using NiseSeriko;
+using NiseSeriko.Exceptions;
 
 namespace ShellExplorer2
 {
@@ -19,7 +21,7 @@ namespace ShellExplorer2
         /// </summary>
         public class ListItem
         {
-            public Shell Shell = null;
+            public ExplorerShell Shell = null;
             public string Name;
             public string DirPath;
             public string ErrorMessage = null;
@@ -64,7 +66,7 @@ namespace ShellExplorer2
                 try
                 {
                     // シェルを読み込み
-                    item.Shell = Shell.Load(subDir, sakuraSurfaceId, keroSurfaceId);
+                    item.Shell = ExplorerShell.Load(subDir, sakuraSurfaceId, keroSurfaceId);
                     item.Name = item.Shell.Name;
                 }
                 catch (UnhandlableShellException ex)
@@ -91,7 +93,7 @@ namespace ShellExplorer2
         /// sakura側サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawSakuraSurface(Shell targetShell)
+        public virtual Bitmap DrawSakuraSurface(ExplorerShell targetShell)
         {
             return DrawSurfaceInternal(targetShell, targetShell.SakuraSurfaceModel, targetShell.SakuraSurfaceId);
         }
@@ -100,7 +102,7 @@ namespace ShellExplorer2
         /// kero側サーフェス画像を取得  （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        public virtual Bitmap DrawKeroSurface(Shell targetShell)
+        public virtual Bitmap DrawKeroSurface(ExplorerShell targetShell)
         {
             return DrawSurfaceInternal(targetShell, targetShell.KeroSurfaceModel, targetShell.KeroSurfaceId);
         }
@@ -109,7 +111,7 @@ namespace ShellExplorer2
         /// サーフェス画像を取得 （element, MAYUNAの合成も行う。またキャッシュがあればキャッシュから取得）
         /// </summary>
         /// <returns>サーフェス画像を取得できた場合はその画像。取得に失敗した場合はnull</returns>
-        protected virtual Bitmap DrawSurfaceInternal(Shell targetShell, Shell.SurfaceModel surfaceModel, int surfaceId)
+        protected virtual Bitmap DrawSurfaceInternal(ExplorerShell targetShell, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
             var cacheDir = Util.GetCacheDirPath(Path.GetFileName(GhostDirPath));
             if (surfaceModel == null) return null;
@@ -129,10 +131,16 @@ namespace ShellExplorer2
                 var surface = targetShell.DrawSurface(surfaceModel);
 
                 // キャッシュとして保存
-                surface.Save(cachePath);
+                surface.Write(cachePath);
 
-                // サーフェス画像を返す
-                return surface;
+                // サーフェス画像をBitmap形式に変換
+                var surfaceBmp = surface.ToBitmap();
+
+                // 元画像を即時破棄
+                surface.Dispose();
+
+                // サーフェス画像をBitmap形式に変換して返す
+                return surfaceBmp;
             }
         }
 
@@ -170,7 +178,11 @@ namespace ShellExplorer2
                         // キャッシュがない場合、サーフェス0から顔画像を生成 (サーフェスを読み込めている場合のみ)
                         if (shell.SakuraSurfaceModel != null)
                         {
-                            face = shell.DrawFaceImage(shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height);
+                            using (var faceImg = shell.DrawFaceImage(shell.SakuraSurfaceModel, faceSize.Width, faceSize.Height))
+                            {
+                                face = faceImg.ToBitmap();
+                            }
+
                             if (face != null)
                             {
                                 // 顔画像のキャッシュを保存

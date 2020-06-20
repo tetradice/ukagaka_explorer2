@@ -1,0 +1,3 @@
+[submodule "gui/niseseriko"]
+	path = gui/niseseriko
+	url = https://github.com/tetradice/niseseriko.git

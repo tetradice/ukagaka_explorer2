@@ -49,6 +49,7 @@
             this.BtnRemoveStartMenu = new System.Windows.Forms.Button();
             this.lblVersion = new System.Windows.Forms.Label();
             this.lblPoweredBy = new System.Windows.Forms.Label();
+            this.linkReadme = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.picSurface)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -297,11 +298,27 @@
             this.lblPoweredBy.Text = "powered by 偽SERIKO and MagicK.NET";
             this.lblPoweredBy.Visible = false;
             // 
+            // linkReadme
+            // 
+            this.linkReadme.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkReadme.AutoSize = true;
+            this.linkReadme.BackColor = System.Drawing.Color.White;
+            this.linkReadme.Font = new System.Drawing.Font("MS UI Gothic", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.linkReadme.Location = new System.Drawing.Point(716, 398);
+            this.linkReadme.Name = "linkReadme";
+            this.linkReadme.Size = new System.Drawing.Size(213, 15);
+            this.linkReadme.TabIndex = 21;
+            this.linkReadme.TabStop = true;
+            this.linkReadme.Text = "このプラグインについて (readme.txt)";
+            this.linkReadme.Visible = false;
+            this.linkReadme.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkReadme_LinkClicked);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(964, 494);
+            this.Controls.Add(this.linkReadme);
             this.Controls.Add(this.lblPoweredBy);
             this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.BtnRemoveStartMenu);
@@ -355,6 +372,7 @@
         private System.Windows.Forms.Button BtnRemoveStartMenu;
         private System.Windows.Forms.Label lblVersion;
         private System.Windows.Forms.Label lblPoweredBy;
+        private System.Windows.Forms.LinkLabel linkReadme;
     }
 }
 
