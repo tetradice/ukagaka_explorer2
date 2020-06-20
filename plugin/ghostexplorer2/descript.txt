@@ -8,6 +8,7 @@ name,ゴーストエクスプローラ通
 //craftmanwは日本語も可、craftmanは英語のみ。どっちか片方でもOK
 craftman,pon
 craftmanw,ポン
+craftmanurl,http://sakura.morphball.net/explorer2/
 
 //PLUGIN DLL
 filename,bridge.dll
