@@ -148,7 +148,12 @@ namespace SerikoCamera
                         case "pair":
                             var sakuraImg = shell.DrawSurface(shell.SakuraSurfaceModel);
                             var keroImg = shell.DrawSurface(shell.KeroSurfaceModel);
-                            sakuraImg.Extent(sakuraImg.Width + keroImg.Width + pairMargin, sakuraImg.Height,
+
+                            // kero側がダミー画像でないかどうかを判定
+                            var keroIsDummy = false;
+                            if (keroImg.Width <= 2 && keroImg.Height <= 2) keroIsDummy = true; // 縦横2px以下の画像はダミー
+
+                            sakuraImg.Extent(sakuraImg.Width + keroImg.Width + (keroIsDummy ? 0 : pairMargin), sakuraImg.Height,
                                              gravity: Gravity.East,
                                              backgroundColor: MagickColor.FromRgba(255, 255, 255, 0));
                             sakuraImg.Composite(keroImg, Gravity.Southwest, CompositeOperator.Over);
