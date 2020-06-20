@@ -329,6 +329,7 @@ namespace GhostExplorer2
             BtnRemoveStartMenu.Visible = OptionSelected;
             lblVersion.Visible = OptionSelected;
             lblPoweredBy.Visible = OptionSelected;
+            linkReadme.Visible = OptionSelected;
 
             // スタートメニューショートカット削除ボタンは、存在する場合のみ押下可能
             BtnRemoveStartMenu.Enabled = File.Exists(StartMenuShortcutPath);
@@ -1418,6 +1419,11 @@ namespace GhostExplorer2
             {
                 MessageBox.Show("すでに削除されています。", "情報", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+
+        private void linkReadme_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(@"../readme.txt");
         }
     }
 }
