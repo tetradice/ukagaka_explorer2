@@ -14,13 +14,12 @@ namespace GhostExplorer2
         /// <summary>
         /// メニューからの実行
         /// </summary>
-        public override PluginResponse OnMenuExec(PluginRequest req)
+        protected override PluginResponse OnMenuExec(PluginRequest req, IList<string> hwnds, string ghostName, string currentShellName, string id, string ghostPath)
         {
             var res = PluginResponse.OK();
             res.Event = "OnGhostExplorer2Open";
 
-            var ghostId = req.References[3];
-            Process.Start(Path.Combine(DLLDirPath, @"gui\GhostExplorer2GUI.exe"), "id:" + ghostId);
+            Process.Start(Path.Combine(DLLDirPath, @"gui\GhostExplorer2GUI.exe"), "id:" + id);
 
             return res;
         }

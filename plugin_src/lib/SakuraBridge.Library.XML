@@ -9,15 +9,46 @@
             リクエスト文字列のパース時にエラーが発生した
             </summary>
         </member>
+        <member name="M:SakuraBridge.Library.BadRequestException.#ctor">
+            <summary>
+            コンストラクタ
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.BadRequestException.#ctor(System.String)">
+            <summary>
+            コンストラクタ (メッセージを指定)
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.BadRequestException.#ctor(System.String,System.Exception)">
+            <summary>
+            コンストラクタ (内部例外を指定)
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.BadRequestException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            コンストラクタ (SerializationInfo, StreamingContextを指定)
+            </summary>
+        </member>
         <member name="T:SakuraBridge.Library.Message">
             <summary>
             SHIORI/SAORI/PLUGIN/SSTPのリクエストやレスポンスを表すクラス
             </summary>
         </member>
+        <member name="F:SakuraBridge.Library.Message.HeaderPattern">
+            <summary>
+            ヘッダの正規表現文字列
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.Message.Headers">
+            <summary>
+            ヘッダ値
+            </summary>
+        </member>
         <member name="P:SakuraBridge.Library.Message.Item(System.String)">
             <summary>
-            指定した名前のヘッダ値を取得/設定 (取得時、指定した名前のヘッダが存在しない場合はnull)
+            指定した名前のヘッダ値を取得/設定
             </summary>
+            <value>ヘッダの値。取得時、指定した名前のヘッダが存在しない場合はnull</value>
         </member>
         <member name="M:SakuraBridge.Library.Message.#ctor">
             <summary>
@@ -32,11 +63,6 @@
         <member name="M:SakuraBridge.Library.Message.Remove(System.String)">
             <summary>
             指定した名前の値をヘッダから削除
-            </summary>
-        </member>
-        <member name="P:SakuraBridge.Library.Message.References">
-            <summary>
-            Reference0, 1, 2... のリストを取得/設定
             </summary>
         </member>
         <member name="M:SakuraBridge.Library.Message.GetSequentialHeaderValues(System.String)">
@@ -177,14 +203,201 @@
             ステータス説明文
             </summary>
         </member>
+        <member name="T:SakuraBridge.Library.DescriptText">
+            <summary>
+            descript.txt を表すクラス
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.DescriptText.Path">
+            <summary>
+            descript.txt のフルパス
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.DescriptText.Values">
+            <summary>
+            キーと値の組を格納したDictionary
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.DescriptText.LastWriteTime">
+            <summary>
+            ファイルの最終更新日時
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.DescriptText.Load(System.String)">
+            <summary>
+            指定したパスの descript.txt を読み込む
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.DescriptText.Load">
+            <summary>
+            descript.txt を読み込む
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.DescriptText.Get(System.String)">
+            <summary>
+            指定キーの値を取得。キーが存在しない場合はnullを返す
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.ShioriModule">
+            <summary>
+            SHIORIモジュールクラス
+            </summary>
+        </member>
+        <member name="F:SakuraBridge.Library.ShioriModule.DLLDirPath">
+            <summary>
+            DLLが置かれているディレクトリのパス。Load時にセットされる
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.ShioriModule.Load(System.String)">
+            <summary>
+            Load処理
+            </summary>
+            <param name="dllDirPath">DLLが置かれているパス</param>
+        </member>
+        <member name="M:SakuraBridge.Library.ShioriModule.Request(System.String)">
+            <summary>
+            リクエスト受信時の処理
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.ShioriModule.RequestMain(SakuraBridge.Library.ShioriRequest)">
+            <summary>
+            リクエスト受信時のメイン処理
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.ShioriModule.Unload">
+            <summary>
+            Unload処理
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.ShioriModule.Version">
+            <summary>
+            バージョン文字列 (オーバーライドしない場合はアセンブリ名とアセンブリのバージョンから自動生成される)
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.ShioriRequest">
+            <summary>
+            SHIORI/3.0 リクエスト
+            </summary>
+        </member>
+        <member name="F:SakuraBridge.Library.ShioriRequest.NotifyCommand">
+            <summary>
+            仕様で規定されたNOTIFYコマンド文字列
+            </summary>
+        </member>
+        <member name="F:SakuraBridge.Library.ShioriRequest.GetCommand">
+            <summary>
+            仕様で規定されたGETコマンド文字列
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.ShioriRequest.Parse(System.String)">
+            <summary>
+            リクエスト文字列をパースする
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.ShioriRequest.IsNotify">
+            <summary>
+            NOTIFYリクエストフラグ
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.ShioriRequest.Command">
+            <summary>
+            コマンド文字列
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.ShioriRequest.ID">
+            <summary>
+            IDヘッダ
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.ShioriRequest.References">
+            <summary>
+            Reference0, 1, 2... のリストを取得/設定
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.ShioriResponse">
+            <summary>
+            SHIORI/3.0 レスポンス
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.ShioriResponse.Version">
+            <summary>
+            バージョン
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.ShioriResponse.#ctor(System.Int32)">
+            <summary>
+            コンストラクタ
+            </summary>
+            <param name="statusCode">ステータスコード。ここで指定した値に応じて、ステータス説明文も自動設定される</param>
+        </member>
+        <member name="P:SakuraBridge.Library.ShioriResponse.Value">
+            <summary>
+            Valueヘッダ
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.ShioriResponse.OK">
+            <summary>
+            新しい 200 OK レスポンスを生成します。
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.ShioriResponse.NoContent">
+            <summary>
+            新しい 204 No Content レスポンスを生成します。
+            </summary>
+        </member>
         <member name="T:SakuraBridge.Library.PluginModule">
             <summary>
-            プラグインモジュール (主に継承して使用する)
+            PLUGINモジュールクラス
             </summary>
         </member>
         <member name="F:SakuraBridge.Library.PluginModule.DLLDirPath">
             <summary>
             DLLが置かれているディレクトリのパス。Load時にセットされる
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.PluginName">
+            <summary>
+            プラグイン名 (descript.txt 内のnameに書かれている名称)
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.InstalledPlugins">
+            <summary>
+            インストール済みプラグインの一覧（installedpluginイベントで通知された内容が格納される）
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.PluginModule.Plugin">
+            <summary>
+            プラグイン情報を表すクラス
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.Plugin.Name">
+            <summary>
+            プラグイン名
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.Plugin.Id">
+            <summary>
+            プラグインID
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.GhostPathList">
+            <summary>
+            インストール済みゴーストフォルダパスの一覧（ghostpathlistイベントで通知された内容が格納される）
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.BalloonPathList">
+            <summary>
+            インストール済みバルーンフォルダパスの一覧（balloonpathlistイベントで通知された内容が格納される）
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.HeadlinePathList">
+            <summary>
+            インストール済みヘッドラインフォルダパスの一覧（headlinepathlistイベントで通知された内容が格納される）
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.PluginPathList">
+            <summary>
+            インストール済みプラグインフォルダパスの一覧（pluginpathlistイベントで通知された内容が格納される）
             </summary>
         </member>
         <member name="M:SakuraBridge.Library.PluginModule.Load(System.String)">
@@ -195,12 +408,12 @@
         </member>
         <member name="M:SakuraBridge.Library.PluginModule.Request(System.String)">
             <summary>
-            リクエスト
+            リクエスト受信時の処理
             </summary>
         </member>
-        <member name="M:SakuraBridge.Library.PluginModule.MakeResponse(SakuraBridge.Library.PluginRequest)">
+        <member name="M:SakuraBridge.Library.PluginModule.RequestMain(SakuraBridge.Library.PluginRequest)">
             <summary>
-            リクエストIDに対応するResponseを作成する
+            リクエスト受信時のメイン処理
             </summary>
         </member>
         <member name="M:SakuraBridge.Library.PluginModule.Unload">
@@ -213,10 +426,135 @@
             バージョン文字列 (オーバーライドしない場合はアセンブリ名とアセンブリのバージョンから自動生成される)
             </summary>
         </member>
-        <member name="M:SakuraBridge.Library.PluginModule.OnMenuExec(SakuraBridge.Library.PluginRequest)">
+        <member name="M:SakuraBridge.Library.PluginModule.OnSecondChange(SakuraBridge.Library.PluginRequest)">
+            <summary>
+            秒経過時に呼び出される処理
+            </summary>
+            <param name="req">受信したリクエスト</param>
+            <remarks>何秒ごとに通知されるかは、descript.txtのsecondchangeinterval設定によって異なります。</remarks>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnGhostBoot(SakuraBridge.Library.PluginRequest,System.Collections.Generic.IList{System.String},System.String,System.String,System.String,System.String)">
+            <summary>
+            ゴースト起動時に呼び出される処理
+            </summary>
+            <param name="req">受信したリクエスト</param>
+            <param name="hwnds">起動したゴーストの\0以降各キャラクターウィンドウのHWND [Reference0]</param>
+            <param name="ghostName">起動したゴースト名 [Reference1]</param>
+            <param name="currentShellName">起動したゴーストの現在のシェル名 [Reference2]</param>
+            <param name="id">起動したゴーストのID (Owned SSTPで送られるものと同じ） [Reference3]</param>
+            <param name="ghostPath">起動したゴーストのフルパス [Reference4]</param>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnGhostExit(SakuraBridge.Library.PluginRequest,System.Collections.Generic.IList{System.String},System.String,System.String,System.String,System.String)">
+            <summary>
+            ゴースト終了時に呼び出される処理 [NOTIFY]
+            </summary>
+            <param name="req">受信したリクエスト</param>
+            <param name="hwnds">終了したゴーストの\0以降各キャラクターウィンドウのHWND [Reference0]</param>
+            <param name="ghostName">終了したゴースト名 [Reference1]</param>
+            <param name="currentShellName">終了したゴーストの現在のシェル名 [Reference2]</param>
+            <param name="id">終了したゴーストのID (Owned SSTPで送られるものと同じ） [Reference3]</param>
+            <param name="ghostPath">終了したゴーストのフルパス [Reference4]</param>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnGhostInfoUpdate(SakuraBridge.Library.PluginRequest,System.Collections.Generic.IList{System.String},System.String,System.String,System.String,System.String)">
+            <summary>
+            ゴーストの情報変更時に呼び出される処理 [NOTIFY]
+            </summary>
+            <param name="req">受信したリクエスト</param>
+            <param name="hwnds">変更があったゴーストの\0以降各キャラクターウィンドウのHWND [Reference0]</param>
+            <param name="ghostName">変更があったゴースト名 [Reference1]</param>
+            <param name="currentShellName">変更があったゴーストの現在のシェル名 [Reference2]</param>
+            <param name="id">変更があったゴーストのID (Owned SSTPで送られるものと同じ） [Reference3]</param>
+            <param name="ghostPath">変更があったゴーストのフルパス [Reference4]</param>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnMenuExec(SakuraBridge.Library.PluginRequest,System.Collections.Generic.IList{System.String},System.String,System.String,System.String,System.String)">
             <summary>
             メニューからのプラグイン選択時に呼び出される処理
             </summary>
+            <param name="req">受信したリクエスト</param>
+            <param name="hwnds">プラグインを呼び出したゴーストの\0以降各キャラクターウィンドウのHWND [Reference0]</param>
+            <param name="ghostName">プラグインを呼び出したゴースト名 [Reference1]</param>
+            <param name="currentShellName">プラグインを呼び出したゴーストの現在のシェル名 [Reference2]</param>
+            <param name="id">プラグインを呼び出したゴーストのID (Owned SSTPで送られるものと同じ） [Reference3]</param>
+            <param name="ghostPath">プラグインを呼び出したゴーストのフルパス [Reference4]</param>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnInstallComplete(SakuraBridge.Library.PluginRequest,System.Collections.Generic.IList{SakuraBridge.Library.PluginModule.InstalledObject})">
+            <summary>
+            何かのインストール完了時に呼び出される処理
+            </summary>
+            <param name="req">受信したリクエスト</param>
+            <param name="installedObjects">インストールされた対象物のリスト [Reference0-2]</param>
+        </member>
+        <member name="T:SakuraBridge.Library.PluginModule.InstalledObject">
+            <summary>
+            インストールされたもの
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.InstalledObject.Type">
+            <summary>
+            タイプ
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.InstalledObject.Name">
+            <summary>
+            名前
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginModule.InstalledObject.Path">
+            <summary>
+            フルパス
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnChoiceSelect(SakuraBridge.Library.PluginRequest,System.String)">
+            <summary>
+            選択肢が選択された際に発生する処理
+            </summary>
+            <param name="req">受信したリクエスト</param>
+            <param name="choiceId">選択肢ID [Reference0]</param>
+            <remarks>
+            プラグインがゴーストに送信したスクリプトおよび、プラグインがゴーストに通知したイベントに対してゴーストから返信されたスクリプトに、
+            選択肢系のさくらスクリプトタグが含まれる場合に発生します。
+            
+            OnChoiceSelectExがNo Content以外を返した場合は、この処理は呼び出されません。
+            </remarks>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnChoiceSelectEx(SakuraBridge.Library.PluginRequest,System.String,System.String,System.Collections.Generic.IList{System.String})">
+            <summary>
+            選択肢が選択された際に発生する処理
+            </summary>
+            <param name="req">受信したリクエスト</param>
+            <param name="choiceText">選択肢のテキスト（ラベル） [Reference0]</param>
+            <param name="choiceId">選択肢ID [Reference1]</param>
+            <param name="additionalValues">拡張情報 [Reference2-]</param>
+            <remarks>
+            プラグインがゴーストに送信したスクリプトおよび、プラグインがゴーストに通知したイベントに対してゴーストから返信されたスクリプトに、
+            選択肢系のさくらスクリプトタグが含まれる場合に発生します。
+            </remarks>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnAnchorSelect(SakuraBridge.Library.PluginRequest,System.String)">
+            <summary>
+            アンカーが選択された際に発生する処理
+            </summary>
+            <param name="req">受信したリクエスト</param>
+            <param name="jumperId">選択されたジャンパのID [Reference0]</param>
+            <remarks>
+            プラグインがゴーストに送信したスクリプトおよび、プラグインがゴーストに通知したイベントに対してゴーストから返信されたスクリプトに、
+            アンカー系のさくらスクリプトタグが含まれる場合に発生します。
+            
+            OnAnchorSelectExがNo Content以外を返した場合は、この処理は呼び出されません。
+            </remarks>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginModule.OnAnchorSelectEx(SakuraBridge.Library.PluginRequest,System.String,System.String,System.Collections.Generic.IList{System.String})">
+             <summary>
+             アンカーが選択された際に発生する処理
+             </summary>
+             <param name="req">受信したリクエスト</param>
+             <param name="jumperText">選択されたジャンパのテキスト（ラベル） [Reference0]</param>
+             <param name="jumperId">選択されたジャンパのID [Reference1]</param>
+             <param name="additionalValues">拡張情報 [Reference2-]</param>
+             <remarks>
+             プラグインがゴーストに送信したスクリプトおよび、プラグインがゴーストに通知したイベントに対してゴーストから返信されたスクリプトに、
+            アンカー系のさくらスクリプトタグが含まれる場合に発生します。
+             </remarks>
         </member>
         <member name="T:SakuraBridge.Library.PluginResponse">
             <summary>
@@ -244,9 +582,29 @@
             Scriptヘッダ
             </summary>
         </member>
+        <member name="M:SakuraBridge.Library.PluginResponse.OK">
+            <summary>
+            新しい 200 OK レスポンスを生成します。
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.PluginResponse.NoContent">
+            <summary>
+            新しい 204 No Content レスポンスを生成します。
+            </summary>
+        </member>
         <member name="T:SakuraBridge.Library.PluginRequest">
             <summary>
             PLUGIN/2.0 リクエスト
+            </summary>
+        </member>
+        <member name="F:SakuraBridge.Library.PluginRequest.NotifyCommand">
+            <summary>
+            仕様で規定されたNOTIFYコマンド文字列
+            </summary>
+        </member>
+        <member name="F:SakuraBridge.Library.PluginRequest.GetCommand">
+            <summary>
+            仕様で規定されたGETコマンド文字列
             </summary>
         </member>
         <member name="M:SakuraBridge.Library.PluginRequest.Parse(System.String)">
@@ -267,6 +625,11 @@
         <member name="P:SakuraBridge.Library.PluginRequest.ID">
             <summary>
             IDヘッダ
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.PluginRequest.References">
+            <summary>
+            Reference0, 1, 2... のリストを取得/設定
             </summary>
         </member>
         <member name="T:SakuraBridge.Library.Request">
@@ -297,6 +660,129 @@
             <param name="versionCaption">パース対象のリクエストバージョン表記。例外発生時に表示される</param>
             <param name="CommandCheckFunc">コマンド行が正しいかどうかを判定する関数</param>
             <param name="RequestSetupFunc">リクエストに必要な初期値をセットする関数。ヘッダのセット後に、コマンド行、リクエストを引数として呼ばれる</param>
+        </member>
+        <member name="T:SakuraBridge.Library.Properties.Resources">
+            <summary>
+              ローカライズされた文字列などを検索するための、厳密に型指定されたリソース クラスです。
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.Properties.Resources.ResourceManager">
+            <summary>
+              このクラスで使用されているキャッシュされた ResourceManager インスタンスを返します。
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.Properties.Resources.Culture">
+            <summary>
+              すべてについて、現在のスレッドの CurrentUICulture プロパティをオーバーライドします
+              現在のスレッドの CurrentUICulture プロパティをオーバーライドします。
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.SaoriModule">
+            <summary>
+            SAORIモジュールクラス
+            </summary>
+        </member>
+        <member name="F:SakuraBridge.Library.SaoriModule.DLLDirPath">
+            <summary>
+            DLLが置かれているディレクトリのパス。Load時にセットされる
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriModule.Load(System.String)">
+            <summary>
+            Load処理
+            </summary>
+            <param name="dllDirPath">DLLが置かれているパス</param>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriModule.Request(System.String)">
+            <summary>
+            リクエスト受信時の処理
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriModule.RequestMain(SakuraBridge.Library.SaoriRequest)">
+            <summary>
+            リクエスト受信時のメイン処理
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriModule.Execute(SakuraBridge.Library.SaoriRequest)">
+            <summary>
+            受信したEXECUTEリクエストに応じてレスポンスを生成する
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriModule.Unload">
+            <summary>
+            Unload処理
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.SaoriRequest">
+            <summary>
+            SAORI/1.0 universal リクエスト
+            </summary>
+        </member>
+        <member name="F:SakuraBridge.Library.SaoriRequest.GetVersionCommand">
+            <summary>
+            仕様で規定されたGET VERSIONコマンド文字列
+            </summary>
+        </member>
+        <member name="F:SakuraBridge.Library.SaoriRequest.ExecuteCommand">
+            <summary>
+            仕様で規定されたEXECUTEコマンド文字列
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriRequest.Parse(System.String)">
+            <summary>
+            リクエスト文字列をパースする
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.SaoriRequest.IsExecute">
+            <summary>
+            EXECUTEリクエストフラグ
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.SaoriRequest.Command">
+            <summary>
+            コマンド文字列
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.SaoriRequest.Arguments">
+            <summary>
+            Argument0, 1, 2... のリストを取得/設定
+            </summary>
+        </member>
+        <member name="T:SakuraBridge.Library.SaoriResponse">
+            <summary>
+            SAORI/1.0 universal レスポンス
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.SaoriResponse.Version">
+            <summary>
+            バージョン
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriResponse.#ctor(System.Int32)">
+            <summary>
+            コンストラクタ
+            </summary>
+            <param name="statusCode">ステータスコード。ここで指定した値に応じて、ステータス説明文も自動設定される</param>
+        </member>
+        <member name="P:SakuraBridge.Library.SaoriResponse.Result">
+            <summary>
+            Resultヘッダ
+            </summary>
+        </member>
+        <member name="P:SakuraBridge.Library.SaoriResponse.Values">
+            <summary>
+            Value0, 1, 2... のリストを取得/設定
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriResponse.OK">
+            <summary>
+            新しい 200 OK レスポンスを生成します。
+            </summary>
+        </member>
+        <member name="M:SakuraBridge.Library.SaoriResponse.NoContent">
+            <summary>
+            新しい 204 No Content レスポンスを生成します。
+            </summary>
         </member>
         <member name="T:SakuraBridge.Library.SSTPRequest">
             <summary>
@@ -384,6 +870,11 @@
             SSTP送信クライアント
             </summary>
         </member>
+        <member name="F:SakuraBridge.Library.SSTPClient.DefaultToPort">
+            <summary>
+            SSTPの標準ポート番号
+            </summary>
+        </member>
         <member name="P:SakuraBridge.Library.SSTPClient.ToHost">
             <summary>
             送信先ホスト (初期値: 127.0.0.1)
@@ -397,11 +888,6 @@
         <member name="P:SakuraBridge.Library.SSTPClient.DebugLogging">
             <summary>
             リクエスト、レスポンスの内容などをDebug.WriteLineで出力するかどうか
-            </summary>
-        </member>
-        <member name="M:SakuraBridge.Library.SSTPClient.#ctor">
-            <summary>
-            コンストラクタ
             </summary>
         </member>
         <member name="M:SakuraBridge.Library.SSTPClient.SendRequest(SakuraBridge.Library.SSTPRequest)">

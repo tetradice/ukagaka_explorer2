@@ -337,7 +337,7 @@
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(800, 400);
             this.Name = "MainForm";
-            this.Text = "ゴーストエクスプローラ通（β版）";
+            this.Text = "ゴーストエクスプローラ通";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);

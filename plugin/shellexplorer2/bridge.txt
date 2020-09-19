@@ -1,1 +1,2 @@
-module,shellexplorer2.dll
+module.dll,shellexplorer2.dll
+module.class,ShellExplorer2.Module

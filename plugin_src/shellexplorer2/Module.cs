@@ -14,14 +14,12 @@ namespace ShellExplorer2
         /// <summary>
         /// メニューからの実行
         /// </summary>
-        public override PluginResponse OnMenuExec(PluginRequest req)
+        protected override PluginResponse OnMenuExec(PluginRequest req, IList<string> hwnds, string ghostName, string currentShellName, string id, string ghostPath)
         {
             var res = PluginResponse.OK();
             res.Event = "OnShellExplorer2Open";
 
-            var ghostId = req.References[3];
-            var ghostDirPath = req.References[4].TrimEnd('\\');
-            Process.Start(Path.Combine(DLLDirPath, @"gui\ShellExplorer2GUI.exe"), "id:" + ghostId + @" """ + ghostDirPath + @"""");
+            Process.Start(Path.Combine(DLLDirPath, @"gui\ShellExplorer2GUI.exe"), "id:" + id + @" """ + ghostPath.TrimEnd('\\') + @"""");
 
             return res;
         }
