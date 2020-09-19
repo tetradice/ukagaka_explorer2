@@ -1349,7 +1349,7 @@ namespace GhostExplorer2
 
         private void linkReadme_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Process.Start(@"../readme.txt");
+            Process.Start(Path.Combine(Util.GetAppDirPath(), @"..\readme.txt"));
         }
     }
 }
