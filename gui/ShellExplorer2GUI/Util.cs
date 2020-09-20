@@ -112,7 +112,7 @@ namespace ShellExplorer2
         public static string GetVersion()
         {
             var ver = Assembly.GetExecutingAssembly().GetName().Version;
-            return string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Revision);
+            return string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
         }
     }
 }

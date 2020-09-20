@@ -198,7 +198,7 @@ namespace GhostExplorer2
             // バージョン表記設定
             var asm = Assembly.GetExecutingAssembly();
             var ver = asm.GetName().Version;
-            lblVersion.Text = $"version: {ver.Major}.{ver.Minor}.{ver.Revision}";
+            lblVersion.Text = $"version: {ver.Major}.{ver.Minor}.{ver.Build}";
 
             // Profile読み込み
             CurrentProfile = Util.LoadProfile();
