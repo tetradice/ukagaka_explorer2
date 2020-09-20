@@ -51,6 +51,13 @@ namespace GhostExplorer2
             // ゴーストフォルダのサブフォルダを列挙
             foreach (var subDir in Directory.GetDirectories(GhostDirPath))
             {
+                // 隠しフォルダの場合はスキップ
+                var dirInfo = new DirectoryInfo(subDir);
+                if ((dirInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    continue;
+                }
+
                 // ゴーストフォルダでなければスキップ
                 if (!ExplorerGhost.IsGhostDir(subDir))
                 {

@@ -58,6 +58,13 @@ namespace ShellExplorer2
             // シェルフォルダを列挙
             foreach (var subDir in Directory.GetDirectories(Path.Combine(GhostDirPath, "shell")))
             {
+                // 隠しフォルダの場合はスキップ
+                var dirInfo = new DirectoryInfo(subDir);
+                if ((dirInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    continue;
+                }
+
                 var descriptPath = Path.Combine(subDir, "descript.txt");
                 // descript.txt が存在しないならスキップ
                 if (!File.Exists(descriptPath))
