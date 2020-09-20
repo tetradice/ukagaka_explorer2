@@ -11,7 +11,7 @@ craftmanw,ポン
 craftmanurl,http://sakura.morphball.net/explorer2/
 
 //PLUGIN DLL
-filename,bridge.dll
+filename,yaya.dll
 
 //オプション指定-OnSecondChangeの通知頻度
 //0で無効、標準1

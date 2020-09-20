@@ -1,2 +1,0 @@
-module.dll,ghostexplorer2.dll
-module.class,GhostExplorer2.Module

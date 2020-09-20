@@ -17,17 +17,23 @@ http://www.kmonos.net/nysl/
 https://github.com/tetradice/ukagaka_explorer2
 
 
-
 なお、ゴーストエクスプローラ通では、浮子屋さん制作の「SSTPLib」からFMO関連のコードを流用させていただいております。
 この流用部分についても、浮子屋さんのWebサイトで
 「本サイトのコンテンツのうち、浮子屋が作成したもので再配布等のライセンスが同梱されていないものについては、無制限の改変、再配布を認めます。」
 と記載されているため、同様に自由に利用を行うことができます。
 http://ukiya.sakura.ne.jp/
 
-また、ゴーストエクスプローラ通では、伺かのプラグインとして呼び出しを行うための基盤として
-自作ソフトウェア「SakuraBridge」を使用しています。
-このソフトウェアはまだ正式公開はしておらず、ドキュメント等もほとんどありませんが、ソースコードは同様にNYSLの元で利用可能です。
-https://github.com/tetradice/SakuraBridgePrototype2
+
+
+■YAYA as PLUGIN
+
+このプラグインは、YAYA as PLUGINを使用して作られています。
+
+yaya.dllはYAYAのライセンスに基づき、
+・伺か関係には完全に自由に（NYSL相当と考えて良い）
+・それ以外には修正BSDライセンスでやはり自由に
+配布・修正等が可能です。
+（詳細は同梱の yaya-readme.txt を参照してください）
 
 
 
