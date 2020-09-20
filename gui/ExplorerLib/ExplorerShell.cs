@@ -82,7 +82,10 @@ namespace ExplorerLib
 
             // explorer2/character_descript.txt 更新日付
             var charDescPath = CharacterDescriptPath;
-            if (File.Exists(charDescPath) && File.GetLastWriteTime(charDescPath) > LastModified) LastModified = File.GetLastWriteTime(charDescPath); // 新しければセット
+            if (File.Exists(charDescPath) && File.GetLastWriteTime(charDescPath) > LastModified)
+            {
+                LastModified = File.GetLastWriteTime(charDescPath); // 新しければセット
+            }
         }
 
         /// <inheritdoc />
@@ -111,17 +114,48 @@ namespace ExplorerLib
                 }
 
                 int left;
-                if (!int.TryParse(desc.Values["face.left"], out left)) throw new InvalidDescriptException(@"face.left の指定が不正です。");
-                if (left < 0) throw new InvalidDescriptException(@"face.left が負数です。");
+                if (!int.TryParse(desc.Values["face.left"], out left))
+                {
+                    throw new InvalidDescriptException(@"face.left の指定が不正です。");
+                }
+
+                if (left < 0)
+                {
+                    throw new InvalidDescriptException(@"face.left が負数です。");
+                }
+
                 int top;
-                if (!int.TryParse(desc.Values["face.top"], out top)) throw new InvalidDescriptException(@"face.top の指定が不正です。");
-                if (top < 0) throw new InvalidDescriptException(@"face.top が負数です。");
+                if (!int.TryParse(desc.Values["face.top"], out top))
+                {
+                    throw new InvalidDescriptException(@"face.top の指定が不正です。");
+                }
+
+                if (top < 0)
+                {
+                    throw new InvalidDescriptException(@"face.top が負数です。");
+                }
+
                 int dWidth;
-                if (!int.TryParse(desc.Values["face.width"], out dWidth)) throw new InvalidDescriptException(@"face.width の指定が不正です。");
-                if (dWidth < 0) throw new InvalidDescriptException(@"face.width が負数です。");
+                if (!int.TryParse(desc.Values["face.width"], out dWidth))
+                {
+                    throw new InvalidDescriptException(@"face.width の指定が不正です。");
+                }
+
+                if (dWidth < 0)
+                {
+                    throw new InvalidDescriptException(@"face.width が負数です。");
+                }
+
                 int dHeight;
-                if (!int.TryParse(desc.Values["face.height"], out dHeight)) throw new InvalidDescriptException(@"face.height の指定が不正です。");
-                if (dHeight < 0) throw new InvalidDescriptException(@"face.height が負数です。");
+                if (!int.TryParse(desc.Values["face.height"], out dHeight))
+                {
+                    throw new InvalidDescriptException(@"face.height の指定が不正です。");
+                }
+
+                if (dHeight < 0)
+                {
+                    throw new InvalidDescriptException(@"face.height が負数です。");
+                }
 
                 // 親処理を呼び出す
                 return base.DrawFaceImage(surfaceModel, faceWidth, faceHeight, faceTrimRange: Tuple.Create(left, top, dWidth, dHeight));

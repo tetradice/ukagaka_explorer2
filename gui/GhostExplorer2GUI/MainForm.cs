@@ -107,7 +107,10 @@ namespace GhostExplorer2
                 var selectedIndex = lstGhost.SelectedItems[0].Index;
 
                 // オプションの場合はスキップ
-                if (OptionSelected) return null;
+                if (OptionSelected)
+                {
+                    return null;
+                }
 
                 // 選択インデックスと対応するゴーストを取得
                 return GhostManager.Ghosts[selectedIndex];
@@ -121,7 +124,11 @@ namespace GhostExplorer2
         {
             get
             {
-                if (lstGhost.SelectedItems.Count == 0) return false;
+                if (lstGhost.SelectedItems.Count == 0)
+                {
+                    return false;
+                }
+
                 var selectedIndex = lstGhost.SelectedItems[0].Index;
                 return (selectedIndex > GhostManager.Ghosts.Count - 1);
             }
@@ -195,7 +202,10 @@ namespace GhostExplorer2
 
             // Profile読み込み
             CurrentProfile = Util.LoadProfile();
-            if (CurrentProfile == null) CurrentProfile = new Profile(); // 存在しなければ生成
+            if (CurrentProfile == null)
+            {
+                CurrentProfile = new Profile(); // 存在しなければ生成
+            }
 
             // ウインドウサイズが保存されていれば反映
             if (CurrentProfile.MainWindowWidth >= 1 && CurrentProfile.MainWindowHeight >= 1)
@@ -370,9 +380,17 @@ namespace GhostExplorer2
             SurfaceNotificationMessages.Clear();
 
             // 読み込んだサーフェスを一度解除
-            if (CurrentSakuraSurface != null) CurrentSakuraSurface.Dispose();
+            if (CurrentSakuraSurface != null)
+            {
+                CurrentSakuraSurface.Dispose();
+            }
+
             CurrentSakuraSurface = null;
-            if (CurrentKeroSurface != null) CurrentKeroSurface.Dispose();
+            if (CurrentKeroSurface != null)
+            {
+                CurrentKeroSurface.Dispose();
+            }
+
             CurrentKeroSurface = null;
 
             // シェルが読み込み状態かどうかで処理を分ける
@@ -692,7 +710,10 @@ namespace GhostExplorer2
             args.RemoveAt(0); // 先頭はexe名のため削除
 
             var caller = args.FirstOrDefault(); // 呼び出し元ゴースト (id or "unspecified") 省略された場合はunspecified扱い
-            if (args.Any()) args.RemoveAt(0); // 先頭削除
+            if (args.Any())
+            {
+                args.RemoveAt(0); // 先頭削除
+            }
 
             var specifiedSSPDirPath = args.FirstOrDefault(); // SSPが存在するフォルダパス
             if (!string.IsNullOrWhiteSpace(specifiedSSPDirPath))
@@ -709,7 +730,10 @@ namespace GhostExplorer2
 
                 SSPDirPath = specifiedSSPDirPath;
             }
-            if (args.Any()) args.RemoveAt(0); // 先頭削除
+            if (args.Any())
+            {
+                args.RemoveAt(0); // 先頭削除
+            }
 
             // この時点でSSPパスが特定できていない場合はエラー
             if (SSPDirPath == null)
@@ -1073,7 +1097,11 @@ namespace GhostExplorer2
 
                 if (FaceImages.ContainsKey(ghost.DirPath))
                 {
-                    if (FaceImages[ghost.DirPath] != null) FaceImages[ghost.DirPath].Dispose();
+                    if (FaceImages[ghost.DirPath] != null)
+                    {
+                        FaceImages[ghost.DirPath].Dispose();
+                    }
+
                     FaceImages.Remove(ghost.DirPath);
                 }
                 imgListFace.Images.RemoveByKey(ghost.DirPath);
@@ -1171,7 +1199,10 @@ namespace GhostExplorer2
         protected void UpdateFaceImageKey(ExplorerGhost ghost)
         {
             // リスト内に項目がなければ何もしない
-            if (!lstGhost.Items.ContainsKey(ghost.DirPath)) return;
+            if (!lstGhost.Items.ContainsKey(ghost.DirPath))
+            {
+                return;
+            }
 
             // 不在判定
             if (AbsenceInfo.ContainsKey(ghost.DirPath))

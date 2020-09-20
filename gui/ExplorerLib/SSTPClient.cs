@@ -46,7 +46,11 @@ namespace ExplorerLib
                     ["Charset"] = "UTF-8",
                     ["Sender"] = Sender
                 };
-                if (Id != null) headers["ID"] = Id;
+                if (Id != null)
+                {
+                    headers["ID"] = Id;
+                }
+
                 headers["Sender"] = Sender;
                 if (IfGhost != null)
                 {
@@ -100,7 +104,11 @@ namespace ExplorerLib
                     ["Sender"] = Sender,
                     ["Event"] = Event
                 };
-                if (Id != null) headers["ID"] = Id;
+                if (Id != null)
+                {
+                    headers["ID"] = Id;
+                }
+
                 headers["Sender"] = Sender;
                 if (IfGhost != null)
                 {

@@ -52,7 +52,10 @@ namespace GhostExplorer2
             foreach (var subDir in Directory.GetDirectories(GhostDirPath))
             {
                 // ゴーストフォルダでなければスキップ
-                if (!ExplorerGhost.IsGhostDir(subDir)) continue;
+                if (!ExplorerGhost.IsGhostDir(subDir))
+                {
+                    continue;
+                }
 
                 // ゴーストの基本情報を読み込み
                 var ghost = ExplorerGhost.Load(subDir);
@@ -78,7 +81,11 @@ namespace GhostExplorer2
             foreach (var ghost in Ghosts)
             {
                 Realize2Text.Record rec = null;
-                if (Realize2Text != null) rec = Realize2Text.GhostRecords.FirstOrDefault(r => r.Name == ghost.Name);
+                if (Realize2Text != null)
+                {
+                    rec = Realize2Text.GhostRecords.FirstOrDefault(r => r.Name == ghost.Name);
+                }
+
                 if (rec != null)
                 {
                     totalBootTimes[ghost.Name] = rec.TotalBootByMinute;
@@ -188,10 +195,16 @@ namespace GhostExplorer2
         protected virtual Bitmap DrawSurfaceInternal(ExplorerGhost ghost, ExplorerShell shell, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
             var cacheDir = Util.GetCacheDirPath();
-            if (surfaceModel == null) return null;
+            if (surfaceModel == null)
+            {
+                return null;
+            }
 
             // キャッシュフォルダが存在しなければ作成
-            if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
+            if (!Directory.Exists(cacheDir))
+            {
+                Directory.CreateDirectory(cacheDir);
+            }
 
             // 立ち絵画像のキャッシュがあり、更新日時がシェルの更新日以降なら、キャッシュを使用
             var cachePath = Path.Combine(cacheDir, string.Format("{0}_s{1}.png", Path.GetFileName(ghost.DirPath), surfaceId));
@@ -227,7 +240,10 @@ namespace GhostExplorer2
             var cacheDir = Util.GetCacheDirPath();
 
             // キャッシュフォルダが存在しなければ作成
-            if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
+            if (!Directory.Exists(cacheDir))
+            {
+                Directory.CreateDirectory(cacheDir);
+            }
 
             try
             {

@@ -60,7 +60,10 @@ namespace ShellExplorer2
             {
                 var descriptPath = Path.Combine(subDir, "descript.txt");
                 // descript.txt が存在しないならスキップ
-                if (!File.Exists(descriptPath)) continue;
+                if (!File.Exists(descriptPath))
+                {
+                    continue;
+                }
 
                 var item = new ListItem() { DirPath = subDir };
                 try
@@ -114,10 +117,16 @@ namespace ShellExplorer2
         protected virtual Bitmap DrawSurfaceInternal(ExplorerShell targetShell, Shell.SurfaceModel surfaceModel, int surfaceId)
         {
             var cacheDir = Util.GetCacheDirPath(Path.GetFileName(GhostDirPath));
-            if (surfaceModel == null) return null;
+            if (surfaceModel == null)
+            {
+                return null;
+            }
 
             // キャッシュフォルダが存在しなければ作成
-            if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
+            if (!Directory.Exists(cacheDir))
+            {
+                Directory.CreateDirectory(cacheDir);
+            }
 
             // 立ち絵画像のキャッシュがあり、更新日時がシェルの更新日以降なら、キャッシュを使用
             var cachePath = Path.Combine(cacheDir, string.Format("{0}_s{1}.png", Path.GetFileName(targetShell.DirPath), surfaceId));
@@ -154,12 +163,18 @@ namespace ShellExplorer2
             var cacheDir = Util.GetCacheDirPath(Path.GetFileName(GhostDirPath));
 
             // キャッシュフォルダが存在しなければ作成
-            if (!Directory.Exists(cacheDir)) Directory.CreateDirectory(cacheDir);
+            if (!Directory.Exists(cacheDir))
+            {
+                Directory.CreateDirectory(cacheDir);
+            }
 
             foreach (var item in ListItems)
             {
                 // シェルが読み込めなかった場合はスキップ
-                if (item.Shell == null) continue;
+                if (item.Shell == null)
+                {
+                    continue;
+                }
 
                 var shell = item.Shell;
 

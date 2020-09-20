@@ -113,7 +113,10 @@ namespace ShellExplorer2
 
             // Profile読み込み
             CurrentProfile = Util.LoadProfile();
-            if (CurrentProfile == null) CurrentProfile = new Profile(); // 存在しなければ生成
+            if (CurrentProfile == null)
+            {
+                CurrentProfile = new Profile(); // 存在しなければ生成
+            }
 
             // ウインドウサイズが保存されていれば反映
             if (CurrentProfile.MainWindowWidth >= 1 && CurrentProfile.MainWindowHeight >= 1)
@@ -214,7 +217,10 @@ namespace ShellExplorer2
         private void lstGhost_SelectedIndexChanged(object sender, EventArgs e)
         {
             // 未選択時は終了
-            if (SelectedShellListItem == null) return;
+            if (SelectedShellListItem == null)
+            {
+                return;
+            }
 
             // エラーメッセージリストを初期化
             SurfaceNotificationMessages.Clear();
