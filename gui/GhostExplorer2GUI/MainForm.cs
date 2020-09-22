@@ -59,16 +59,6 @@ namespace GhostExplorer2
         protected Realize2Text Realize2Text;
 
         /// <summary>
-        /// 不在アイコンの画像キーリスト
-        /// </summary>
-        protected List<string> AbsenceImageKeys = new List<string>();
-
-        /// <summary>
-        /// ゴースト不在情報。ゴーストのフォルダパスをキーとし、不在時は値に不在画像のキーが入っている
-        /// </summary>
-        protected Dictionary<string, string> AbsenceInfo = new Dictionary<string, string>();
-
-        /// <summary>
         /// Window Message "Sakura" (RegisterWindowMessageで取得)
         /// </summary>
         protected int WMSakuraAPI;
@@ -263,50 +253,6 @@ namespace GhostExplorer2
                 CallerLost = true;
             }
 
-            // ゴースト不在判定 SSP側で立っているゴーストは画像表示無し
-            {
-                var rand = new Random();
-
-                // SSP側で立っているゴーストの情報を取得 (sakuraname, keronameのTupleをキーとして、HashSetを生成)
-                var standingGhosts = new HashSet<Tuple<string, string>>();
-                foreach (var fmoGhost in FMOGhostList)
-                {
-                    standingGhosts.Add(Tuple.Create(fmoGhost.Name, fmoGhost.KeroName));
-                }
-
-                // ゴーストごとに処理
-                foreach (var ghost in GhostManager.Ghosts)
-                {
-                    // 不在情報更新
-                    var beforeAbsent = AbsenceInfo.ContainsKey(ghost.DirPath);
-                    var currentAbsent = standingGhosts.Contains(Tuple.Create(ghost.SakuraName, ghost.KeroName));
-
-                    // いる→いない に変わった場合、不在画像をランダムに選択して設定
-                    if (!beforeAbsent && currentAbsent)
-                    {
-                        AbsenceInfo[ghost.DirPath] = AbsenceImageKeys[rand.Next(0, AbsenceImageKeys.Count)];
-                    }
-
-                    // いない→いるに変わった場合、すでに読み込んだシェル情報をクリアして読み込み直し
-                    if (beforeAbsent && !currentAbsent)
-                    {
-                        LoadShellAndFaceImage(ghost, reload: true);
-                    }
-
-                    if (!currentAbsent)
-                    {
-                        // いる場合は不在情報削除
-                        if (AbsenceInfo.ContainsKey(ghost.DirPath))
-                        {
-                            AbsenceInfo.Remove(ghost.DirPath);
-                        }
-                    }
-
-                    // ゴーストの顔画像表示を更新
-                    UpdateFaceImageKey(ghost);
-                }
-            }
-
             // UI状態も更新
             UpdateUIState();
         }
@@ -344,15 +290,8 @@ namespace GhostExplorer2
             // スタートメニューショートカット削除ボタンは、存在する場合のみ押下可能
             BtnRemoveStartMenu.Enabled = File.Exists(StartMenuShortcutPath);
 
-            // 選択ゴーストがすでに不在の場合は、上記に優先してボタンを無効化
-            if (SelectedGhost != null && AbsenceInfo.ContainsKey(SelectedGhost.DirPath))
-            {
-                BtnCall.Enabled = false;
-                BtnChange.Enabled = ChkCloseAfterChange.Enabled = false;
-            }
-
-            // ゴーストの立ち絵は、選択されているゴーストがいて、かつ不在でない場合のみ表示
-            SelectedGhostSurfaceVisible = (SelectedGhost != null && !AbsenceInfo.ContainsKey(SelectedGhost.DirPath));
+            // ゴーストの立ち絵は、選択されているゴーストがいる場合のみ表示
+            SelectedGhostSurfaceVisible = (SelectedGhost != null);
 
             // 立ち絵Paint再発生
             picSurface.Invalidate();
@@ -834,15 +773,6 @@ namespace GhostExplorer2
             // チェックボックスの位置移動
             ChkCloseAfterChange.Left = BtnChange.Left + 1;
 
-            // イメージリストに不在アイコンを追加
-            AbsenceImageKeys.Clear();
-            foreach (var path in Directory.GetFiles(Path.Combine(Util.GetAppDirPath(), @"res\absence_icon"), "*.png"))
-            {
-                var fileName = Path.GetFileName(path);
-                imgListFace.Images.Add(fileName, new Bitmap(path));
-                AbsenceImageKeys.Add(fileName);
-            }
-
             // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
             if (CurrentProfile.LastBootVersion != null && Util.GetVersion() != CurrentProfile.LastBootVersion)
             {
@@ -1194,7 +1124,7 @@ namespace GhostExplorer2
         }
 
         /// <summary>
-        /// 指定ゴーストの顔画像を更新 (不在かどうかに応じて処理を分ける)
+        /// 指定ゴーストの顔画像を更新
         /// </summary>
         protected void UpdateFaceImageKey(ExplorerGhost ghost)
         {
@@ -1204,17 +1134,7 @@ namespace GhostExplorer2
                 return;
             }
 
-            // 不在判定
-            if (AbsenceInfo.ContainsKey(ghost.DirPath))
-            {
-                // いない
-                lstGhost.Items[ghost.DirPath].ImageKey = AbsenceInfo[ghost.DirPath];
-            }
-            else
-            {
-                // いる
-                lstGhost.Items[ghost.DirPath].ImageKey = ghost.DirPath;
-            }
+            lstGhost.Items[ghost.DirPath].ImageKey = ghost.DirPath;
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
