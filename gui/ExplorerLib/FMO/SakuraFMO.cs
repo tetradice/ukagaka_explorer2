@@ -20,6 +20,8 @@ namespace ExplorerLib
         public string KeroName;
         public int SakuraSurface;
         public int KeroSurface;
+        public string Path; // SSPのパス
+        public string GhostPath; // ゴーストフォルダのパス
     }
 
     /// <summary>
@@ -187,6 +189,12 @@ namespace ExplorerLib
                         break;
                     case "keroname":
                         fd.KeroName = val;
+                        break;
+                    case "path":
+                        fd.Path = val;
+                        break;
+                    case "ghostpath":
+                        fd.GhostPath = val;
                         break;
                     case "sakura":
                         int v2;

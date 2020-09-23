@@ -267,11 +267,11 @@ namespace GhostExplorer2
             {
                 var rand = new Random();
 
-                // SSP側で立っているゴーストの情報を取得 (sakuraname, keronameのTupleをキーとして、HashSetを生成)
-                var standingGhosts = new HashSet<Tuple<string, string>>();
+                // SSP側で立っているゴーストの情報を取得 (ゴーストフォルダのパスをキーとして、HashSetを生成)
+                var standingGhosts = new HashSet<string>();
                 foreach (var fmoGhost in FMOGhostList)
                 {
-                    standingGhosts.Add(Tuple.Create(fmoGhost.Name, fmoGhost.KeroName));
+                    standingGhosts.Add(fmoGhost.GhostPath.TrimEnd('\\'));
                 }
 
                 // ゴーストごとに処理
@@ -279,7 +279,7 @@ namespace GhostExplorer2
                 {
                     // 不在情報更新
                     var beforeAbsent = AbsenceInfo.ContainsKey(ghost.DirPath);
-                    var currentAbsent = standingGhosts.Contains(Tuple.Create(ghost.SakuraName, ghost.KeroName));
+                    var currentAbsent = standingGhosts.Contains(ghost.DirPath);
 
                     // いる→いない に変わった場合、不在画像をランダムに選択して設定
                     if (!beforeAbsent && currentAbsent)
