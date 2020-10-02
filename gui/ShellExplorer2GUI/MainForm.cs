@@ -602,6 +602,17 @@ namespace ShellExplorer2
             // シェル情報読み込み
             ShellManager = ShellManager.Load(ghostDirPath, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
 
+            // シェルが1件も取得できなかった場合はエラー表示
+            if (!ShellManager.ListItems.Any())
+            {
+                MessageBox.Show("有効なシェルフォルダが1件も見つかりませんでした。"
+                                , "エラー"
+                                , MessageBoxButtons.OK
+                                , MessageBoxIcon.Error);
+                Application.Exit();
+                return;
+            }
+
             // 最終起動時の記録があり、かつ最終起動時とバージョンが異なる場合は、キャッシュをすべて破棄
             if (CurrentProfile.LastBootVersion != null && Util.GetVersion() != CurrentProfile.LastBootVersion)
             {
