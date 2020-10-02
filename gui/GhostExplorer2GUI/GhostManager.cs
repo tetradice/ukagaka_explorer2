@@ -174,6 +174,12 @@ namespace GhostExplorer2
             }
 
             var shellDir = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
+
+            // descript.txtが存在しない場合はエラーとする
+            if (!ExplorerShell.IsShellDir(shellDir)) {
+                throw new ShellDescriptNotFoundException("シェルフォルダの中に descript.txt が存在しません。");
+            }
+
             return ExplorerShell.Load(shellDir, ghost.SakuraDefaultSurfaceId, ghost.KeroDefaultSurfaceId);
         }
 
