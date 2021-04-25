@@ -4,9 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExplorerLib;
 using ImageMagick;
@@ -176,7 +173,8 @@ namespace GhostExplorer2
             var shellDir = Path.Combine(ghost.DirPath, ghost.CurrentShellRelDirPath);
 
             // descript.txtが存在しない場合はエラーとする
-            if (!ExplorerShell.IsShellDir(shellDir)) {
+            if (!ExplorerShell.IsShellDir(shellDir))
+            {
                 throw new ShellDescriptNotFoundException("シェルフォルダの中に descript.txt が存在しません。");
             }
 
