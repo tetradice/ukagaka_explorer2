@@ -1,4 +1,4 @@
-≪ゴーストエクスプローラ通≫ ver 1.2.1
+≪ゴーストエクスプローラ通≫ ver 1.3.0
 
 顔画像・立ち絵表示付きのゴーストエクスプローラです。
 絵を見ながらゴーストの切り替えや呼び出しを行うことができます。
@@ -76,9 +76,6 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
 ・SERIKOの描画メソッドのうち、正しく処理できるのは、基本的な重ね合わせメソッド (base, overlay, overlayfast, add, bind) 、および reduce, interpolate のみです。
   他の描画メソッドは、moveは無視し、それ以外はすべてoverlay扱いで描画します。
 
-・SERIKOの機能のうち、下記のものには対応できていません。
-  ・animation*.option,background
-
 
 
 ■ライセンス（利用条件）
@@ -91,6 +88,12 @@ Ukadon: https://ukadon.shillest.net/web/accounts/29648
 
 
 ■更新履歴
+
+2021/4/27 ver 1.3.0 リリース
+
+* [機能追加] surfaces.txt 内のanimation定義で、backgroundオプション指定を正しく処理できるように対応（前verまでは非対応だった）
+* [修正] 一部ゴーストの立ち絵を正しく処理できない不具合を修正
+           - surfaces.txt 内のanimation定義で、「animation1.interval,bind,1」のようにbindとパラメータの両方が指定された場合に、サーフェスを正しく描画できていなかった
 
 2020/10/2 ver 1.2.1 リリース
 
